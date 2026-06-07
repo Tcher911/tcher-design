@@ -1,0 +1,12 @@
+{
+  "name": "tcher",
+  "description": "Design fluency for frontend development. 1 skill with 23 commands (/tcher polish, /tcher audit, /tcher critique, etc.) and curated anti-pattern detection.",
+  "version": "3.5.0",
+  "author": {
+    "name": "tcher",
+    "email": "support@tcherz.store"
+  },
+  "homepage": "https://tcher.style",
+  "repository": "https://github.com/Tcher911/tcher-design",
+  "skills": "./.claude/skills/"
+}

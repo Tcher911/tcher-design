@@ -1,0 +1,257 @@
+# Project Instructions for Claude
+
+## Skill bootstrap: skip the post-update-cleanup step
+
+The `<post-update-cleanup>` block at the top of `.claude/skills/tcher/SKILL.md` runs `scripts/cleanup-deprecated.mjs` and then self-deletes. **Do not run it in this repo, and do not delete the block.** This repo is the source of truth for the Tcher skill; the cleanup script scans for "leftover" skill files to remove and its judgment doesn't fit a repo where the skill lives in `skill/`. The block is also regenerated from `skill/SKILL.src.md` on every `bun run build`, so any deletion churns back on the next build. Skip the step silently and proceed.
+
+Same rule for AGENTS.md and every other harness-specific instruction file: treat post-update-cleanup as a no-op in this repo.
+
+## Architecture (v3.0+)
+
+There is **one** user-invocable skill, `tcher`, with **23 commands** underneath it. Users type `/tcher polish`, `/tcher audit`, etc. The skill is defined in `skill/`:
+
+- `SKILL.md` — frontmatter (with the auto-trigger-optimized description and the `allowed-tools` list), shared design laws, and the **Commands** router table.
+- `reference/` — one `<command>.md` per command (`audit.md`, `polish.md`, `critique.md`, etc.) plus the domain reference files (`typography.md`, `color-and-contrast.md`, etc.). When a sub-command is matched, the router loads its reference file.
+- `reference/brand.md` and `reference/product.md` — the two register references. SKILL.md's Setup section selects one based on the task cue, the surface in focus, or the `register` field in PRODUCT.md (first match wins).
+- `scripts/command-metadata.json` — single source of truth for each command's description, argument hint, and (eventually) category. Both the build and `pin.mjs` read from this.
+- `scripts/pin.mjs` — creates/removes lightweight redirect shims so users can have `/audit` as a standalone shortcut that delegates to `/tcher audit`.
+- `scripts/cleanup-deprecated.mjs` — runs once after an update to remove leftover files from renamed/merged commands.
+
+**Do not add standalone skills** unless there's a strong reason. The consolidation was deliberate: the `/` menu pollution problem is real and gets worse as users install more plugins.
+
+### Register (brand vs product)
+
+Every design task belongs to one of two registers:
+
+- **Brand** — design IS the product: marketing, landing pages, brand sites, campaign surfaces, portfolios, long-form content. Distinctiveness is the bar. Spans every visual lane (tech-minimal, luxury, editorial-magazine, consumer-warm, brutalist, etc.) — do not default to only one.
+- **Product** — design SERVES the product: app UI, admin, dashboards, tools. Earned familiarity is the bar — fluent users of Linear / Figma / Notion / Raycast / Stripe should trust it.
+
+PRODUCT.md at the project root carries a `## Register` section with a bare value (`brand` or `product`). `/tcher teach` asks about register first because it shapes every downstream answer.
+
+Sub-command reference files add a short `## Register` section near the top *only where the answer diverges between the two*. Don't restate the register files' content in sub-commands — link instead. Sub-commands where register meaningfully diverges today: `typeset`, `animate`, `bolder`, `delight`, `colorize`, `layout`, `quieter`.
+
+**a11y lives in `audit.md`**, not in SKILL.md, `brand.md`, or `product.md`. Models over-cautious themselves into safe, underdesigned output when reminded about accessibility at design time. The audit command is the dedicated place for that check.
+
+## Removed components (do not reintroduce)
+
+The website (`site/`, Astro + Cloudflare Pages, `functions/`, `wrangler.toml`) and the Chrome extension (`extension/`) were deleted from this copy of the project. The remaining components are the **skill** (`skill/`), the **CLI** (`cli/`), and the build/test tooling that supports them. Don't recreate site or extension scripts, and ignore any leftover references to them in READMEs or notes.
+
+## Prose: read STYLE.md before writing user-facing copy
+
+Editorial brief is at `STYLE.md` (root). Read it before editing the READMEs.
+
+The build's `validateProse` step (in `scripts/build.js`) enforces a denylist: em dashes (`—` and HTML entities), the `--` em-dash substitute, `load-bearing`, `highest-leverage`, `biggest unlock`, `seamless`, `robust`, `delve`, `elevate`, `empower`, `underscore`, `pivotal`, `tapestry`, `data-driven`, `reflex defaults`, `collapses into monoculture`, `in today's`, `gone are the days`, `whether you're`, `let's dive in`, `in summary`, `in conclusion`, `moreover`, `furthermore`. Each rule prints a rationale and a suggested replacement when it fires. **Do not silently work around the regex.** If a banned word has earned a real meaning here, raise it as a STYLE.md amendment.
+
+The validator scans `README.md` and `README.npm.md`. It deliberately skips `skill/` because LLM-facing reference instructions sometimes need technical phrasings the marketing copy can't.
+
+## Build System
+
+The build system compiles the tcher skill from `skill/` to provider-specific formats in `dist/`:
+
+```bash
+bun run build      # Build all providers
+bun run rebuild    # Clean and rebuild
+```
+
+Source files use placeholders that get replaced per-provider:
+- `{{model}}` — Model name (Claude, Gemini, GPT, etc.)
+- `{{config_file}}` — Config file name (CLAUDE.md, .cursorrules, etc.)
+- `{{ask_instruction}}` — How to ask user questions
+- `{{command_prefix}}` — `/` or `$` depending on provider
+- `{{available_commands}}` — auto-populated list of commands (from `TCHER_SUB_COMMANDS` in `scripts/lib/utils.js`)
+- `{{scripts_path}}` — provider-aware path to the skill's scripts directory
+
+### Harness output directories are tracked
+
+`.claude/skills/`, `.cursor/skills/`, `.agents/skills/`, and the other 8 harness directories are **intentionally committed to the repo**. `npx skills` reads them directly from this repo at install time, and they enable clean submodule use. Do not gitignore them. Run `bun run build` to refresh them after editing `skill/`.
+
+Local state files inside harness directories (e.g. `.claude/scheduled_tasks.lock`, `.claude/settings.local.json`) ARE gitignored.
+
+## Testing
+
+```bash
+bun run test                  # Default suite: unit + static framework fixtures
+bun run test:live-e2e         # Opt-in: full-cycle live-mode E2E across framework fixtures
+bun run test:skill-behavior   # Opt-in: LLM-backed checks that the skill text actually drives the agent's setup flow
+```
+
+Unit tests (build orchestration, detector logic) run via `bun test`. Fixture tests (jsdom-based HTML detection) run via `node --test` because bun is too slow with jsdom. The `test` script handles this split automatically.
+
+**Important:** `tests/build.test.js` uses `spyOn(transformers, 'transformCursor')` with the named exports from `scripts/lib/transformers/index.js`. Those named exports (`transformCursor`, `transformClaudeCode`, etc.) are kept specifically for test spying, even though `build.js` itself uses `createTransformer + PROVIDERS` directly. **Do not delete them as "dead code"** — I made that mistake once and broke 8 tests.
+
+### Live-mode E2E
+
+`tests/live-e2e.test.mjs` drives the entire user flow (handshake → pick → Go → cycle → accept → carbonize cleanup) against every fixture in `tests/framework-fixtures/` that declares a `runtime` block. Each fixture installs real deps, boots its framework dev server (Vite, Next, SvelteKit, Astro, Nuxt static), and runs Playwright Chromium against a deterministic fake agent that produces realistic variants in the exact format `reference/live.md` describes.
+
+```bash
+bun run test:live-e2e                                       # full suite, ~2 min, 19 fixtures
+TCHER_E2E_ONLY=vite8-react-modal bun run test:live-e2e # scope to one fixture
+TCHER_E2E_DEBUG=1 bun run test:live-e2e                # dump page DOM + dev-server tail on failure
+```
+
+**One-time setup**: `npx playwright install chromium` (the suite uses a specific Chromium build keyed to the bundled Playwright version).
+
+**Kept out of the default `bun run test`** because (a) it does real `npm install` per fixture, (b) it boots framework dev servers, (c) wall time is ~2 minutes, and (d) it requires Playwright's browser cache. Run it locally before shipping changes to anything in `skill/scripts/live-*.{mjs,js}`.
+
+The agent is pluggable via a one-method interface in `tests/live-e2e/agent.mjs`: `generateVariants(event, context) → { scopedCss, variants[] }`. The default fake agent emits canned variants that exercise all three param kinds (`range`, `steps`, `toggle`). The orchestrator (wrap, write, accept, carbonize) is agent-agnostic.
+
+**LLM agent (opt-in)**: set `TCHER_E2E_AGENT=llm` to swap the fake agent for `tests/live-e2e/agents/llm-agent.mjs`, which calls Claude (default Haiku 4.5) via `@anthropic-ai/sdk`. Requires `ANTHROPIC_API_KEY` in env; the test runner skips with a clear message when it's unset. Override the model with `TCHER_E2E_LLM_MODEL=claude-sonnet-4-6` if Haiku produces unreliable JSON. Caching is on — live.md is the cacheable prefix, and after the first call subsequent fixtures pay only the cache-read rate. Pass rate on a typical sweep is 18/19; the modal fixture's intrinsic state-loss flake is amplified by LLM latency and may need a re-run. **This path hits the API and costs money** — keep it out of CI unless you really want it there.
+
+Adding a new fixture is a matter of cloning a directory under `tests/framework-fixtures/`, swapping the source files, and writing a `fixture.json`. See `tests/framework-fixtures/README.md` for the full schema.
+
+### Skill-behavior tests
+
+`tests/skill-behavior/scenarios.test.mjs` is the LLM-backed safety net for edits to `skill/SKILL.src.md` and the Setup-adjacent reference files (`teach.md`, `document.md`, `brand.md`, `product.md`, sub-command refs). It inlines the source `skill/SKILL.src.md` into the system prompt of a real LLM, gives the agent `bash` / `read` / `write` / `list` tools scoped to a temp workspace, and asserts on the tool-call trace — not on the model's free-form output. The trace is the source of truth.
+
+```bash
+bun run test:skill-behavior                                              # full suite (27 tests, ~5 min, ~$0.50-1.50 across providers)
+TCHER_SKILL_BEHAVIOR_MODELS=gemini-3.1-flash-lite bun run test:skill-behavior   # scope to one provider
+TCHER_SKILL_BEHAVIOR_VERBOSE=1 bun run test:skill-behavior          # dump per-scenario trace JSON to stderr (use when iterating)
+```
+
+**Three providers per run, every run.** The suite always exercises `claude-sonnet-4-6`, `gpt-5.5`, and `gemini-3.1-flash-lite`. Sonnet and GPT-5.5 are production-tier, matching what users actually run, so the pass/fail signal reflects real agent behavior rather than a cheap proxy; gemini stays on the flash-lite tier. **Don't substitute Claude alone**: many of the most useful findings come from divergence between providers.
+
+**Auth** lives in repo-root `.env` (copied from `~/code/tcher-evals/.env`, gitignored). Providers skip cleanly when their key is unset; they don't fail.
+
+**Nine scenarios:**
+1. empty workspace → agent loads `reference/teach.md`
+2. PRODUCT.md only → loads `brand.md`
+3. PRODUCT.md + DESIGN.md → loads `brand.md` + consults the design system
+4. context already loaded in turn 1 → turn 2 does **not** re-run `context.mjs`
+5. PRODUCT.md without `## Register` field → agent infers `brand` from task cue
+6. `/tcher polish` → loads `reference/polish.md`
+7. `/tcher audit` → loads `reference/audit.md`
+8. existing SvelteKit project → agent reads at least one project code file
+9. `context.mjs` emits `UPDATE_AVAILABLE` (seeded newer version) → agent surfaces it but does **not** auto-run `npx tcher skills update`
+
+**Baseline.** The 21-22 / 24 baseline (with stable gpt scenario 6/7 failures) was measured on the old cheap tier (`claude-haiku-4-5` / `gpt-5.4-mini`). It needs re-measuring on the current `claude-sonnet-4-6` / `gpt-5.5` lineup; the production-tier models are expected to do better on the sub-command routing scenarios the old gpt tier failed. See `tests/skill-behavior/README.md`.
+
+**Cost.** Each run is real LLM calls, billed to the keys in `.env`. Production-tier models put a full sweep around $0.50-1.50. Keep it out of CI unless you really want it there.
+
+**Adding a scenario.** Write the fixture in `tests/skill-behavior/fixtures.mjs`, add the `it()` block in `scenarios.test.mjs` (the harness uses the source `skill/` dir via a symlink, so no rebuild needed), and update the baseline table in the suite's README. The harness's `fileLoaded(trace, filename)` helper checks both `read` and bash `cat` — different models prefer different tools.
+
+**The harness symlinks source, not built output.** This is deliberate so SKILL.md / reference / `scripts/context.mjs` edits show up immediately without `bun run build:skills`. The trade-off: reference files surface their raw `{{placeholders}}`, but the assertions key on tool calls rather than content, so it doesn't matter for correctness.
+
+## CLI
+
+The CLI lives in this repo under `cli/`: `cli/bin/` (entry + sub-commands), `cli/engine/` (the detect-antipatterns rule engine + browser variant), `cli/lib/` (shared helpers). Published to npm as `tcher`.
+
+```bash
+npx tcher detect [file-or-dir-or-url...]   # detect anti-patterns
+npx tcher detect --fast --json src/         # regex-only, JSON output
+npx tcher live                              # start browser overlay server
+npx tcher skills install                    # install skills
+npx tcher --help                            # show help
+```
+
+The browser detector (`cli/engine/detect-antipatterns-browser.js`) is generated from the main engine. After changing `cli/engine/detect-antipatterns.mjs`, rebuild it:
+
+```bash
+bun run build:browser
+```
+
+**IMPORTANT**: Always use `node` (not `bun`) to run the detect CLI. Bun's jsdom implementation is extremely slow and will cause scans with HTML files to hang for minutes.
+
+## Versioning
+
+There are two independently versioned components. Only bump the one(s) that actually changed:
+
+**CLI** (npm package):
+- `package.json` → `version`
+- Bump when: CLI code changes (`cli/bin/`, `cli/engine/detect-antipatterns.mjs`, etc.)
+
+**Skills** (Claude Code plugin / skill definitions):
+- `.claude-plugin/plugin.json` → `version`
+- `.claude-plugin/marketplace.json` → `plugins[0].version`
+- Bump when: skill content changes (`skill/`, reference files, command metadata, etc.)
+
+After bumping, see **Releases** below for how to tag and publish.
+
+## Releases
+
+GitHub releases are tagged per-component, not per-version, since the components ship independently. Tag prefixes: `skill-v`, `cli-v`.
+
+Workflow for any component:
+
+1. Bump the manifest version (see Versioning above).
+2. Commit and push to `main`.
+3. Run `bun run release:<skill|cli>`. Preview first with `node scripts/release.mjs <component> --dry-run`.
+
+The script refuses to run if: the working tree is dirty, HEAD is ahead of origin, the tag already exists, or (for skill) `bun run build` produces uncommitted changes — meaning the harness output dirs weren't refreshed before the bump was committed.
+
+Release notes are a plain `<Label> <version>` header (the website changelog the script used to extract from is gone). Edit afterwards with `gh release edit <tag> --notes-file <md>` if richer notes are needed.
+
+Skill releases attach `dist/universal.zip`. CLI releases print a reminder to run `npm publish` separately.
+
+## Adding New Commands
+
+All commands live under `/tcher`. To add a new one:
+
+1. Create `skill/reference/<command>.md` with the command's instructions (this is what the LLM loads when the command is invoked)
+2. Add a row to the **Sub-command reference table** in `skill/SKILL.src.md`
+3. Add an entry to the **Command menu** section in the same file
+4. Add the command name to `TCHER_SUB_COMMANDS` in `scripts/lib/utils.js`
+5. Add it to `VALID_COMMANDS` in `skill/scripts/pin.mjs`
+6. Add its metadata (description + argumentHint) to `skill/scripts/command-metadata.json`
+7. Add its category to `SKILL_CATEGORIES` in `scripts/lib/sub-pages-data.js`
+
+The build system counts commands from the router table automatically. Update the command count in **all** of these locations when the total changes:
+
+- `README.md` — intro, command count, commands table
+- `NOTICE.md` — command count
+- `AGENTS.md` — intro command count
+- `.claude-plugin/plugin.json` — description
+- `.claude-plugin/marketplace.json` — metadata description + plugin description
+
+The build validator (`generateCounts` in `scripts/build.js`) checks these files for stale numeric counts and fails the build if any disagree with the router table.
+
+## Adding or modifying anti-pattern detection rules
+
+`cli/engine/detect-antipatterns.mjs` is the source of truth for the rule engine. It powers the CLI and the live-mode browser overlay. Three places stay in sync:
+
+| Where | How it stays in sync |
+|---|---|
+| `cli/engine/detect-antipatterns.mjs` (`ANTIPATTERNS` array + `checkXxx` logic) | Hand-edited |
+| `cli/engine/detect-antipatterns-browser.js` | `bun run build:browser` |
+| `skill/SKILL.src.md` and `reference/*.md` | Hand-edited if the rule introduces new design guidance |
+
+Always run both builds and the test suite after a rule change:
+
+```bash
+bun run build && bun run build:browser && bun run test
+```
+
+### TDD order (non-negotiable)
+
+1. **Fixture** at `tests/fixtures/antipatterns/{rule-id}.html` with two columns (should-flag / should-pass), each case identified by a unique heading. Cover ≥4 flag cases and ≥5 false-positive shapes. Use **explicit pixel dimensions in CSS** because jsdom does no layout.
+2. **Failing test** in `tests/detect-antipatterns-fixtures.test.mjs` using the snippet-substring pattern (regex `/"([^"]+)"/` against `SHOULD_FLAG` / `SHOULD_PASS` lists). Run it and watch it fail before implementing.
+3. **Rule entry** in the `ANTIPATTERNS` array: `id`, `category` (`slop` for AI tells, `quality` for real design or a11y issues), `name`, `description`, optional `skillSection` and `skillGuideline`.
+4. **Pure check function** `checkXxx(opts)` returning `[{ id, snippet }]`. No DOM access in the pure function.
+5. **Two adapters**: `checkElementXxxDOM(el)` for the browser (`getComputedStyle` + `getBoundingClientRect`) and `checkElementXxx(el, tag, window)` for jsdom (`parseFloat(style.width)` instead of layout). Wire **both** into **both** element loops in `cli/engine/detect-antipatterns.mjs` — the browser loop (~line 1837) and the jsdom loop in `detectHtml` (~line 2058). Forgetting one is the most common mistake; symptom is "test passes, live page silent" or vice versa.
+6. **Verify in a real browser**: open `tests/fixtures/antipatterns/{rule-id}.html` directly (or via any static server) and run the browser detector against it. The two adapter paths can disagree, so manual browser checks catch what the fixture test can't.
+
+### Conventions and jsdom gotchas
+
+- **Snippet format**: wrap the identifying heading text in straight double quotes (e.g. `'icon tile above h3 "Lightning Fast"'`) so the fixture test can extract it. For rules not anchored to a heading, pick another stable identifier.
+- **jsdom doesn't lay out**: `getBoundingClientRect()` returns 0×0. Read `parseFloat(style.width)` and `parseFloat(style.height)` from explicit CSS instead.
+- **`background:` shorthand isn't decomposed in jsdom**: use the existing `resolveBackground()` and `resolveGradientStops()` helpers (~line 631 / 670).
+- **Computed colors aren't normalized in jsdom**: `parseGradientColors()` handles both hex and rgb forms.
+
+Reference rules to copy from: `side-tab` (border, ~line 312), `low-contrast` (color + gradient, ~line 339), `icon-tile-stack` (sibling relationship, ~line 425), `flat-type-hierarchy` (page-level, ~line 1080).
+
+## Evals Framework (separate private repo)
+
+The eval framework lives in a separate private repo at `~/code/tcher-evals/`. It measures whether the `/tcher` skill improves or harms AI-generated frontend design by running the same brief through a model with and without the skill loaded.
+
+**If you're picking up eval work, switch to that repo and read its `AGENT.md` first.** It captures model choices, sample size policy, lessons learned, common workflows, and gotchas.
+
+```bash
+cd ~/code/tcher-evals
+bun run serve            # dashboard on http://localhost:8723
+```
+
+The eval runners read this repo's skill from `../tcher/skill/` and staged provider skills from `../tcher/build/_data/dist/*`. Run `bun run build` in this repo before an eval sweep if you want the Claude/Gemini staged skills to reflect your latest edits.
+
+### After structural skill changes, update `inline-skill.ts` in the evals repo
+
+The harness inlines `SKILL.md` into the system prompt for "skill-on", stripping sections irrelevant to an API-driven craft run. The stripped list in `runner/inline-skill.ts` needs to stay in sync with `SKILL.md`'s top-level `##` headings. As of v3.0, it should strip `## Setup (non-optional)` (was `## Context Gathering Protocol`), `## Commands` (was `## Command Router`), and `## Pin / Unpin`. Keep `## Shared design laws`. If you add or rename a top-level section, update the strip list there.
