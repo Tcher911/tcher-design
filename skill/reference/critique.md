@@ -186,7 +186,7 @@ Codex Run Notes are final-chat only. Do not include this section in the persiste
 
 ### Persist the Snapshot
 
-Once the report above is finalized, write it to `.tcher/critique/` so the user can refer back, and so `{{command_prefix}}tcher polish` can pick up the priority issues without a copy-paste.
+Once the report above is finalized, write it to `.tcher/critique/` so the user can refer back, and so `{{command_prefix}}tcher refine` can pick up the priority issues without a copy-paste.
 
 Skip this step if the Setup slug was null (vague or root-level target).
 
@@ -264,7 +264,7 @@ List recommended commands in priority order, based on the user's answers:
 - Skip commands that would address zero issues
 - If the user chose a limited scope, only include items within that scope
 - If the user marked areas as off-limits, exclude commands that would touch those areas
-- End with `{{command_prefix}}tcher polish` as the final step if any fixes were recommended
+- End with `{{command_prefix}}tcher refine` as the final step if any fixes were recommended
 
 After presenting the summary, tell the user:
 

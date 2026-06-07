@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choice-overload-nav fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  nav { width: 900px; padding: 12px; }
+  nav a { margin-right: 12px; }
+</style>
+</head>
+<body>
+<h1>Navigation choice cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<nav aria-label="Primary sprawl">
+  <a href="/products">Products</a><a href="/solutions">Solutions</a><a href="/pricing">Pricing</a><a href="/customers">Customers</a><a href="/partners">Partners</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/docs">Docs</a><a href="/community">Community</a><a href="/company">Company</a>
+</nav>
+<nav aria-label="Mega list">
+  <ul>
+    <li><a href="/a">Overview</a></li>
+    <li><a href="/b">Features</a></li>
+    <li><a href="/c">Integrations</a></li>
+    <li><a href="/d">Enterprise</a></li>
+    <li><a href="/e">Security</a></li>
+    <li><a href="/f">Changelog</a></li>
+    <li><a href="/g">Roadmap</a></li>
+    <li><a href="/h">Support</a></li>
+    <li><a href="/i">Status</a></li>
+    <li><a href="/j">Careers</a></li>
+    <li><a href="/k">Press</a></li>
+    <li><a href="/l">Legal</a></li>
+  </ul>
+</nav>
+
+<nav aria-label="Wrapped anchors">
+  <div>
+    <a href="/w1">Platform</a><a href="/w2">Analytics</a><a href="/w3">Automations</a><a href="/w4">Templates</a><a href="/w5">Imports</a><a href="/w6">Exports</a><a href="/w7">Billing</a><a href="/w8">Teams</a><a href="/w9">Audit log</a>
+  </div>
+</nav>
+<nav aria-label="Fifteen wide">
+  <a href="/x1">A</a><a href="/x2">B</a><a href="/x3">C</a><a href="/x4">D</a><a href="/x5">E</a><a href="/x6">F</a><a href="/x7">G</a><a href="/x8">H</a><a href="/x9">I</a><a href="/x10">J</a><a href="/x11">K</a><a href="/x12">L</a><a href="/x13">M</a><a href="/x14">N</a><a href="/x15">O</a>
+</nav>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<nav aria-label="Primary tight">
+  <a href="/product">Product</a><a href="/pricing2">Pricing</a><a href="/docs2">Docs</a><a href="/blog2">Blog</a><a href="/about">About</a>
+</nav>
+<nav aria-label="Exactly eight">
+  <ul>
+    <li><a href="/1">One</a></li>
+    <li><a href="/2">Two</a></li>
+    <li><a href="/3">Three</a></li>
+    <li><a href="/4">Four</a></li>
+    <li><a href="/5">Five</a></li>
+    <li><a href="/6">Six</a></li>
+    <li><a href="/7">Seven</a></li>
+    <li><a href="/8">Eight</a></li>
+  </ul>
+</nav>
+<footer>
+  <nav aria-label="Footer sitemap">
+    <a href="/s1">Product</a><a href="/s2">Features</a><a href="/s3">Pricing</a><a href="/s4">Docs</a><a href="/s5">API</a><a href="/s6">Blog</a><a href="/s7">Guides</a><a href="/s8">Support</a><a href="/s9">Status</a><a href="/s10">About</a><a href="/s11">Careers</a><a href="/s12">Legal</a>
+  </nav>
+</footer>
+
+</body>
+</html>

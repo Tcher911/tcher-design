@@ -6,7 +6,7 @@
  * Safe to run repeatedly -- it is a no-op when nothing needs cleaning.
  *
  * Usage (from the project root):
- *   node {{scripts_path}}/cleanup-deprecated.mjs
+ *   node <scripts_path>/cleanup-deprecated.mjs
  *
  * What it does:
  *   1. Finds every harness-specific skills directory (.claude/skills,
@@ -31,7 +31,11 @@ const DEPRECATED_NAMES = [
   'normalize',          // merged into polish
   'onboard',            // merged into harden
   'extract',            // merged into /tcher extract
-  // v3.0 consolidation: all standalone skills -> /tcher sub-commands
+  // v3.0 consolidation: all standalone skills -> /tcher sub-commands.
+  // These MUST stay the OLD names: they identify stale directories to
+  // delete on user machines. The v3.6 sub-command renames (bolder->brave,
+  // polish->refine, ...) are covered by the same entries, since stale
+  // old-name pin shims carry these names too.
   'adapt',
   'animate',
   'audit',

@@ -623,3 +623,281 @@ describe('detectHtml — gated provider tells (--gpt / --gemini)', () => {
     );
   });
 });
+
+describe('detectHtml — emoji-in-ui', () => {
+  // Quoted text expected inside finding snippets (headings, button, and the
+  // first item of the emoji-bullet list).
+  const SHOULD_FLAG = [
+    'Welcome to Acme 👋',
+    '🚀 Ship faster than ever',
+    '✨ Magic Features',
+    'Get started 🎉',
+    'Try it free 🎉',
+    '🚀',
+    '⚡ Fast performance on every device',
+  ];
+  // Prose, testimonials, sparse menus, links inside prose, long link text,
+  // and ™ marks must stay quiet.
+  const SHOULD_PASS = [
+    'Pricing that scales',
+    'Acme™ Platform',
+    '🍜 Tom yum with river prawns',
+    '🧵 thread on social',
+  ];
+
+  it('emoji-in-ui: flags emoji headings/buttons/bullet runs as advisory, passes prose and sparse lists', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'emoji-in-ui.html'));
+    const found = f.filter(r => r.antipattern === 'emoji-in-ui');
+    for (const r of found) assert.equal(r.severity, 'advisory');
+
+    const texts = found.map(r => {
+      const m = [...(r.snippet || '').matchAll(/"([^"]+)"/g)];
+      return m.length ? m[m.length - 1][1] : '';
+    });
+    for (const t of SHOULD_FLAG) {
+      assert.ok(
+        texts.some(x => x.includes(t.slice(0, 30))),
+        `expected "${t}" to be flagged as emoji-in-ui; got: ${texts.join(' | ') || '(none)'}`,
+      );
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!texts.some(x => x.includes(t)), `"${t}" should not be flagged as emoji-in-ui`);
+    }
+    assert.equal(
+      found.length, 7,
+      `expected 7 emoji-in-ui findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`,
+    );
+  });
+});
+
+// ─── UX rules (category: 'ux') ──────────────────────────────────────────────
+// Each fixture is two-column (should-flag / should-pass); tests extract the
+// quoted identifier from snippets and assert per-rule severity + law metadata.
+
+function quoted(r) {
+  const m = [...(r.snippet || '').matchAll(/"([^"]+)"/g)];
+  return m.length ? m[m.length - 1][1] : '';
+}
+
+describe('detectHtml — ux: tap-target-too-small', () => {
+  const SHOULD_FLAG = ['flag-close', 'flag-prev', 'flag-slim', 'flag-dot'];
+  const SHOULD_PASS = ['pass-min', 'pass-cta', 'pass-hidden', 'pass-deco', 'the documentation'];
+
+  it('flags sub-24px explicit targets, passes minimum/hidden/prose-inline', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'tap-target-too-small.html'));
+    const found = f.filter(r => r.antipattern === 'tap-target-too-small');
+    for (const r of found) assert.equal(r.severity, 'critical');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: input-without-label', () => {
+  const SHOULD_FLAG = ['Search projects', 'Work email', 'Engineering', 'Tell us more'];
+  const SHOULD_PASS = ['Bangkok', 'Thailand', 'Street address', 'UTC+7'];
+
+  it('flags placeholder-only and bare fields, passes labelled/aria/hidden/submit', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'input-without-label.html'));
+    const found = f.filter(r => r.antipattern === 'input-without-label');
+    for (const r of found) assert.equal(r.severity, 'critical');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: icon-button-no-name', () => {
+  const SHOULD_FLAG = ['icon-close', 'icon-settings', 'icon-upload', 'icon-menu'];
+  const SHOULD_PASS = ['named-close', 'named-profile', 'named-img', 'with-text', 'decorative-icon', 'named-title'];
+
+  it('flags icon-only controls without accessible names', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'icon-button-no-name.html'));
+    const found = f.filter(r => r.antipattern === 'icon-button-no-name');
+    for (const r of found) assert.equal(r.severity, 'critical');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: missing-alt', () => {
+  const SHOULD_FLAG = ['hero-product.png', 'team-photo.jpg', 'chart-revenue.svg', 'pricing-banner.webp'];
+  const SHOULD_PASS = ['diagram.png', 'divider.png', 'texture.png', 'sparkle.png'];
+
+  it('flags imgs with no alt attribute, passes alt/empty-alt/presentation/aria-hidden', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'missing-alt.html'));
+    const found = f.filter(r => r.antipattern === 'missing-alt');
+    for (const r of found) assert.equal(r.severity, 'critical');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: focus-outline-removed', () => {
+  const SHOULD_FLAG = ['*:focus', 'a.flag-link:focus', 'button.flag-btn:focus-visible', '.flag-nav :focus'];
+  const SHOULD_PASS = ['pass-shadow', 'pass-outline', 'pass-border'];
+
+  it('flags outline:none without a replacement cue, passes replaced outlines', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'focus-outline-removed.html'));
+    const found = f.filter(r => r.antipattern === 'focus-outline-removed');
+    for (const r of found) assert.equal(r.severity, 'critical');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: no-viewport-meta', () => {
+  it('flags the page missing the viewport meta', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'no-viewport-meta.html'));
+    const found = f.filter(r => r.antipattern === 'no-viewport-meta');
+    assert.equal(found.length, 1, `expected 1 finding, got ${found.length}`);
+    assert.equal(found[0].severity, 'major');
+  });
+
+  it('stays quiet on pages that declare it', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'should-pass.html'));
+    assert.equal(f.filter(r => r.antipattern === 'no-viewport-meta').length, 0);
+  });
+});
+
+describe('detectHtml — ux: link-no-affordance', () => {
+  const SHOULD_FLAG = ['read the guide', 'review your plan', 'the export log', 'check your quota'];
+  const SHOULD_PASS = ['browse the docs', 'the API reference', 'the changelog', 'status page', 'Home', 'the community forum'];
+
+  it('flags prose links with no distinguishing cue', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'link-no-affordance.html'));
+    const found = f.filter(r => r.antipattern === 'link-no-affordance');
+    for (const r of found) assert.equal(r.severity, 'major');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: choice-overload-nav', () => {
+  const SHOULD_FLAG = ['Primary sprawl', 'Mega list', 'Wrapped anchors', 'Fifteen wide'];
+  const SHOULD_PASS = ['Primary tight', 'Exactly eight', 'Footer sitemap'];
+
+  it('flags top navs with more than 8 choices, exempts footer sitemaps', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'choice-overload-nav.html'));
+    const found = f.filter(r => r.antipattern === 'choice-overload-nav');
+    for (const r of found) assert.equal(r.severity, 'minor');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: select-overload', () => {
+  const SHOULD_FLAG = ['category', 'team', 'project', 'tag'];
+  const SHOULD_PASS = ['priority', 'page size', 'country', 'birth year', 'grouped catalog'];
+
+  it('flags ungrouped selects past 25 options, exempts country/year/optgroup', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'select-overload.html'));
+    const found = f.filter(r => r.antipattern === 'select-overload');
+    for (const r of found) assert.equal(r.severity, 'advisory');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x === t || x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x === t || x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: logo-not-home-link', () => {
+  const SHOULD_FLAG = ['acme-logo.svg', 'Brand mark', 'nested-logo.png', 'wordmark.svg'];
+  const SHOULD_PASS = ['linked-logo.svg', 'index-logo.svg', 'SPA mark', 'favicon-ish.png', 'content-figure.png'];
+
+  it('flags header logos that are not links to home', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'logo-not-home-link.html'));
+    const found = f.filter(r => r.antipattern === 'logo-not-home-link');
+    for (const r of found) assert.equal(r.severity, 'advisory');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: autocomplete-missing', () => {
+  const SHOULD_FLAG = ['email', 'phone', 'full-name', 'postal-code'];
+  const SHOULD_PASS = ['otp', 'invoice-query', 'Newsletter email outside any form'];
+
+  it('flags autofillable form fields without autocomplete', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'autocomplete-missing.html'));
+    const found = f.filter(r => r.antipattern === 'autocomplete-missing');
+    for (const r of found) assert.equal(r.severity, 'advisory');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x === t || x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x === t || x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — ux: form-field-overload', () => {
+  const SHOULD_FLAG = ['Signup wall', 'Survey wall', 'Profile wall', 'Billing wall'];
+  const SHOULD_PASS = ['Seven fields', 'Grouped checkout', 'Sectioned application', 'Preference toggles', 'Search'];
+
+  it('flags >7 ungrouped text fields, passes fieldsets/headings/checkbox stacks', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'form-field-overload.html'));
+    const found = f.filter(r => r.antipattern === 'form-field-overload');
+    for (const r of found) assert.equal(r.severity, 'minor');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});

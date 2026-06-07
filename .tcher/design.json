@@ -198,9 +198,9 @@
       "name": "Live Picker Bar",
       "kind": "custom",
       "refersTo": "live-picker-bar",
-      "description": "Global live mode bar. Lacquer-deep fill, kinpaku border, carved-tile mark.",
-      "html": "<div class=\"ds-live-bar\"><span class=\"ds-live-mark\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" width=\"18\" height=\"18\"><path d=\"M5 2.5 L13.5 2.5 L5.5 21.5 L5 21.5 Q2.5 21.5 2.5 19 L2.5 5 Q2.5 2.5 5 2.5 Z\"/><path d=\"M16.5 2.5 L19 2.5 Q21.5 2.5 21.5 5 L21.5 19 Q21.5 21.5 19 21.5 L8.5 21.5 Z\"/></svg></span><button type=\"button\" class=\"ds-live-toggle is-active\">Pick</button><button type=\"button\" class=\"ds-live-toggle\">Detect</button></div>",
-      "css": ".ds-live-bar { display: inline-flex; align-items: center; gap: 2px; padding: 4px 5px; background: oklch(4% 0.004 95); border: 1.5px solid oklch(84% 0.19 80.46); border-radius: 10px; box-shadow: 0 0 0 1px oklch(78% 0.12 82 / 0.18), 0 10px 28px oklch(0% 0 0 / 0.28); font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: oklch(84% 0.035 82); } .ds-live-mark { display: inline-flex; align-items: center; padding: 0 12px 0 14px; color: oklch(84% 0.19 80.46); } .ds-live-toggle { padding: 6px 8px; border: none; border-radius: 7px; background: transparent; color: oklch(63% 0.024 82); font-family: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; } .ds-live-toggle:hover { color: oklch(84% 0.035 82); } .ds-live-toggle.is-active { background: oklch(78% 0.12 82 / 0.18); color: oklch(84% 0.19 80.46); } .ds-live-toggle:focus-visible { outline: none; box-shadow: 0 0 0 2px oklch(84% 0.19 80.46 / 0.18), 0 0 0 3px oklch(84% 0.19 80.46); }"
+      "description": "Global live mode bar. Deep black fill, neutral hairline border, brand tile mark.",
+      "html": "<div class=\"ds-live-bar\"><span class=\"ds-live-mark\" aria-hidden=\"true\"><svg viewBox=\"0 0 44 44\" fill=\"none\" width=\"18\" height=\"18\"><path d=\"M31.9 0H12.1C5.41735 0 0 5.41735 0 12.1V31.9C0 38.5826 5.41735 44 12.1 44H31.9C38.5826 44 44 38.5826 44 31.9V12.1C44 5.41735 38.5826 0 31.9 0Z\" fill=\"#171717\"/><path d=\"M12.7169 18.3021L15.744 16.6701L14.0543 13.9357H29.9457L22.0026 26.8008L20.3128 24.0618L17.2857 25.6985L22.0026 33.3337L36 10.667H8L12.7169 18.3021Z\" fill=\"white\"/></svg></span><button type=\"button\" class=\"ds-live-toggle is-active\">Select</button><button type=\"button\" class=\"ds-live-toggle\">Detect UX</button></div>",
+      "css": ".ds-live-bar { display: inline-flex; align-items: center; gap: 2px; padding: 4px 5px; background: oklch(4% 0 0); border: 1px solid oklch(92% 0 0 / 0.13); border-radius: 10px; box-shadow: 0 10px 28px oklch(0% 0 0 / 0.28); font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: oklch(92% 0 0); } .ds-live-mark { display: inline-flex; align-items: center; padding: 0 12px 0 14px; color: oklch(97% 0 0); } .ds-live-toggle { padding: 6px 8px; border: none; border-radius: 7px; background: transparent; color: oklch(63% 0 0); font-family: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; } .ds-live-toggle:hover { color: oklch(92% 0 0); } .ds-live-toggle.is-active { background: oklch(27% 0 0); color: oklch(97% 0 0); } .ds-live-toggle:focus-visible { outline: none; box-shadow: 0 0 0 2px oklch(97% 0 0 / 0.18), 0 0 0 3px oklch(97% 0 0); }"
     }
   ],
   "narrative": {
@@ -225,7 +225,7 @@
       { "name": "The Dark Type Needs Air Rule", "section": "typography", "body": "Body text on lacquer uses line-height 1.65 to 1.8 and a max width of 65 to 75ch." },
       { "name": "The Hairline First Rule", "section": "elevation", "body": "Use 1px gold hairlines before adding shadow." },
       { "name": "The No Glass Rule", "section": "elevation", "body": "Translucency can exist in overlays, but decorative blur/glass panels are not part of this system." },
-      { "name": "The Picker Is Brand Rule", "section": "components", "body": "Live mode UI is Tcher product chrome, not host-page chrome. It always ships the full kinpaku border, lacquer-deep fill, and carved-tile mark." }
+      { "name": "The Picker Is Brand Rule", "section": "components", "body": "Live mode UI is Tcher product chrome, not host-page chrome. It always ships the mono chrome: deep black fill, neutral hairline border, and the brand tile mark." }
     ],
     "dos": [
       "Do use kinpaku gold as the primary brand color.",
@@ -235,7 +235,7 @@
       "Do use circuit/calibration geometry as structure, especially around product proof.",
       "Do keep cards compact, flat, and sharply bounded.",
       "Do preserve utility: demos, sliders, audit tables, command examples, docs, and pricing must remain understandable.",
-      "Do keep live mode picker bars on lacquer-deep with kinpaku gold borders, regardless of host page theme."
+      "Do keep live mode picker bars on deep black mono chrome, regardless of host page theme."
     ],
     "donts": [
       "Do not use editorial magenta as a brand accent.",
@@ -247,7 +247,7 @@
       "Do not use wide rounded cards or nested cards.",
       "Do not use pure black or pure white.",
       "Do not let the visual system hide the product proof.",
-      "Do not theme-adapt live mode picker chrome to match arbitrary host pages. The picker is always neo-kinpaku."
+      "Do not theme-adapt live mode picker chrome to match arbitrary host pages. The picker is always tcher-kit mono."
     ]
   }
 }

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>missing-alt fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  img { width: 120px; height: 80px; }
+</style>
+</head>
+<body>
+<h1>Image alt cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <img src="hero-product.png">
+  <img src="team-photo.jpg">
+  <figure><img src="chart-revenue.svg"></figure>
+  <a href="/pricing"><img src="pricing-banner.webp"></a>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <img src="diagram.png" alt="Request flow from client through cache to origin">
+  <img src="divider.png" alt="">
+  <img src="texture.png" role="presentation">
+  <img src="sparkle.png" aria-hidden="true">
+  <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 12h16"/></svg>
+</div>
+
+</body>
+</html>

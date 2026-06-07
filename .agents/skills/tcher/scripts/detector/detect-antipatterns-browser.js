@@ -471,7 +471,170 @@ const ANTIPATTERNS = [
     skillSection: 'Motion',
     skillGuideline: 'image scale or rotate on hover',
   },
+  {
+    id: 'emoji-in-ui',
+    category: 'slop',
+    severity: 'advisory',
+    name: 'Emoji as UI ornament',
+    description:
+      'Emoji in headings, buttons, or as list bullets is a recognizable generated-UI tell — the playful-emoji reflex. Advisory because some brands use emoji as a deliberate voice decision; keep it only when it is a choice, not a default.',
+    skillSection: 'Visual Details',
+    skillGuideline: 'emoji as interface ornament',
+  },
+
+  // ── UX: usability rules the engine can measure deterministically ──
+  // The `law` field names the Laws of UX principle (lawsofux.com, Jon
+  // Yablonski) a rule operationalizes; descriptions are our own wording.
+  // Rules without a `law` are core usability/WCAG checks.
+  {
+    id: 'tap-target-too-small',
+    category: 'ux',
+    severity: 'critical',
+    law: "Fitts's Law",
+    name: 'Tap target too small',
+    description:
+      'Interactive element smaller than 24×24px. Small targets take longer to acquire and cause mis-taps, especially on touch screens. WCAG 2.2 sets 24×24 as the floor; 44×44 is the comfortable target.',
+  },
+  {
+    id: 'tap-targets-crowded',
+    category: 'ux',
+    severity: 'major',
+    law: "Fitts's Law",
+    name: 'Tap targets crowded',
+    description:
+      'Small interactive elements packed closer than 8px apart. Adjacent targets without breathing room turn every tap into a precision task and cause wrong-action errors.',
+  },
+  {
+    id: 'input-without-label',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Input without a label',
+    description:
+      'Form field with no label, aria-label, or aria-labelledby. A placeholder is not a label: it vanishes on focus, screen readers may skip it, and users forget what the half-filled field asked for.',
+  },
+  {
+    id: 'icon-button-no-name',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Icon button without a name',
+    description:
+      'Icon-only button or link with no accessible name (aria-label, title, or img alt). Screen readers announce it as "button", and the action is a guess.',
+  },
+  {
+    id: 'missing-alt',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Image missing alt attribute',
+    description:
+      'Content <img> with no alt attribute at all. Screen readers fall back to the filename. Use alt="" for decorative images and a real description for content images.',
+  },
+  {
+    id: 'focus-outline-removed',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Focus outline removed',
+    description:
+      'A stylesheet sets outline: none on :focus without any replacement cue (box-shadow, border, or a new outline). Keyboard users lose their position on the page entirely.',
+  },
+  {
+    id: 'no-viewport-meta',
+    category: 'ux',
+    severity: 'major',
+    name: 'Missing viewport meta tag',
+    description:
+      'Page has no <meta name="viewport">. Mobile browsers will render it at desktop width and shrink it, making text unreadable and targets untappable.',
+  },
+  {
+    id: 'link-no-affordance',
+    category: 'ux',
+    severity: 'major',
+    law: 'Law of Similarity',
+    name: 'Link indistinguishable from text',
+    description:
+      'Link inside prose styled with the body text color and no underline, weight, or border cue. Readers cannot tell what is clickable; links must look different from the text around them.',
+  },
+  {
+    id: 'choice-overload-nav',
+    category: 'ux',
+    severity: 'minor',
+    law: "Hick's Law",
+    name: 'Too many navigation choices',
+    description:
+      'Top-level navigation with more than 8 items. Decision time grows with every added choice; group secondary destinations under a parent or move them to the footer.',
+  },
+  {
+    id: 'select-overload',
+    category: 'ux',
+    severity: 'advisory',
+    law: 'Choice Overload',
+    name: 'Select with too many options',
+    description:
+      'Dropdown with more than 25 ungrouped options. Long flat lists force linear scanning; group with optgroup, or switch to a searchable combobox. Country, year, and similar canonical lists are exempt.',
+  },
+  {
+    id: 'logo-not-home-link',
+    category: 'ux',
+    severity: 'advisory',
+    law: "Jakob's Law",
+    name: 'Header logo is not a home link',
+    description:
+      'The site logo in the header is not wrapped in a link to home. Users expect the logo to take them back; the convention is universal enough that breaking it reads as broken.',
+  },
+  {
+    id: 'autocomplete-missing',
+    category: 'ux',
+    severity: 'advisory',
+    law: "Postel's Law",
+    name: 'Autofillable field without autocomplete',
+    description:
+      'Email, phone, name, or address field in a form without an autocomplete attribute. The browser already knows these values; one attribute saves the user the whole field.',
+  },
+  {
+    id: 'form-field-overload',
+    category: 'ux',
+    severity: 'minor',
+    law: "Miller's Law",
+    name: 'Form fields without grouping',
+    description:
+      'More than 7 text fields in one form with no fieldset or section headings. Working memory holds about 7 items; chunk long forms into labelled groups or steps.',
+  },
+  {
+    id: 'oversized-image-payload',
+    category: 'ux',
+    severity: 'major',
+    law: 'Doherty Threshold',
+    name: 'Oversized image payload',
+    description:
+      'Image whose natural size is far larger than its rendered size (beyond 2.5× even on a high-density screen). The wasted bytes delay load past the 400ms feedback window for no visual gain.',
+  },
 ];
+
+const SEVERITY_OVERRIDES = {
+  // quality → critical
+  'broken-image': 'critical',
+  'gray-on-color': 'critical',
+  'low-contrast': 'critical',
+  'tiny-text': 'critical',
+  'skipped-heading': 'critical',
+  'text-overflow': 'critical',
+  'clipped-overflow-container': 'critical',
+  // slop → major (the loudest AI tells)
+  'side-tab': 'major',
+  'border-accent-on-rounded': 'major',
+  'ai-color-palette': 'major',
+  'gradient-text': 'major',
+  'icon-tile-stack': 'major',
+  'bounce-easing': 'major',
+  'dark-glow': 'major',
+  'flat-type-hierarchy': 'major',
+  'nested-cards': 'major',
+};
+
+for (const ap of ANTIPATTERNS) {
+  if (!ap.severity) {
+    ap.severity = SEVERITY_OVERRIDES[ap.id] || (ap.category === 'slop' ? 'minor' : 'major');
+  }
+}
 
 // --- cli/engine/shared/color.mjs ---
 // ─── Section 2: Color Utilities ─────────────────────────────────────────────
@@ -2880,6 +3043,642 @@ function checkElementTextOverflowDOM(el) {
   return [];
 }
 
+// ─── Emoji as UI ornament ────────────────────────────────────────────────
+// ©/®/™ count as Extended_Pictographic but are not the tell we mean.
+const EMOJI_UI_RE = /(?![©®™])\p{Extended_Pictographic}/u;
+const EMOJI_UI_HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const EMOJI_UI_CTA_TAGS = new Set(['button', 'a', 'summary']);
+const EMOJI_UI_ICON_TAGS = new Set(['span', 'div', 'i', 'em', 'strong', 'b']);
+
+function checkEmojiUiElement(opts) {
+  const { tag, text, hasElementChildren = false, inProse = false } = opts;
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (!clean || !EMOJI_UI_RE.test(clean)) return [];
+  if (EMOJI_UI_HEADINGS.has(tag)) {
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" uses emoji as UI ornament` }];
+  }
+  if (EMOJI_UI_CTA_TAGS.has(tag)) {
+    // Short link/button text reads as a UI control; emoji inside running
+    // prose or long descriptive link text is conversational, not chrome.
+    if (inProse || clean.length > 60) return [];
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" uses emoji as UI ornament` }];
+  }
+  if (EMOJI_UI_ICON_TAGS.has(tag)) {
+    if (inProse || hasElementChildren) return [];
+    if (clean.length > 8 || !isEmojiOnlyText(clean)) return [];
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" used as an emoji icon` }];
+  }
+  return [];
+}
+
+function checkEmojiBullets(opts) {
+  const { items, minCount = 3 } = opts;
+  if (!Array.isArray(items)) return [];
+  const leads = items
+    .map(t => (t || '').replace(/\s+/g, ' ').trim())
+    .filter(t => t && EMOJI_UI_RE.test(t.slice(0, 4)));
+  if (leads.length < minCount) return [];
+  return [{ id: 'emoji-in-ui', snippet: `${leads.length} list items use emoji bullets ("${leads[0].slice(0, 40)}")` }];
+}
+
+function emojiUiHasProseAncestor(el) {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const t = (p.tagName || '').toLowerCase();
+    if (t === 'p' || t === 'blockquote' || t === 'figcaption') return true;
+    if (t === 'body' || t === 'html') break;
+  }
+  return false;
+}
+
+// Shared adapter: both the static (jsdom-style) and browser engines expose
+// textContent/parentElement, so one element adapter serves both loops.
+// `children` differs (htmlparser2 includes text nodes), hence the type check.
+function checkElementEmojiUi(el, tag) {
+  if (!EMOJI_UI_HEADINGS.has(tag) && !EMOJI_UI_CTA_TAGS.has(tag) && !EMOJI_UI_ICON_TAGS.has(tag)) return [];
+  const hasElementChildren = [...(el.children || [])]
+    .some(c => c.nodeType === 1 || c.type === 'tag');
+  return checkEmojiUiElement({
+    tag,
+    text: el.textContent || '',
+    hasElementChildren,
+    inProse: emojiUiHasProseAncestor(el),
+  });
+}
+
+function checkEmojiBulletsFromDoc(doc) {
+  const findings = [];
+  for (const list of doc.querySelectorAll('ul, ol')) {
+    if (list.closest?.('.tcher-overlay, .tcher-banner, [id^="tcher-live-"]')) continue;
+    const items = [...list.children]
+      .filter(c => (c.tagName || '').toLowerCase() === 'li')
+      .map(li => li.textContent || '');
+    // Carry the list element so the browser overlay can outline the actual
+    // <ul> (the static engine ignores `el` and just reads id/snippet).
+    findings.push(...checkEmojiBullets({ items }).map(f => ({ ...f, el: list })));
+  }
+  return findings;
+}
+
+// ─── Browser-only additions ──────────────────────────────────────────────
+
+// Broken image: only a real browser knows whether the fetch failed, so this
+// check is browser-only (the static engine can only flag missing/empty src).
+function checkElementBrokenImageDOM(el) {
+  if (el.tagName !== 'IMG') return [];
+  const src = (el.getAttribute('src') || '').trim();
+  if (!src || src === '#') return [{ id: 'broken-image', snippet: '<img> with empty src' }];
+  if (el.complete && el.naturalWidth === 0) {
+    return [{ id: 'broken-image', snippet: `<img src="${src.slice(0, 60)}"> failed to load` }];
+  }
+  return [];
+}
+
+// Rendered page text, skipping tcher's own overlay chrome (labels and the
+// banner quote finding text, which would otherwise feed back into rescans).
+function collectPageTextDOM() {
+  const SKIP = '.tcher-overlay, .tcher-label, .tcher-banner, .tcher-tooltip, [id^="tcher-live-"]';
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      const tag = parent.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return NodeFilter.FILTER_REJECT;
+      if (parent.closest(SKIP)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let text = '';
+  while (walker.nextNode()) text += walker.currentNode.nodeValue + ' ';
+  return text.replace(/\s+/g, ' ');
+}
+
+// Mirrors the regex engine's em-dash + buzzword passes (see
+// engines/regex/detect-text.mjs) over the rendered page, so the live overlay
+// surfaces them too. Keep thresholds + the phrase list in sync by hand.
+const PAGE_TEXT_BUZZWORDS = [
+  'streamline your', 'empower your', 'supercharge your',
+  'unleash your', 'unleash the power', 'leverage the power',
+  'built for the modern', 'trusted by leading', 'trusted by the world',
+  'best-in-class', 'industry-leading', 'world-class', 'enterprise-grade',
+  'next-generation', 'cutting-edge', 'transform your business',
+  'revolutionize', 'game-changer', 'game changing',
+  'mission-critical', 'best of breed', 'future-proof', 'future proof',
+  'seamless experience', 'seamlessly integrate',
+  'drive engagement', 'drive growth', 'drive results',
+  'harness the power',
+];
+
+function checkPageTextDOM() {
+  const findings = [];
+  const text = collectPageTextDOM();
+  let dashCount = 0;
+  const dashRe = /[—]|--(?=\S)/g;
+  while (dashRe.exec(text) !== null) dashCount++;
+  if (dashCount >= 5) {
+    findings.push({ id: 'em-dash-overuse', snippet: `${dashCount} em-dashes in body text` });
+  }
+  const lower = text.toLowerCase();
+  let buzzCount = 0;
+  let firstSample = '';
+  for (const phrase of PAGE_TEXT_BUZZWORDS) {
+    let from = 0;
+    while (true) {
+      const idx = lower.indexOf(phrase, from);
+      if (idx === -1) break;
+      buzzCount += 1;
+      if (!firstSample) {
+        firstSample = text.slice(Math.max(0, idx - 12), Math.min(text.length, idx + phrase.length + 12)).trim();
+      }
+      from = idx + phrase.length;
+    }
+  }
+  if (buzzCount > 0) {
+    findings.push({ id: 'marketing-buzzword', snippet: `${buzzCount} buzzword phrase${buzzCount === 1 ? '' : 's'}: "${firstSample}"` });
+  }
+  return findings;
+}
+
+// ─── UX rules (category: 'ux') ───────────────────────────────────────────
+// Deterministic usability checks; several operationalize a Laws of UX
+// principle (the registry's `law` field). Pure functions first, then the
+// shared doc/element adapters both engines call.
+
+// Fitts's Law: minimum acquirable size. Inline links in prose are exempt
+// (the line box constrains the target, mirroring WCAG 2.5.8's exception).
+function checkTapTargetSize(opts) {
+  const { width, height, selector = '', hidden = false, inlineProse = false } = opts;
+  if (hidden || inlineProse) return [];
+  if (!(width > 0) || !(height > 0)) return []; // unmeasurable → stay quiet
+  if (width >= 24 && height >= 24) return [];
+  return [{
+    id: 'tap-target-too-small',
+    snippet: `"${selector}" tap target is ${Math.round(width)}×${Math.round(height)}px (24×24 minimum, 44×44 comfortable)`,
+  }];
+}
+
+function checkInputLabel(opts) {
+  const {
+    tag, type = '', hasLabel = false, ariaLabel = '', ariaLabelledby = '',
+    title = '', ident = '',
+  } = opts;
+  const t = (type || '').toLowerCase();
+  if (tag === 'input' && ['hidden', 'submit', 'button', 'reset', 'image'].includes(t)) return [];
+  if (hasLabel || ariaLabel.trim() || ariaLabelledby.trim() || title.trim()) return [];
+  return [{
+    id: 'input-without-label',
+    snippet: `${tag}${t ? `[type=${t}]` : ''} "${(ident || '(unnamed)').slice(0, 40)}" has no associated label (a placeholder is not a label)`,
+  }];
+}
+
+function checkIconButtonName(opts) {
+  const {
+    tag, text = '', ariaLabel = '', ariaLabelledby = '', title = '',
+    imgAlt = '', hasIconChild = false, selector = '',
+  } = opts;
+  if (!hasIconChild) return [];
+  if ((text || '').trim()) return [];
+  if (ariaLabel.trim() || ariaLabelledby.trim() || title.trim() || imgAlt.trim()) return [];
+  return [{
+    id: 'icon-button-no-name',
+    snippet: `icon-only ${tag} "${selector}" has no accessible name`,
+  }];
+}
+
+function checkImgAlt(opts) {
+  const { hasAlt, role = '', ariaHidden = '', src = '' } = opts;
+  if (hasAlt) return []; // alt present (even alt="") is an explicit decision
+  if (role === 'presentation' || role === 'none' || ariaHidden === 'true') return [];
+  const name = (String(src).split('/').pop() || String(src)).slice(0, 50);
+  return [{ id: 'missing-alt', snippet: `<img src="${name}"> has no alt attribute` }];
+}
+
+// Page-level pass over raw CSS text. Walks rule blocks; tolerant of nesting
+// (an @media prefix just rides along in the selector string).
+function checkFocusOutlineCss(cssText) {
+  const findings = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(cssText || '')) !== null) {
+    // Strip comments riding along before the selector, then normalize.
+    const selector = m[1].replace(/\/\*[\s\S]*?\*\//g, '').trim().replace(/\s+/g, ' ');
+    const body = m[2];
+    if (!/:focus(-visible|-within)?\b/.test(selector)) continue;
+    if (!/outline\s*:\s*(none|0)(\s*;|\s|$)/.test(body)) continue;
+    // A replacement cue in the same block keeps focus visible.
+    if (/box-shadow\s*:|\bborder(-bottom|-top|-color|-width)?\s*:|outline\s*:\s*[^n0\s]/.test(body)) continue;
+    findings.push({
+      id: 'focus-outline-removed',
+      snippet: `"${selector.slice(0, 60)}" sets outline: none with no replacement cue`,
+    });
+  }
+  return findings;
+}
+
+// Law of Similarity: links must look different from the prose around them.
+function checkLinkAffordance(opts) {
+  const { inProse, decorationNone, sameColor, hasCue, text = '' } = opts;
+  if (!inProse || !decorationNone || !sameColor || hasCue) return [];
+  return [{
+    id: 'link-no-affordance',
+    snippet: `link "${(text || '').trim().slice(0, 40)}" is indistinguishable from the text around it`,
+  }];
+}
+
+// Hick's Law: top-level choices grow decision time. Footer sitemaps exempt.
+function checkNavChoices(opts) {
+  const { count, label = '', inFooter = false } = opts;
+  if (inFooter || count <= 8) return [];
+  return [{ id: 'choice-overload-nav', snippet: `nav "${label}" offers ${count} top-level choices` }];
+}
+
+const SELECT_CANONICAL_RE = /(countr|year|month|day|date|state|province|region|timezone|time-zone|currency|locale|language)/i;
+
+// Choice Overload: long flat dropdowns force linear scanning.
+function checkSelectChoices(opts) {
+  const { optionCount, hasOptgroups = false, label = '', exempt = false } = opts;
+  if (exempt || hasOptgroups || optionCount <= 25) return [];
+  return [{ id: 'select-overload', snippet: `select "${label}" lists ${optionCount} flat options` }];
+}
+
+// Jakob's Law: the logo links home everywhere else, so it must here too.
+function checkLogoHomeLink(opts) {
+  const { ident = '', linked, sizePx = 0 } = opts;
+  if (linked || sizePx < 24) return [];
+  return [{ id: 'logo-not-home-link', snippet: `header logo "${ident}" is not a link to home` }];
+}
+
+const AUTOCOMPLETE_FIELD_RE = /(^|[\s_-])(email|e-mail|phone|tel|mobile|name|address|street|city|postal|zip)([\s_-]|$)/;
+
+// Postel's Law: the browser already knows these values; accept its help.
+function checkAutocomplete(opts) {
+  const { type = '', name = '', id = '', ariaLabel = '', hasAutocomplete, inForm } = opts;
+  if (!inForm || hasAutocomplete) return [];
+  const t = (type || '').toLowerCase();
+  const hay = `${name} ${id} ${ariaLabel}`.toLowerCase();
+  const wants = t === 'email' || t === 'tel'
+    || ((t === '' || t === 'text') && AUTOCOMPLETE_FIELD_RE.test(hay));
+  if (!wants) return [];
+  const ident = name || id || ariaLabel || t;
+  return [{ id: 'autocomplete-missing', snippet: `input "${ident}" could autofill but has no autocomplete attribute` }];
+}
+
+// Miller's Law: chunk long forms; ~7 fields is where scanning breaks down.
+function checkFormFieldChunking(opts) {
+  const { textFieldCount, hasFieldsets = false, hasHeadings = false, label = '' } = opts;
+  if (hasFieldsets || hasHeadings || textFieldCount <= 7) return [];
+  return [{ id: 'form-field-overload', snippet: `form "${label}" packs ${textFieldCount} fields with no grouping` }];
+}
+
+// ─── UX: browser-only pure checks (need real layout / load data) ─────────
+
+// Fitts's Law / WCAG 2.5.8 with the spacing alternative: a sub-24px target
+// is fine when every other target's center sits at least 24px away (text
+// links in a roomy nav pass); it only flags when small AND crowded. The
+// static engine keeps the simpler explicit-dimensions check instead — it
+// has no layout, so it cannot know the neighbors.
+function checkTapTargetSpacing(targets) {
+  const findings = [];
+  const list = targets || [];
+  for (let i = 0; i < list.length; i++) {
+    const t = list[i];
+    if (!(t.width > 0) || !(t.height > 0)) continue;
+    if (t.width >= 24 && t.height >= 24) continue;
+    if (t.inlineProse) continue;
+    const cx = t.left + t.width / 2;
+    const cy = t.top + t.height / 2;
+    let crowded = false;
+    for (let j = 0; j < list.length; j++) {
+      if (j === i) continue;
+      const o = list[j];
+      if (Math.hypot(cx - (o.left + o.width / 2), cy - (o.top + o.height / 2)) < 24) {
+        crowded = true;
+        break;
+      }
+    }
+    if (!crowded) continue;
+    findings.push({
+      id: 'tap-target-too-small',
+      snippet: `"${t.selector || t.label || 'control'}" tap target is ${Math.round(t.width)}×${Math.round(t.height)}px with a neighbor inside 24px (24×24 minimum, 44×44 comfortable)`,
+      el: t.el,
+    });
+  }
+  return findings;
+}
+
+// Fitts's Law, crowding half: clusters of small targets packed together.
+// Takes measured rects so the math is unit-testable without a DOM.
+function checkTapTargetsCrowded(targets, opts = {}) {
+  const { minGap = 8, smallMax = 44 } = opts;
+  const small = (targets || []).filter(t => t.width > 0 && t.height > 0 && t.width < smallMax && t.height < smallMax);
+  const n = small.length;
+  if (n < 2) return [];
+  const parent = [...Array(n).keys()];
+  const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const dist = (a, b) => {
+    const dx = Math.max(a.left - (b.left + b.width), b.left - (a.left + a.width), 0);
+    const dy = Math.max(a.top - (b.top + b.height), b.top - (a.top + a.height), 0);
+    return Math.hypot(dx, dy);
+  };
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (dist(small[i], small[j]) < minGap) parent[find(i)] = find(j);
+    }
+  }
+  const clusters = new Map();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    if (!clusters.has(root)) clusters.set(root, []);
+    clusters.get(root).push(small[i]);
+  }
+  const findings = [];
+  for (const group of clusters.values()) {
+    if (group.length < 2) continue;
+    findings.push({
+      id: 'tap-targets-crowded',
+      snippet: `${group.length} small targets ("${group[0].label || group[0].selector || 'control'}", …) packed closer than ${minGap}px apart`,
+      el: group[0].el,
+    });
+  }
+  return findings;
+}
+
+// Doherty Threshold: serving multi-thousand-pixel naturals into small slots
+// delays first feedback for no visual gain. dpr-aware.
+function checkOversizedImage(opts) {
+  const { naturalWidth = 0, naturalHeight = 0, displayWidth = 0, displayHeight = 0, src = '', dpr = 1 } = opts;
+  if (!(displayWidth > 0) || !(naturalWidth > 0)) return [];
+  if (naturalWidth < 1200) return []; // below the floor the payload barely matters
+  const budget = displayWidth * Math.max(1, dpr) * 2.5;
+  if (naturalWidth <= budget) return [];
+  const name = (String(src).split('/').pop() || String(src)).split('?')[0].slice(0, 50);
+  return [{
+    id: 'oversized-image-payload',
+    snippet: `"${name}" ships ${naturalWidth}×${naturalHeight} natural pixels into a ${Math.round(displayWidth)}×${Math.round(displayHeight)} slot`,
+  }];
+}
+
+// ─── UX: shared doc/element adapters ─────────────────────────────────────
+// Both engines expose tagName/getAttribute/parentElement/querySelectorAll,
+// so these adapters serve the static loop and the browser loop alike.
+
+const UX_SKIP_SELECTOR = '.tcher-overlay, .tcher-label, .tcher-banner, .tcher-banner-panel, .tcher-tooltip, [id^="tcher-live-"]';
+
+function uxAttr(el, attr) {
+  const v = el.getAttribute ? el.getAttribute(attr) : el.attribs?.[attr];
+  return v === undefined ? null : v;
+}
+
+function uxClassSelector(el) {
+  const tag = (el.tagName || '').toLowerCase();
+  const cls = String(uxAttr(el, 'class') || '').trim().split(/\s+/).filter(Boolean);
+  return cls.length ? `${tag}.${cls[0]}` : tag;
+}
+
+function uxAncestor(el, match) {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const t = (p.tagName || '').toLowerCase();
+    if (match(t, p)) return p;
+    if (t === 'body' || t === 'html') break;
+  }
+  return null;
+}
+
+function uxInTcherChrome(el) {
+  return Boolean(el.closest?.(UX_SKIP_SELECTOR));
+}
+
+function checkElementMissingAlt(el, tag) {
+  if (tag !== 'img') return [];
+  const alt = uxAttr(el, 'alt');
+  return checkImgAlt({
+    hasAlt: alt !== null,
+    role: uxAttr(el, 'role') || '',
+    ariaHidden: uxAttr(el, 'aria-hidden') || '',
+    src: uxAttr(el, 'src') || '',
+  });
+}
+
+function checkElementIconButtonName(el, tag) {
+  if (tag !== 'button' && !(tag === 'a' && uxAttr(el, 'href') !== null)) return [];
+  if (uxInTcherChrome(el)) return [];
+  const text = (el.textContent || '').trim();
+  const svgOrImg = el.querySelectorAll ? el.querySelectorAll('svg, img') : [];
+  const hasElementChildren = [...(el.children || [])].some(c => c.nodeType === 1 || c.type === 'tag');
+  let imgAlt = '';
+  for (const child of svgOrImg) {
+    imgAlt = imgAlt || (uxAttr(child, 'alt') || '').trim() || (uxAttr(child, 'aria-label') || '').trim();
+  }
+  return checkIconButtonName({
+    tag,
+    text,
+    ariaLabel: uxAttr(el, 'aria-label') || '',
+    ariaLabelledby: uxAttr(el, 'aria-labelledby') || '',
+    title: uxAttr(el, 'title') || '',
+    imgAlt,
+    hasIconChild: svgOrImg.length > 0 || (hasElementChildren && !text),
+    selector: uxClassSelector(el),
+  });
+}
+
+// Static engine variant: jsdom does no layout, so only explicit CSS
+// dimensions are measurable. The browser variant reads real rects.
+function checkElementTapTargetStatic(el, tag, style) {
+  if (tag === 'a' && uxAttr(el, 'href') === null) return [];
+  if ((style.display || '') === 'none' || (style.visibility || '') === 'hidden') return [];
+  const inlineProse = Boolean(uxAncestor(el, t => t === 'p' || t === 'li' || t === 'blockquote' || t === 'figcaption' || t === 'td'));
+  return checkTapTargetSize({
+    width: parseFloat(style.width) || 0,
+    height: parseFloat(style.height) || 0,
+    selector: uxClassSelector(el),
+    inlineProse,
+  });
+}
+
+// Browser tap-target sizing goes through checkTapTargetSpacing (page pass
+// over collected rects) rather than a per-element check: the WCAG spacing
+// alternative needs every neighbor's position to decide.
+function uxCollectTargetRect(el) {
+  const tag = el.tagName.toLowerCase();
+  if (tag === 'a' && uxAttr(el, 'href') === null) return null;
+  if (uxInTcherChrome(el)) return null;
+  const style = getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden') return null;
+  const rect = el.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return null;
+  const inlineProse = style.display.startsWith('inline')
+    && Boolean(uxAncestor(el, t => t === 'p' || t === 'li' || t === 'blockquote' || t === 'figcaption' || t === 'td'));
+  return {
+    left: rect.left, top: rect.top, width: rect.width, height: rect.height,
+    selector: uxClassSelector(el), label: uxClassSelector(el), inlineProse, el,
+  };
+}
+
+// Link affordance needs resolved colors; each engine resolves, this shapes.
+function linkAffordanceFromResolved(el, linkStyle, parentColorResolved) {
+  const decoration = `${linkStyle.textDecorationLine || ''} ${linkStyle.textDecoration || ''}`;
+  if (!/\bnone\b/.test(decoration)) return [];
+  if (/underline|overline/.test(decoration)) return [];
+  const linkColor = parseAnyColor(linkStyle.color || '');
+  const parentColor = parentColorResolved;
+  let sameColor;
+  if (!linkStyle.color || linkStyle.color === 'inherit') {
+    sameColor = true;
+  } else if (linkColor && parentColor) {
+    sameColor = Math.abs(linkColor.r - parentColor.r) <= 8
+      && Math.abs(linkColor.g - parentColor.g) <= 8
+      && Math.abs(linkColor.b - parentColor.b) <= 8;
+  } else {
+    sameColor = false;
+  }
+  const weight = parseInt(linkStyle.fontWeight, 10) || 400;
+  const hasCue = (parseFloat(linkStyle.borderBottomWidth) || 0) > 0
+    || weight >= 600
+    || Boolean(linkStyle.backgroundColor && !/transparent|rgba\(0,\s*0,\s*0,\s*0\)/.test(linkStyle.backgroundColor));
+  const prose = uxAncestor(el, t => t === 'p' || t === 'li' || t === 'td' || t === 'blockquote');
+  const inProse = Boolean(prose)
+    && (prose.textContent || '').trim().length > (el.textContent || '').trim().length + 10;
+  return checkLinkAffordance({
+    inProse,
+    decorationNone: true,
+    sameColor,
+    hasCue,
+    text: el.textContent || '',
+  });
+}
+
+function checkElementLinkAffordance(el, tag, style, window) {
+  if (tag !== 'a' || uxAttr(el, 'href') === null) return [];
+  if (uxInTcherChrome(el)) return [];
+  if (uxAncestor(el, t => t === 'nav')) return [];
+  // Resolve nearest explicit ancestor color for the comparison.
+  let parentColor = null;
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const c = (window ? window.getComputedStyle(p) : getComputedStyle(p)).color;
+    if (c && c !== 'inherit') { parentColor = parseAnyColor(c); break; }
+    if ((p.tagName || '').toLowerCase() === 'html') break;
+  }
+  return linkAffordanceFromResolved(el, style, parentColor);
+}
+
+// Doc-level UX pass shared by both engines: viewport meta, nav choice
+// counts, select overload, header logo link, form chunking, autocomplete,
+// and input labelling. Findings carry `el` so the overlay can outline the
+// concrete element (the static engine just reads id/snippet). `getStyle`
+// resolves computed style per engine (static window vs real browser).
+function checkUxPageFromDoc(doc, getStyle) {
+  const findings = [];
+  const push = (f, el) => { if (f.length) findings.push(...f.map(x => ({ ...x, el }))); };
+
+  // no-viewport-meta
+  if (!doc.querySelector('meta[name="viewport"]')) {
+    findings.push({ id: 'no-viewport-meta', snippet: 'missing "viewport" meta tag; mobile browsers will render desktop-width' });
+  }
+
+  // choice-overload-nav
+  for (const nav of doc.querySelectorAll('nav')) {
+    if (nav.closest?.(UX_SKIP_SELECTOR)) continue;
+    const links = nav.querySelectorAll('a[href]');
+    const label = uxAttr(nav, 'aria-label') || (links[0] ? (links[0].textContent || '').trim() : 'navigation');
+    push(checkNavChoices({
+      count: links.length,
+      label,
+      inFooter: Boolean(uxAncestor(nav, t => t === 'footer')),
+    }), nav);
+  }
+
+  // select-overload
+  for (const select of doc.querySelectorAll('select')) {
+    if (select.closest?.(UX_SKIP_SELECTOR)) continue;
+    const hay = `${uxAttr(select, 'name') || ''} ${uxAttr(select, 'id') || ''} ${uxAttr(select, 'aria-label') || ''}`;
+    push(checkSelectChoices({
+      optionCount: select.querySelectorAll('option').length,
+      hasOptgroups: select.querySelectorAll('optgroup').length > 0,
+      label: uxAttr(select, 'aria-label') || uxAttr(select, 'name') || uxAttr(select, 'id') || 'select',
+      exempt: SELECT_CANONICAL_RE.test(hay),
+    }), select);
+  }
+
+  // logo-not-home-link: first sizeable img/svg per header
+  const HOME_HREFS = new Set(['/', '#', '', './', 'index.html', '/index.html', '#/', '/#']);
+  for (const header of doc.querySelectorAll('header, [role="banner"]')) {
+    if (header.closest?.(UX_SKIP_SELECTOR)) continue;
+    for (const mark of header.querySelectorAll('img, svg')) {
+      let sizePx = parseFloat(uxAttr(mark, 'width')) || 0;
+      if (!sizePx && getStyle) {
+        try { sizePx = parseFloat(getStyle(mark).width) || 0; } catch { /* unstyleable node */ }
+      }
+      if (sizePx < 24) continue;
+      const linkAncestor = uxAncestor(mark, (t, p) => t === 'a' && uxAttr(p, 'href') !== null);
+      const href = linkAncestor ? String(uxAttr(linkAncestor, 'href')).trim() : null;
+      const ident = (mark.tagName || '').toLowerCase() === 'img'
+        ? (String(uxAttr(mark, 'src') || '').split('/').pop() || 'logo')
+        : (uxAttr(mark, 'aria-label') || 'svg mark');
+      push(checkLogoHomeLink({
+        ident: ident.slice(0, 50),
+        linked: href !== null && HOME_HREFS.has(href),
+        sizePx,
+      }), mark);
+      break; // only the first qualifying mark per header
+    }
+  }
+
+  // form-field-overload + autocomplete-missing
+  const TEXTY = new Set(['', 'text', 'email', 'tel', 'url', 'password', 'number', 'search']);
+  for (const form of doc.querySelectorAll('form')) {
+    if (form.closest?.(UX_SKIP_SELECTOR)) continue;
+    let textFieldCount = 0;
+    for (const field of form.querySelectorAll('input, textarea, select')) {
+      const tag = (field.tagName || '').toLowerCase();
+      const type = (uxAttr(field, 'type') || '').toLowerCase();
+      if (tag === 'textarea' || tag === 'select' || (tag === 'input' && TEXTY.has(type))) textFieldCount++;
+      if (tag === 'input') {
+        push(checkAutocomplete({
+          type,
+          name: uxAttr(field, 'name') || '',
+          id: uxAttr(field, 'id') || '',
+          ariaLabel: uxAttr(field, 'aria-label') || '',
+          hasAutocomplete: uxAttr(field, 'autocomplete') !== null,
+          inForm: true,
+        }), field);
+      }
+    }
+    push(checkFormFieldChunking({
+      textFieldCount,
+      hasFieldsets: form.querySelectorAll('fieldset').length > 0,
+      hasHeadings: form.querySelectorAll('h2, h3, h4, h5, h6').length > 0,
+      label: uxAttr(form, 'aria-label') || uxAttr(form, 'id') || 'form',
+    }), form);
+  }
+
+  // input-without-label (needs the doc for label[for] lookups)
+  const labelFor = new Set();
+  for (const label of doc.querySelectorAll('label[for]')) {
+    labelFor.add(uxAttr(label, 'for'));
+  }
+  for (const field of doc.querySelectorAll('input, select, textarea')) {
+    if (field.closest?.(UX_SKIP_SELECTOR)) continue;
+    const tag = (field.tagName || '').toLowerCase();
+    const id = uxAttr(field, 'id');
+    const wrapped = Boolean(uxAncestor(field, t => t === 'label'));
+    const firstOption = tag === 'select' ? field.querySelectorAll('option')[0] : null;
+    const ident = uxAttr(field, 'placeholder')
+      || uxAttr(field, 'name')
+      || (firstOption ? (firstOption.textContent || '').trim() : '')
+      || id || '';
+    push(checkInputLabel({
+      tag,
+      type: uxAttr(field, 'type') || '',
+      hasLabel: wrapped || (id !== null && labelFor.has(id)),
+      ariaLabel: uxAttr(field, 'aria-label') || '',
+      ariaLabelledby: uxAttr(field, 'aria-labelledby') || '',
+      title: uxAttr(field, 'title') || '',
+      ident,
+    }), field);
+  }
+
+  return findings;
+}
+
 // --- cli/engine/browser/injected/index.mjs ---
 const IS_BROWSER = typeof window !== 'undefined';
 
@@ -2892,23 +3691,24 @@ if (IS_BROWSER) {
   const EXTENSION_MODE = (_myScript && _myScript.dataset.tcherExtension === 'true')
     || document.documentElement.dataset.tcherExtension === 'true';
 
-  // Kinpaku gold — pinned to the site's brand token (see
-  // site/styles/kinpaku-tokens.css --ks-kinpaku). Keep this in sync with
-  // the picker's C.brand in skill/scripts/live-browser.js and the kit's
-  // picker section in site/styles/kinpaku-kit.css.
-  //
-  // One color across both light and dark host pages. The outline is a
-  // 2px gesture pointing at an element + a labeled tag — it's a marker,
-  // not body text, so it doesn't need WCAG AA against the page. The
-  // label text inside the gold tag is dark (LABEL_INK) which has ~16:1
-  // against the leaf gold, so reading the rule name is solid in both
-  // modes. Hover deepens the gold (preserves chroma — never drops it,
-  // dropping chroma washes the gold into a sand/olive tone).
-  const BRAND_COLOR = 'oklch(84% 0.19 80.46)';
-  const BRAND_COLOR_HOVER = 'oklch(74% 0.18 80)';
-  const LABEL_INK = 'oklch(4% 0.004 95)';
-  const LABEL_BG = BRAND_COLOR;
-  const OUTLINE_COLOR = BRAND_COLOR;
+  // Detect overlay signal colors — coded by finding severity so urgency is
+  // readable at a glance (the live picker chrome itself is tcher-kit mono):
+  //   critical (red)    breaks readability/usability; fix first
+  //   major    (orange) clearly hurts quality or is a loud AI tell
+  //   minor    (yellow) stylistic tell worth a look
+  // The outline is a 2px marker gesture, not body text, so it doesn't need
+  // WCAG AA against the page; the label ink IS tuned per tier (white on
+  // red, near-black on orange/yellow). Hover deepens each tier's color
+  // while preserving chroma.
+  const SEVERITY_RANK = { critical: 3, major: 2, minor: 1, advisory: 0 };
+  const SEVERITY_COLORS = {
+    critical: { base: 'oklch(56.1% 0.213 21.07)', hover: 'oklch(48% 0.2 21.07)', ink: 'oklch(98% 0.01 21.07)' },
+    major: { base: 'oklch(74.86% 0.129 61.02)', hover: 'oklch(67% 0.135 61.02)', ink: 'oklch(16% 0.03 61.02)' },
+    minor: { base: 'oklch(88.88% 0.147 90.7)', hover: 'oklch(81% 0.15 90.7)', ink: 'oklch(18% 0.04 90.7)' },
+    // Lowest tier: heads-up rules; a muted yellow so it never outshouts minor.
+    advisory: { base: 'oklch(88% 0.045 90.7)', hover: 'oklch(80% 0.05 90.7)', ink: 'oklch(25% 0.01 90.7)' },
+  };
+  const OUTLINE_COLOR = SEVERITY_COLORS.minor.base;
 
   // Inject hover styles via CSS (more reliable than JS event listeners)
   const styleEl = document.createElement('style');
@@ -2930,11 +3730,7 @@ if (IS_BROWSER) {
       animation-play-state: running;
     }
     .tcher-overlay.tcher-hover {
-      outline-color: ${BRAND_COLOR_HOVER};
       z-index: 100001 !important;
-    }
-    .tcher-overlay.tcher-hover .tcher-label {
-      background: ${BRAND_COLOR_HOVER};
     }
     .tcher-overlay.tcher-spotlight {
       z-index: 100002 !important;
@@ -3028,9 +3824,23 @@ if (IS_BROWSER) {
   const overlays = [];
   const TYPE_LABELS = {};
   const RULE_CATEGORY = {};
+  const RULE_SEVERITY = {};
+  const RULE_LAW = {};
   for (const ap of ANTIPATTERNS) {
     TYPE_LABELS[ap.id] = ap.name.toLowerCase();
     RULE_CATEGORY[ap.id] = ap.category || 'quality';
+    RULE_SEVERITY[ap.id] = ap.severity || 'minor';
+    if (ap.law) RULE_LAW[ap.id] = ap.law;
+  }
+
+  // The strongest severity among a set of findings decides the marker color.
+  function topSeverity(findings) {
+    let top = 'advisory';
+    for (const f of findings) {
+      const s = RULE_SEVERITY[f.type || f.id] || 'minor';
+      if (SEVERITY_RANK[s] > SEVERITY_RANK[top]) top = s;
+    }
+    return top;
   }
 
   function isInFixedContext(el) {
@@ -3144,6 +3954,8 @@ if (IS_BROWSER) {
   const highlight = function(el, findings) {
     if (el._tcherOverlay) detachOverlay(el._tcherOverlay);
     const hasSlop = findings.some(f => RULE_CATEGORY[f.type || f.id] === 'slop');
+    // Marker color follows the most severe finding on this element.
+    const SC = SEVERITY_COLORS[topSeverity(findings)];
 
     const fixed = isInFixedContext(el);
     const rect = el.getBoundingClientRect();
@@ -3157,6 +3969,7 @@ if (IS_BROWSER) {
       left: fixed ? `${rect.left - 2}px` : `${rect.left + scrollX - 2}px`,
       width: `${rect.width + 4}px`, height: `${rect.height + 4}px`,
       zIndex: '99999', boxSizing: 'border-box',
+      outlineColor: SC.base,
     });
 
     // Build per-finding label entries: ✦ prefix for slop
@@ -3174,8 +3987,8 @@ if (IS_BROWSER) {
       display: 'flex', alignItems: 'center',
       whiteSpace: 'nowrap',
       fontSize: '11px', fontWeight: '600', letterSpacing: '0.02em',
-      color: LABEL_INK, lineHeight: '14px',
-      background: LABEL_BG,
+      color: SC.ink, lineHeight: '14px',
+      background: SC.base,
       fontFamily: 'system-ui, sans-serif',
       borderRadius: '4px 4px 0 0',
     });
@@ -3258,8 +4071,8 @@ if (IS_BROWSER) {
     const onMouseEnter = () => {
       isHovered = true;
       outline.classList.add('tcher-hover');
-      outline.style.outlineColor = BRAND_COLOR_HOVER;
-      label.style.background = BRAND_COLOR_HOVER;
+      outline.style.outlineColor = SC.hover;
+      label.style.background = SC.hover;
       if (cycleMode) {
         updateCycleText();
       } else {
@@ -3269,8 +4082,8 @@ if (IS_BROWSER) {
     const onMouseLeave = () => {
       isHovered = false;
       outline.classList.remove('tcher-hover');
-      outline.style.outlineColor = '';
-      label.style.background = LABEL_BG;
+      outline.style.outlineColor = SC.base;
+      label.style.background = SC.base;
       if (cycleMode) {
         updateCycleText();
       } else {
@@ -3288,16 +4101,45 @@ if (IS_BROWSER) {
     overlays.push(outline);
   };
 
-  const showPageBanner = function(findings) {
-    if (!findings.length) return;
+  const showPageBanner = function(findings, allForSummary, groups) {
+    const summaryFindings = (allForSummary && allForSummary.length) ? allForSummary : findings;
+    if (!summaryFindings.length) return;
+
+    // Neutral chrome in the spirit of the live design panel: the severity
+    // signal lives on the badges, not a full-width colored strip.
+    const INK = 'oklch(15% 0 0)';
+    const DIM = 'oklch(45% 0 0)';
+    const SURFACE = 'oklch(98.5% 0 0 / 0.97)';
+    const HAIRLINE = 'oklch(88% 0 0)';
+    const TIERS = ['critical', 'major', 'minor', 'advisory'];
+
+    const counts = { critical: 0, major: 0, minor: 0, advisory: 0 };
+    for (const f of summaryFindings) counts[RULE_SEVERITY[f.type] || 'minor'] += 1;
+
+    const makeBadge = (tier, count) => {
+      const c = SEVERITY_COLORS[tier];
+      const b = document.createElement('span');
+      b.textContent = `${count} ${tier}`;
+      Object.assign(b.style, {
+        background: c.base, color: c.ink,
+        padding: '2px 10px', borderRadius: '999px',
+        fontSize: '11.5px', fontWeight: '650', whiteSpace: 'nowrap',
+        boxShadow: 'inset 0 0 0 1px oklch(0% 0 0 / 0.10)',
+        flexShrink: '0',
+      });
+      return b;
+    };
+
     const banner = document.createElement('div');
     banner.className = 'tcher-overlay tcher-banner';
     Object.assign(banner.style, {
       position: 'fixed', top: '0', left: '0', right: '0', zIndex: '100000',
-      background: LABEL_BG, color: LABEL_INK,
+      background: SURFACE, color: INK,
+      backdropFilter: 'blur(8px)',
       fontFamily: 'system-ui, sans-serif', fontSize: '13px',
-      display: 'flex', alignItems: 'center', pointerEvents: 'auto',
-      height: '36px', overflow: 'hidden', maxWidth: '100vw',
+      borderBottom: '1px solid ' + HAIRLINE,
+      boxShadow: '0 8px 24px oklch(0% 0 0 / 0.10)',
+      pointerEvents: 'auto', maxWidth: '100vw',
       transform: 'translateY(-100%)',
       transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
     });
@@ -3305,52 +4147,270 @@ if (IS_BROWSER) {
       banner.style.transform = 'translateY(0)';
     }));
 
-    // Scrollable findings area
-    const scrollArea = document.createElement('div');
-    Object.assign(scrollArea.style, {
-      flex: '1', minWidth: '0', overflowX: 'auto', overflowY: 'hidden',
-      display: 'flex', gap: '8px', alignItems: 'center',
-      padding: '0 12px', scrollSnapType: 'x mandatory',
-      scrollbarWidth: 'none',
+    // \u2500\u2500 Summary row: "UX check" + one status badge per tier \u2500\u2500
+    const row = document.createElement('div');
+    Object.assign(row.style, {
+      display: 'flex', alignItems: 'center', gap: '8px',
+      height: '40px', padding: '0 12px',
     });
-    for (const f of findings) {
-      const prefix = RULE_CATEGORY[f.type] === 'slop' ? '\u2726 ' : '';
-      const tag = document.createElement('span');
-      tag.textContent = `${prefix}${TYPE_LABELS[f.type] || f.type}: ${f.detail}`;
-      Object.assign(tag.style, {
-        background: 'rgba(255,255,255,0.15)', padding: '2px 8px',
-        borderRadius: '3px', fontSize: '12px', fontFamily: 'ui-monospace, monospace',
-        whiteSpace: 'nowrap', flexShrink: '0', scrollSnapAlign: 'start',
-      });
-      scrollArea.appendChild(tag);
+    const title = document.createElement('span');
+    title.textContent = 'UX check';
+    Object.assign(title.style, {
+      fontWeight: '700', fontSize: '12.5px', letterSpacing: '0.01em',
+      whiteSpace: 'nowrap', flexShrink: '0',
+    });
+    row.appendChild(title);
+    for (const tier of TIERS) {
+      if (counts[tier]) row.appendChild(makeBadge(tier, counts[tier]));
     }
-    banner.appendChild(scrollArea);
+    const spacer = document.createElement('div');
+    spacer.style.flex = '1';
+    row.appendChild(spacer);
 
-    // Controls area (only in standalone mode, not extension)
-    if (!EXTENSION_MODE) {
-      const controls = document.createElement('div');
-      Object.assign(controls.style, {
-        display: 'flex', alignItems: 'center', gap: '2px',
-        padding: '0 8px', flexShrink: '0',
+    // \u2500\u2500 Details panel (hidden until "View details") \u2500\u2500
+    // Left-docked popover (the live DESIGN.md panel's mirror image, which
+    // docks right): tiers stack vertically and the popover scrolls itself.
+    const panel = document.createElement('div');
+    panel.id = 'tcher-banner-panel';
+    // Mounted on document.body, NOT inside the banner: the banner's slide-in
+    // transform would otherwise become this fixed panel's containing block
+    // and collapse it to the banner's 40px box. Deliberately NOT given the
+    // `tcher-overlay` class: that selector pauses a reveal animation at
+    // opacity 0 and disables pointer events (it is meant for finding
+    // outlines), which made the open panel invisible and unclickable. It is
+    // still pushed into `overlays` so clearOverlays() removes it.
+    panel.className = 'tcher-banner-panel';
+    const PANEL_OPEN_DISPLAY = 'block';
+    Object.assign(panel.style, {
+      display: 'none',
+      position: 'fixed', left: '12px', top: '52px', bottom: '12px',
+      width: 'min(380px, calc(100vw - 24px))',
+      background: 'oklch(99% 0 0)',
+      border: '1px solid ' + HAIRLINE, borderRadius: '12px',
+      boxShadow: '0 18px 48px oklch(0% 0 0 / 0.16)',
+      overflowY: 'auto', padding: '12px',
+      zIndex: '100001',
+    });
+
+    // Popover header
+    const panelHead = document.createElement('div');
+    Object.assign(panelHead.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      margin: '0 0 10px',
+    });
+    const panelTitle = document.createElement('span');
+    panelTitle.textContent = 'UX findings';
+    Object.assign(panelTitle.style, { fontWeight: '700', fontSize: '12.5px' });
+    const panelClose = document.createElement('button');
+    panelClose.textContent = '×';
+    panelClose.title = 'Close findings';
+    Object.assign(panelClose.style, {
+      background: 'none', border: 'none', color: INK, opacity: '0.6',
+      fontSize: '18px', cursor: 'pointer', padding: '0 2px', lineHeight: '1',
+    });
+    panelClose.addEventListener('click', () => closePanel());
+    panelHead.appendChild(panelTitle);
+    panelHead.appendChild(panelClose);
+    panel.appendChild(panelHead);
+
+    // Fixed sky-blue flash: a tier-colored flash can vanish against the
+    // outline's own color, so the jump highlight uses a contrast hue.
+    const FLASH_COLOR = 'oklch(74.79% 0.137 239.13)';
+    const flashTarget = (el) => {
+      if (!el || el === document.body) return;
+      try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch { /* noop */ }
+      const o = el._tcherOverlay;
+      if (!o) return;
+      const prev = o.style.boxShadow;
+      o.style.boxShadow = '0 0 0 5px ' + FLASH_COLOR;
+      setTimeout(() => { o.style.boxShadow = prev; }, 1200);
+    };
+
+    // Assigned once the details button exists; clicking a finding collapses
+    // the panel first so the 60vh sheet doesn't cover the spot it jumps to.
+    let closePanel = () => {};
+
+    // \u2500\u2500 Mode tabs: All / Design / UX \u2500\u2500
+    // design = slop + quality rules (AI tells and craft); ux = the
+    // deterministic usability set (Laws of UX + WCAG-adjacent checks).
+    const MODES = [
+      { key: 'all', label: 'All', match: () => true },
+      { key: 'design', label: 'Design', match: (cat) => cat === 'slop' || cat === 'quality' },
+      { key: 'ux', label: 'UX', match: (cat) => cat === 'ux' },
+    ];
+    let activeMode = 'all';
+    const modeCount = (mode) => {
+      let n = 0;
+      for (const g of (groups || [])) {
+        for (const f of g.findings) {
+          if (mode.match(RULE_CATEGORY[f.type] || 'quality')) n++;
+        }
+      }
+      return n;
+    };
+    const tabStrip = document.createElement('div');
+    Object.assign(tabStrip.style, {
+      display: 'flex', gap: '4px', margin: '0 0 12px',
+      background: 'oklch(96% 0 0)', border: '1px solid ' + HAIRLINE,
+      borderRadius: '8px', padding: '3px',
+    });
+    const tabBtns = new Map();
+    for (const mode of MODES) {
+      const tb = document.createElement('button');
+      tb.textContent = `${mode.label} ${modeCount(mode)}`;
+      Object.assign(tb.style, {
+        flex: '1', border: 'none', borderRadius: '6px', padding: '4px 0',
+        fontSize: '11.5px', fontWeight: '600', fontFamily: 'inherit',
+        cursor: 'pointer', background: 'transparent', color: DIM,
+        transition: 'background 0.12s ease, color 0.12s ease',
       });
+      tb.addEventListener('click', () => { activeMode = mode.key; renderPanelRows(); });
+      tabBtns.set(mode.key, tb);
+      tabStrip.appendChild(tb);
+    }
+    panel.appendChild(tabStrip);
 
+    const panelList = document.createElement('div');
+    panel.appendChild(panelList);
+
+    const renderPanelRows = () => {
+      for (const [key, tb] of tabBtns) {
+        const active = key === activeMode;
+        tb.style.background = active ? 'oklch(100% 0 0)' : 'transparent';
+        tb.style.color = active ? INK : DIM;
+        tb.style.boxShadow = active ? '0 1px 2px oklch(0% 0 0 / 0.08), inset 0 0 0 1px ' + HAIRLINE : 'none';
+      }
+      const mode = MODES.find(m => m.key === activeMode) || MODES[0];
+      panelList.textContent = '';
+
+      for (const tier of TIERS) {
+        const rows = [];
+        for (const g of (groups || [])) {
+          for (const f of g.findings) {
+            if ((RULE_SEVERITY[f.type] || 'minor') !== tier) continue;
+            if (!mode.match(RULE_CATEGORY[f.type] || 'quality')) continue;
+            rows.push({ el: g.el, f });
+          }
+        }
+        if (!rows.length) continue;
+
+        const head = document.createElement('div');
+        Object.assign(head.style, {
+          display: 'flex', alignItems: 'center', gap: '8px',
+          margin: '14px 0 8px',
+        });
+        head.appendChild(makeBadge(tier, rows.length));
+        panelList.appendChild(head);
+
+        for (const { el, f } of rows) {
+          const item = document.createElement('div');
+          const clickable = el && el !== document.body;
+          Object.assign(item.style, {
+            display: 'flex', alignItems: 'flex-start', gap: '8px',
+            padding: '7px 10px', margin: '0 0 6px',
+            border: '1px solid ' + HAIRLINE, borderRadius: '8px',
+            background: 'oklch(100% 0 0)',
+            cursor: clickable ? 'pointer' : 'default',
+            transition: 'border-color 0.12s ease',
+          });
+          const dot = document.createElement('span');
+          Object.assign(dot.style, {
+            width: '8px', height: '8px', borderRadius: '50%',
+            background: SEVERITY_COLORS[tier].base, flexShrink: '0',
+            marginTop: '5px', boxShadow: 'inset 0 0 0 1px oklch(0% 0 0 / 0.12)',
+          });
+          item.appendChild(dot);
+          const text = document.createElement('div');
+          text.style.minWidth = '0';
+          const name = document.createElement('div');
+          const prefix = RULE_CATEGORY[f.type] === 'slop' ? '\u2726 ' : '';
+          name.textContent = prefix + (TYPE_LABELS[f.type] || f.type);
+          Object.assign(name.style, { fontWeight: '600', fontSize: '12.5px' });
+          const detail = document.createElement('div');
+          // ux rules cite their Laws of UX principle ahead of the detail.
+          const law = RULE_LAW[f.type];
+          detail.textContent = (law ? law + ' \u00b7 ' : '') + (f.detail || '');
+          Object.assign(detail.style, {
+            color: DIM, fontFamily: 'ui-monospace, monospace',
+            fontSize: '11.5px', lineHeight: '1.45', wordBreak: 'break-word',
+          });
+          text.appendChild(name);
+          text.appendChild(detail);
+          item.appendChild(text);
+          if (clickable) {
+            item.addEventListener('mouseenter', () => { item.style.borderColor = SEVERITY_COLORS[tier].base; });
+            item.addEventListener('mouseleave', () => { item.style.borderColor = HAIRLINE; });
+            item.addEventListener('click', () => {
+              closePanel();
+              requestAnimationFrame(() => flashTarget(el));
+            });
+          }
+          panelList.appendChild(item);
+        }
+      }
+
+      if (!panelList.children.length) {
+        const empty = document.createElement('div');
+        empty.textContent = 'No findings in this set.';
+        Object.assign(empty.style, { color: DIM, fontSize: '12px', padding: '8px 2px' });
+        panelList.appendChild(empty);
+      }
+    };
+    renderPanelRows();
+
+    // "View details" toggle
+    const detailsBtn = document.createElement('button');
+    detailsBtn.id = 'tcher-banner-details';
+    const CHEVRON_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0; transition: transform 0.15s ease" aria-hidden="true"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>';
+    const setDetailsLabel = (open) => {
+      detailsBtn.innerHTML = (open ? 'Hide details' : 'View details') + CHEVRON_SVG;
+      const svg = detailsBtn.querySelector('svg');
+      if (svg && open) svg.style.transform = 'rotate(180deg)';
+    };
+    setDetailsLabel(false);
+    Object.assign(detailsBtn.style, {
+      display: 'inline-flex', alignItems: 'center', gap: '5px',
+      background: 'oklch(100% 0 0)', color: INK,
+      border: '1px solid ' + HAIRLINE, borderRadius: '6px',
+      padding: '3px 10px', fontSize: '11.5px', fontWeight: '600',
+      fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap',
+      flexShrink: '0', transition: 'border-color 0.12s ease',
+    });
+    detailsBtn.addEventListener('mouseenter', () => { detailsBtn.style.borderColor = DIM; });
+    detailsBtn.addEventListener('mouseleave', () => { detailsBtn.style.borderColor = HAIRLINE; });
+    let panelOpen = false;
+    detailsBtn.addEventListener('click', () => {
+      panelOpen = !panelOpen;
+      panel.style.display = panelOpen ? PANEL_OPEN_DISPLAY : 'none';
+      setDetailsLabel(panelOpen);
+    });
+    closePanel = () => {
+      if (!panelOpen) return;
+      panelOpen = false;
+      panel.style.display = 'none';
+      setDetailsLabel(false);
+    };
+    row.appendChild(detailsBtn);
+
+    // Controls (standalone mode only, not extension)
+    if (!EXTENSION_MODE) {
       // Toggle visibility button
       const toggle = document.createElement('button');
       toggle.textContent = '\u25C9'; // circle with dot (visible state)
       toggle.title = 'Toggle overlay visibility';
       Object.assign(toggle.style, {
         background: 'none', border: 'none',
-        color: 'white', fontSize: '16px', cursor: 'pointer', padding: '0 4px',
-        opacity: '0.85', transition: 'opacity 0.15s',
+        color: INK, fontSize: '16px', cursor: 'pointer', padding: '0 4px',
+        opacity: '0.6', transition: 'opacity 0.15s',
       });
       let overlaysVisible = true;
       toggle.addEventListener('click', () => {
         overlaysVisible = !overlaysVisible;
         document.body.classList.toggle('tcher-hidden', !overlaysVisible);
         toggle.textContent = overlaysVisible ? '\u25C9' : '\u25CB'; // filled vs empty circle
-        toggle.style.opacity = overlaysVisible ? '0.85' : '0.5';
+        toggle.style.opacity = overlaysVisible ? '0.6' : '0.35';
       });
-      controls.appendChild(toggle);
+      row.appendChild(toggle);
 
       // Close button
       const close = document.createElement('button');
@@ -3358,15 +4418,18 @@ if (IS_BROWSER) {
       close.title = 'Dismiss banner';
       Object.assign(close.style, {
         background: 'none', border: 'none',
-        color: 'white', fontSize: '18px', cursor: 'pointer', padding: '0 4px',
+        color: INK, fontSize: '18px', cursor: 'pointer', padding: '0 4px',
+        opacity: '0.6',
       });
-      close.addEventListener('click', () => banner.remove());
-      controls.appendChild(close);
-
-      banner.appendChild(controls);
+      close.addEventListener('click', () => { banner.remove(); panel.remove(); });
+      row.appendChild(close);
     }
+
+    banner.appendChild(row);
     document.body.appendChild(banner);
+    document.body.appendChild(panel);
     overlays.push(banner);
+    overlays.push(panel);
   };
 
   // Heuristic for skipping CSS-in-JS hashed class names like "css-1a2b3c" or "_2x4hG_".
@@ -4152,7 +5215,7 @@ if (IS_BROWSER) {
 
     for (const el of document.querySelectorAll('*')) {
       // Skip tcher's own elements and any descendants (overlays, labels, banner, nav buttons)
-      if (el.closest('.tcher-overlay, .tcher-label, .tcher-banner, .tcher-tooltip')) continue;
+      if (el.closest('.tcher-overlay, .tcher-label, .tcher-banner, .tcher-banner-panel, .tcher-tooltip')) continue;
       // Skip browser extension elements (Claude, etc.)
       const elId = el.id || '';
       if (elId.startsWith('claude-') || elId.startsWith('cic-')) continue;
@@ -4175,6 +5238,15 @@ if (IS_BROWSER) {
         ...checkElementClippedOverflowDOM(el).map(f => ({ type: f.id, detail: f.snippet })),
         ...checkElementGptBorderShadowDOM(el).map(f => ({ type: f.id, detail: f.snippet })),
         ...checkElementTextOverflowDOM(el).map(f => ({ type: f.id, detail: f.snippet })),
+        ...checkElementBrokenImageDOM(el).map(f => ({ type: f.id, detail: f.snippet })),
+        ...checkElementEmojiUi(el, el.tagName.toLowerCase()).map(f => ({ type: f.id, detail: f.snippet })),
+        // ux rules (shared adapters with the static engine; tap-target
+        // sizing runs as a page pass below — it needs every neighbor)
+        ...checkElementMissingAlt(el, el.tagName.toLowerCase()).map(f => ({ type: f.id, detail: f.snippet })),
+        ...checkElementIconButtonName(el, el.tagName.toLowerCase()).map(f => ({ type: f.id, detail: f.snippet })),
+        ...(el.tagName === 'A'
+          ? checkElementLinkAffordance(el, 'a', getComputedStyle(el), window).map(f => ({ type: f.id, detail: f.snippet }))
+          : []),
       ].filter(f => _ruleOk(f.type));
 
       addBrowserFindings(groupMap, el, findings);
@@ -4203,6 +5275,88 @@ if (IS_BROWSER) {
     if (sectionKickerFindings.length > 0) {
       pageLevelFindings.push(...sectionKickerFindings);
       addBrowserFindings(groupMap, document.body, sectionKickerFindings);
+    }
+
+    // Page-text passes (em-dash cadence, marketing buzzwords) — mirrors the
+    // regex engine so text tells show up in the live overlay too.
+    const pageTextFindings = checkPageTextDOM()
+      .map(f => ({ type: f.id, detail: f.snippet }))
+      .filter(f => _ruleOk(f.type));
+    if (pageTextFindings.length > 0) {
+      pageLevelFindings.push(...pageTextFindings);
+      addBrowserFindings(groupMap, document.body, pageTextFindings);
+    }
+
+    // Emoji-bullet lists: attach each finding to its actual <ul>/<ol> so the
+    // list gets an on-page outline + a clickable popover row (per-element
+    // emoji headings/buttons run in the element loop above).
+    for (const f of checkEmojiBulletsFromDoc(document)) {
+      if (!_ruleOk(f.id)) continue;
+      addBrowserFindings(groupMap, f.el || document.body, [{ type: f.id, detail: f.snippet }]);
+    }
+
+    // ux page rules (shared adapter with the static engine): viewport meta,
+    // nav/select/form overload, header logo link, autocomplete, input labels.
+    // Findings carry their concrete element where one exists; page-wide ones
+    // (viewport meta) land in the banner via pageLevelFindings.
+    for (const f of checkUxPageFromDoc(document, (n) => getComputedStyle(n))) {
+      if (!_ruleOk(f.id)) continue;
+      const target = f.el && f.el.nodeType === 1 ? f.el : document.body;
+      if (target === document.body) pageLevelFindings.push({ type: f.id, detail: f.snippet });
+      addBrowserFindings(groupMap, target, [{ type: f.id, detail: f.snippet }]);
+    }
+
+    // ux: focus-outline-removed — page pass over same-origin stylesheet text.
+    // tcher's own chrome styles are excluded by owner id/ancestry.
+    const focusCssChunks = [];
+    for (const sheet of document.styleSheets) {
+      const owner = sheet.ownerNode;
+      if (owner && owner.id && String(owner.id).startsWith('tcher-')) continue;
+      if (owner && owner.closest && owner.closest('.tcher-overlay, .tcher-banner, .tcher-banner-panel, [id^="tcher-live-"]')) continue;
+      try {
+        for (const rule of sheet.cssRules) focusCssChunks.push(rule.cssText);
+      } catch { /* cross-origin stylesheet; skip */ }
+    }
+    const focusFindings = checkFocusOutlineCss(focusCssChunks.join('\n'))
+      .map(f => ({ type: f.id, detail: f.snippet }))
+      .filter(f => _ruleOk(f.type));
+    if (focusFindings.length > 0) {
+      pageLevelFindings.push(...focusFindings);
+      addBrowserFindings(groupMap, document.body, focusFindings);
+    }
+
+    // ux: oversized-image-payload — browser-only (needs natural sizes; the
+    // static engine cannot know what file actually shipped).
+    for (const img of document.querySelectorAll('img')) {
+      if (img.closest('.tcher-overlay, .tcher-banner, .tcher-banner-panel, [id^="tcher-live-"]')) continue;
+      const rect = img.getBoundingClientRect();
+      const oversize = checkOversizedImage({
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        displayWidth: rect.width,
+        displayHeight: rect.height,
+        src: img.currentSrc || img.src || '',
+        dpr: window.devicePixelRatio || 1,
+      }).filter(f => _ruleOk(f.id));
+      if (oversize.length > 0) {
+        addBrowserFindings(groupMap, img, oversize.map(f => ({ type: f.id, detail: f.snippet })));
+      }
+    }
+
+    // ux: tap-target sizing + crowding — browser-only (needs real layout).
+    // One rect collection feeds both: sizing applies the WCAG 2.5.8 spacing
+    // alternative (small is fine when isolated), crowding finds packed
+    // clusters. Wrappers containing another target are skipped so a linked
+    // card doesn't collide with its own inner button.
+    const targetRects = [];
+    for (const t of document.querySelectorAll('a[href], button, input, select, [role="button"]')) {
+      if (t.querySelector('a[href], button, input, select, [role="button"]')) continue;
+      const rect = uxCollectTargetRect(t);
+      if (rect) targetRects.push(rect);
+    }
+    for (const f of [...checkTapTargetSpacing(targetRects), ...checkTapTargetsCrowded(targetRects)]) {
+      if (!_ruleOk(f.id)) continue;
+      addBrowserFindings(groupMap, f.el || document.body, [{ type: f.id, detail: f.snippet }]);
     }
 
     const layoutFindings = checkLayout().filter(f => _ruleOk(f.type));
@@ -4463,8 +5617,13 @@ if (IS_BROWSER) {
       highlight(el, findings);
     }
 
-    if (pageLevelFindings.length > 0) {
-      showPageBanner(pageLevelFindings);
+    // The banner's severity summary counts EVERY finding on the page.
+    // allFindings already contains the page-level ones (they are grouped
+    // under document.body), so count from it alone; the banner's tag list
+    // stays page-level only, since element findings wear their own outlines.
+    const summarySource = allFindings.flatMap(g => g.findings);
+    if (summarySource.length > 0) {
+      showPageBanner(pageLevelFindings, summarySource, allFindings);
     }
 
     if (!EXTENSION_MODE) printSummary(allFindings);

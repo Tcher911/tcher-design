@@ -30,25 +30,28 @@
   // Design tokens
   //
 
-  // Brand kinpaku (gold) is pinned to the site's neo-kinpaku tokens
-  // (see site/styles/kinpaku-tokens.css) so Accept / knobs / cycle-dots /
-  // the selection outline / the comment tag all match the site's accent,
-  // not a washed theme-adjusted one. These mirror the kit's picker
-  // colors in site/styles/kinpaku-kit.css; keep them in sync by hand.
+  // tcher-kit mono palette. The live chrome is brand-stable black & white:
+  // white accents on a deep black surface, no host-page theme adaptation.
+  // On-page marks (selection outline, strokes, pins, insert lines) lead
+  // with brand ink plus a white halo so they read on light and dark pages
+  // alike. Keep in sync with the live-bar entry in .tcher/design.json by
+  // hand.
   const C = {
-    brand:     'oklch(84% 0.19 80.46)',         // kinpaku gold
-    brandHov:  'oklch(86% 0.07 84)',            // kinpaku-pale (hover lift)
-    brandSoft: 'oklch(84% 0.19 80.46 / 0.18)',  // kinpaku-dim
-    ink:       'oklch(4% 0.004 95)',            // lacquer-deep
-    ash:       'oklch(55% 0.018 82)',           // warm muted text
-    paper:     'oklch(98% 0.005 95 / 0.92)',    // light overlay on user pages
-    paperSolid:'oklch(98% 0.005 95)',
-    mist:      'oklch(90% 0.008 82 / 0.6)',     // light hairline
+    brand:     'oklch(97% 0 0)',          // brand white (accent on dark chrome)
+    brandHov:  'oklch(100% 0 0)',         // pure white (hover lift)
+    brandSoft: 'oklch(97% 0 0 / 0.16)',   // soft white wash
+    ink:       'oklch(4% 0 0)',           // deep black chrome surface
+    mark:      'oklch(20% 0 0)',          // on-page annotation ink (#171717 brand black)
+    markHalo:  'drop-shadow(0 0 1.5px oklch(99% 0 0 / 0.9))', // keeps ink marks legible on dark pages
+    ash:       'oklch(55% 0 0)',          // muted gray text
+    paper:     'oklch(98% 0 0 / 0.92)',   // light overlay on user pages
+    paperSolid:'oklch(98% 0 0)',
+    mist:      'oklch(90% 0 0 / 0.6)',    // light hairline
     white:     'oklch(99% 0 0)',
   };
-  // Picker bar chrome - mirrors .live-demo-gbar / .live-demo-ctx in kinpaku-kit.css.
-  // Quiet neutral elevation: no gold halo ring (gold is reserved for the brand
-  // mark and the active control, not the container outline).
+  // Picker bar chrome - mirrors .live-demo-gbar / .live-demo-ctx in tcher-kit.
+  // Quiet neutral elevation: no halo ring on the container; the bright accent
+  // is reserved for the brand mark and the active control.
   const PICKER_SHADOW =
     '0 16px 36px -12px oklch(0% 0 0 / 0.6)';
   const FONT = 'system-ui, -apple-system, sans-serif';
@@ -96,16 +99,16 @@
 
   const LIVE_CHROME_MOUNT_CONTRACT = ['root', 'transport', 'state', 'actions'];
   const LIVE_UI_SURFACES = [
-    { key: 'global-bottom-bar', ids: [PREFIX + '-global-bar', PREFIX + '-global-bar-brand', PREFIX + '-pick-toggle', PREFIX + '-insert-toggle', PREFIX + '-detect-toggle', PREFIX + '-detect-badge', PREFIX + '-design-toggle', PREFIX + '-page-chat', PREFIX + '-page-chat-input', PREFIX + '-page-chat-voice'] },
+    { key: 'global-bottom-bar', ids: [PREFIX + '-global-bar', PREFIX + '-global-bar-brand', PREFIX + '-pick-toggle', PREFIX + '-insert-toggle', PREFIX + '-detect-toggle', PREFIX + '-detect-badge', PREFIX + '-design-toggle', PREFIX + '-page-chat', PREFIX + '-page-chat-input'] },
     { key: 'pending-copy-edit-dock', ids: [PREFIX + '-pending-dock'] },
-    { key: 'element-selection-chrome', ids: [PREFIX + '-highlight', PREFIX + '-tooltip', PREFIX + '-bar', PREFIX + '-configure-input-wrap', PREFIX + '-input', PREFIX + '-configure-voice'] },
+    { key: 'element-selection-chrome', ids: [PREFIX + '-highlight', PREFIX + '-tooltip', PREFIX + '-bar', PREFIX + '-configure-input-wrap', PREFIX + '-input'] },
     { key: 'action-picker', ids: [PREFIX + '-picker'] },
     { key: 'edit-chrome', ids: [PREFIX + '-edit-badge'] },
     { key: 'generating-row', ids: [PREFIX + '-bar', PREFIX + '-shader'] },
     { key: 'variant-cycling-row', ids: [PREFIX + '-bar', PREFIX + '-params-panel'] },
     { key: 'variant-params-panel', ids: [PREFIX + '-params-panel'] },
     { key: 'saving-confirmed-rows', ids: [PREFIX + '-bar'] },
-    { key: 'insert-mode-chrome', ids: [PREFIX + '-insert-line', PREFIX + '-insert-placeholder', PREFIX + '-placeholder-resize', PREFIX + '-insert-input', PREFIX + '-insert-voice', PREFIX + '-insert-create', PREFIX + '-insert-create-tooltip'] },
+    { key: 'insert-mode-chrome', ids: [PREFIX + '-insert-line', PREFIX + '-insert-placeholder', PREFIX + '-placeholder-resize', PREFIX + '-insert-input', PREFIX + '-insert-create', PREFIX + '-insert-create-tooltip'] },
     { key: 'annotation-chrome', ids: [PREFIX + '-annot', PREFIX + '-annot-svg', PREFIX + '-annot-pins', PREFIX + '-annot-clear'] },
     { key: 'design-system-panel', ids: [PREFIX + '-design-host'] },
     { key: 'toasts-and-errors', ids: [PREFIX + '-toast'] },
@@ -138,7 +141,7 @@
   let recoveringEmptyCycling = false;
   let hasProjectContext = false;
   let selectedAction = 'tcher';
-  let selectedCount = 3;
+  let selectedCount = 2;
   const browserOwner = sessionState.owner;
   let checkpointTimer = null;
 
@@ -362,7 +365,8 @@
     highlightEl.id = PREFIX + '-highlight';
     Object.assign(highlightEl.style, {
       position: 'fixed', top: '0', left: '0', width: '0', height: '0',
-      border: '2px solid ' + C.brand, borderRadius: '3px',
+      border: '2px solid ' + C.mark, borderRadius: '3px',
+      boxShadow: '0 0 0 1px oklch(99% 0 0 / 0.75)',
       pointerEvents: 'none', zIndex: Z.highlight, boxSizing: 'border-box',
       transition: HIGHLIGHT_TRANSITION,
       display: 'none', opacity: '0',
@@ -419,11 +423,11 @@
   }
 
   //
-  // Annotation overlay (comment pins + kinpaku strokes)
+  // Annotation overlay (comment pins + ink strokes)
   //
   // Active while state === 'CONFIGURING'. The overlay is a fixed-positioned
   // sibling of <body> mirroring selectedElement's bounding rect. Click (no
-  // drag) drops a comment pin; drag paints a kinpaku SVG stroke. All coords
+  // drag) drops a comment pin; drag paints an ink SVG stroke. All coords
   // are stored in element-local CSS px so they survive scroll / resize and
   // correlate directly with the captured PNG.
   //
@@ -560,7 +564,7 @@
   }
 
   // Rebuild the SVG layer. Each stroke gets a wider invisible hit path
-  // beneath the visible kinpaku path so clicks register on thin lines.
+  // beneath the visible ink path so clicks register on thin lines.
   function redrawStrokes() {
     while (annotSvgEl.firstChild) annotSvgEl.removeChild(annotSvgEl.firstChild);
     annotState.strokes.forEach((s, idx) => {
@@ -578,7 +582,8 @@
       annotSvgEl.appendChild(hit);
       const visible = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       visible.setAttribute('d', d);
-      visible.setAttribute('stroke', C.brand);
+      visible.setAttribute('stroke', C.mark);
+      visible.style.filter = C.markHalo;
       visible.setAttribute('stroke-width', '3');
       visible.setAttribute('stroke-linecap', 'round');
       visible.setAttribute('stroke-linejoin', 'round');
@@ -714,7 +719,8 @@
       if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
       annotPointer.moved = true;
       const strokeEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      strokeEl.setAttribute('stroke', C.brand);
+      strokeEl.setAttribute('stroke', C.mark);
+      strokeEl.style.filter = C.markHalo;
       strokeEl.setAttribute('stroke-width', '3');
       strokeEl.setAttribute('stroke-linecap', 'round');
       strokeEl.setAttribute('stroke-linejoin', 'round');
@@ -804,7 +810,7 @@
     const dot = document.createElement('div');
     Object.assign(dot.style, {
       width: '14px', height: '14px', borderRadius: '50%',
-      background: C.brand, border: '2px solid ' + C.white,
+      background: C.mark, border: '2px solid ' + C.white,
       boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       flexShrink: '0',
     });
@@ -919,7 +925,8 @@
       });
       for (const s of strokes) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('stroke', C.brand);
+        path.setAttribute('stroke', C.mark);
+        path.style.filter = C.markHalo;
         path.setAttribute('stroke-width', '3');
         path.setAttribute('stroke-linecap', 'round');
         path.setAttribute('stroke-linejoin', 'round');
@@ -1112,7 +1119,7 @@
       transition: 'box-shadow 0.2s ease, opacity 0.25s ' + EASE + ', transform 0.3s ' + EASE,
       fontFamily: FONT, fontSize: '13px', color: BP.text,
       padding: '6px',
-      maxWidth: '520px', minWidth: '320px',
+      maxWidth: 'min(840px, calc(100vw - 16px))', minWidth: '320px',
     });
     uiAppend(barEl);
     defangOutsideHandlers(barEl);
@@ -1168,9 +1175,7 @@
 
   function hideBar() {
     if (!barEl) return;
-    const hideSeq = ++barHideSeq;
-    stopVoice({ suppressSubmit: true });
-    if (configureKind === 'insert') clearInsertPicking();
+    const hideSeq = ++barHideSeq;    if (configureKind === 'insert') clearInsertPicking();
     barEl.style.opacity = '0';
     barEl.style.transform = 'translateY(6px)';
     setTimeout(() => { if (barEl && hideSeq === barHideSeq) barEl.style.display = 'none'; }, 250);
@@ -1184,7 +1189,7 @@
     if (!barEl || barEl.style.display === 'none') return;
     if (mode === 'cycling' && !ensureCyclingRenderable('update-bar')) return;
     barEl.innerHTML = '';
-    // Reset bar styling to the kinpaku picker palette
+    // Reset bar styling to the tcher-kit picker palette
     barEl.style.background = BP.surface;
     barEl.style.border = '1px solid ' + BP.border;
     barEl.style.boxShadow = BP.shadow;
@@ -1196,8 +1201,8 @@
     else if (mode === 'saving') barEl.appendChild(buildSavingRow());
     else if (mode === 'confirmed') {
       barEl.appendChild(buildConfirmedRow());
-      barEl.style.background = 'oklch(95% 0.05 145)';
-      barEl.style.border = '1px solid oklch(75% 0.12 145 / 0.4)';
+      barEl.style.background = 'oklch(95% 0 0)';
+      barEl.style.border = '1px solid oklch(75% 0 0 / 0.4)';
     }
     syncPageChatFocus('update-bar-content');
   }
@@ -1210,10 +1215,7 @@
     if (!wrap || !input) return;
     const focused = activeElementDeep() === input;
     wrap.dataset.inputFocused = focused ? 'true' : 'false';
-    wrap.dataset.voiceListening = (voiceListening && voiceCtx?.mode === 'configure') ? 'true' : 'false';
-    wrap.style.borderColor = (voiceListening && voiceCtx?.mode === 'configure')
-      ? BP.patinaSoft
-      : (focused ? BP.accentSoft : BP.hairline);
+    wrap.style.borderColor = focused ? BP.accentSoft : BP.hairline;
   }
 
   // Insert mode helpers (mirrors skill/scripts/live-insert-ui.mjs)
@@ -1484,7 +1486,8 @@
       position: 'fixed',
       zIndex: String(Z.highlight),
       height: '0',
-      borderTop: '2px dotted ' + C.brand,
+      borderTop: '2px dotted ' + C.mark,
+      filter: C.markHalo,
       pointerEvents: 'none',
       display: 'none',
       opacity: '0.9',
@@ -1506,7 +1509,7 @@
         width: '0',
         height: coords.height + 'px',
         borderTop: 'none',
-        borderLeft: '2px dotted ' + C.brand,
+        borderLeft: '2px dotted ' + C.mark,
       });
     } else {
       Object.assign(line.style, {
@@ -1516,7 +1519,7 @@
         width: coords.width + 'px',
         height: '0',
         borderLeft: 'none',
-        borderTop: '2px dotted ' + C.brand,
+        borderTop: '2px dotted ' + C.mark,
       });
     }
     insertHoverAnchor = resolved.anchor;
@@ -1874,7 +1877,7 @@
       display: 'flex', alignItems: 'center', gap: '6px',
     });
 
-    // Action pill - dark graphite chip (matches kinpaku-kit .live-demo-ctx-pill)
+    // Action pill - dark graphite chip (matches tcher-kit .live-demo-ctx-pill)
     const pill = el('button', {
       display: 'inline-flex', alignItems: 'center', gap: '4px',
       padding: '5px 10px', borderRadius: '6px',
@@ -1911,7 +1914,9 @@
     // Prompt field - same chat-surface chrome as the bottom Steer bar
     const inputWrap = el('div', {
       display: 'inline-flex', alignItems: 'center',
-      flex: '1', minWidth: '0', height: '28px',
+      // Real minimum so the shrink-to-fit bar opens up a long typing area
+      // (an <input> alone only contributes ~20ch of intrinsic width).
+      flex: '1', minWidth: 'min(400px, 50vw)', height: '28px',
       borderRadius: '7px',
       background: BP.chatSurface,
       border: '1px solid ' + BP.hairline,
@@ -1923,7 +1928,7 @@
     const input = document.createElement('input');
     input.id = PREFIX + '-input';
     input.type = 'text';
-    input.placeholder = selectedAction === 'tcher' ? 'describe what you want…' : 'refine further (optional)…';
+    input.placeholder = selectedAction === 'tcher' ? 'Describe what you need.' : 'refine further (optional)…';
     input.setAttribute('aria-label', 'Describe the change');
     Object.assign(input.style, {
       flex: '1', minWidth: '0', width: '100%',
@@ -1938,31 +1943,11 @@
       input.style.opacity = '0.58';
     }
 
-    const voiceBtn = el('button', {
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0', boxSizing: 'border-box',
-      width: '28px', height: '28px', flexShrink: '0',
-      border: 'none', background: 'transparent',
-      color: BP.textDim, cursor: 'pointer',
-      transition: 'color 0.12s ease, background 0.12s ease',
-    });
-    voiceBtn.id = PREFIX + '-configure-voice';
-    voiceBtn.type = 'button';
-    voiceBtn.setAttribute('aria-label', 'Voice input');
-    voiceBtn.innerHTML = ICON_PAGE_VOICE;
-    voiceBtn.disabled = controlsLocked;
-    voiceBtn.style.cursor = controlsLocked ? 'not-allowed' : 'pointer';
-    voiceBtn.style.opacity = controlsLocked ? '0.58' : '1';
-
     if (!uiGetById(PREFIX + '-configure-input-style')) {
       const s = document.createElement('style');
       s.id = PREFIX + '-configure-input-style';
       s.textContent =
-        '@keyframes tcher-configure-voice-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }' +
-        '#' + PREFIX + '-input::placeholder { color: ' + BP.textDim + '; opacity: 1; }' +
-        '#' + PREFIX + '-configure-voice[data-listening="true"] svg { animation: tcher-configure-voice-pulse 1.1s ease-in-out infinite; }' +
-        '@media (prefers-reduced-motion: reduce) { #' + PREFIX + '-configure-voice[data-listening="true"] svg { animation: none; opacity: 1; } }' +
-        '#' + PREFIX + '-configure-voice:hover { background: oklch(78% 0.12 82 / 0.12); }';
+        '#' + PREFIX + '-input::placeholder { color: ' + BP.textDim + '; opacity: 1; }';
       uiAppendStyle(s);
     }
 
@@ -1986,15 +1971,7 @@
       e.stopPropagation();
     });
 
-    voiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
-    voiceBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (controlsLocked) { showManualApplyBusyToast(); return; }
-      toggleConfigureVoice();
-    });
-
     inputWrap.appendChild(input);
-    inputWrap.appendChild(voiceBtn);
     row.appendChild(inputWrap);
     syncConfigureInputChrome();
 
@@ -2009,7 +1986,7 @@
       transition: 'color 0.12s ease, border-color 0.12s ease',
       flexShrink: '0', whiteSpace: 'nowrap',
     });
-    count.textContent = '\u00D7' + selectedCount;
+    count.textContent = 'Variations \u00D7' + selectedCount;
     count.title = 'Variants: click to change';
     count.disabled = controlsLocked;
     count.style.cursor = controlsLocked ? 'not-allowed' : 'pointer';
@@ -2021,13 +1998,14 @@
       e.stopPropagation();
       if (controlsLocked) { showManualApplyBusyToast(); return; }
       selectedCount = selectedCount >= 4 ? 2 : selectedCount + 1;
-      count.textContent = '\u00D7' + selectedCount;
+      count.textContent = 'Variations \u00D7' + selectedCount;
     });
     row.appendChild(count);
 
     // Go button
     const go = el('button', {
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      gap: '6px',
       boxSizing: 'border-box', height: '28px', padding: '0 12px',
       borderRadius: '6px',
       border: 'none', background: BP.accent, color: C.ink,
@@ -2036,7 +2014,7 @@
       transition: 'filter 0.12s ease, transform 0.1s ease',
       flexShrink: '0', whiteSpace: 'nowrap',
     });
-    go.textContent = 'Go \u2192';
+    go.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0" aria-hidden="true"><path d="M19.4999 2.00098C20.0944 2.00063 20.6989 2.15072 21.2499 2.46875C22.924 3.43525 23.4977 5.57598 22.5312 7.25001L15.0311 20.2403C14.0646 21.9142 11.9238 22.488 10.2498 21.5215C9.41372 21.0387 8.85157 20.2605 8.61994 19.3975L7.1209 13.8028L15.8905 8.73927C16.3687 8.46311 16.5327 7.85126 16.2567 7.37306C15.9805 6.89505 15.3686 6.73096 14.8905 7.00685L6.12089 12.0713L2.02515 7.97462C0.658428 6.60771 0.658787 4.39204 2.02515 3.02539C2.65731 2.39319 3.53383 2.00021 4.49978 2L19.4999 2.00098Z"/></svg>Enter';
     go.disabled = controlsLocked;
     go.style.cursor = controlsLocked ? 'not-allowed' : 'pointer';
     go.style.opacity = controlsLocked ? '0.58' : '1';
@@ -2062,7 +2040,9 @@
 
     const inputWrap = el('div', {
       display: 'inline-flex', alignItems: 'center',
-      flex: '1', minWidth: '0', height: '28px',
+      // Real minimum so the shrink-to-fit bar opens up a long typing area
+      // (an <input> alone only contributes ~20ch of intrinsic width).
+      flex: '1', minWidth: 'min(400px, 50vw)', height: '28px',
       borderRadius: '7px',
       background: BP.chatSurface,
       border: '1px solid ' + BP.hairline,
@@ -2092,21 +2072,6 @@
       input.style.opacity = '0.58';
     }
 
-    const voiceBtn = el('button', {
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0', boxSizing: 'border-box',
-      width: '28px', height: '28px', flexShrink: '0',
-      border: 'none', background: 'transparent',
-      color: BP.textDim, cursor: 'pointer',
-    });
-    voiceBtn.id = PREFIX + '-insert-voice';
-    voiceBtn.type = 'button';
-    voiceBtn.setAttribute('aria-label', 'Voice input');
-    voiceBtn.innerHTML = ICON_PAGE_VOICE;
-    voiceBtn.disabled = controlsLocked;
-    voiceBtn.style.cursor = controlsLocked ? 'not-allowed' : 'pointer';
-    voiceBtn.style.opacity = controlsLocked ? '0.58' : '1';
-
     input.addEventListener('input', () => syncInsertCreateButton());
     input.addEventListener('pointerdown', (e) => e.stopPropagation());
     input.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -2127,15 +2092,7 @@
       }
       e.stopPropagation();
     });
-    voiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
-    voiceBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (controlsLocked) { showManualApplyBusyToast(); return; }
-      toggleConfigureVoice();
-    });
-
     inputWrap.appendChild(input);
-    inputWrap.appendChild(voiceBtn);
     row.appendChild(inputWrap);
 
     const count = el('button', {
@@ -2146,7 +2103,7 @@
       fontFamily: MONO, fontSize: '11px', fontWeight: '600',
       color: BP.textDim, cursor: 'pointer', flexShrink: '0', whiteSpace: 'nowrap',
     });
-    count.textContent = '\u00D7' + selectedCount;
+    count.textContent = 'Variations \u00D7' + selectedCount;
     count.disabled = controlsLocked;
     count.style.cursor = controlsLocked ? 'not-allowed' : 'pointer';
     count.style.opacity = controlsLocked ? '0.58' : '1';
@@ -2154,7 +2111,7 @@
       e.stopPropagation();
       if (controlsLocked) { showManualApplyBusyToast(); return; }
       selectedCount = selectedCount >= 4 ? 2 : selectedCount + 1;
-      count.textContent = '\u00D7' + selectedCount;
+      count.textContent = 'Variations \u00D7' + selectedCount;
     });
     row.appendChild(count);
 
@@ -2313,7 +2270,7 @@
     // Spacer
     row.appendChild(el('div', { flex: '1' }));
 
-    // Accept - primary action, kinpaku gold + lacquer-deep (matches demo .live-demo-ctx-accept)
+    // Accept - primary action, brand white + deep ink (matches demo .live-demo-ctx-accept)
     const accept = el('button', {
       padding: '5px 14px', borderRadius: '5px',
       border: 'none', background: C.brand, color: C.ink,
@@ -2383,12 +2340,12 @@
     });
     const check = el('span', {
       fontSize: '15px', lineHeight: '1', flexShrink: '0',
-      color: 'oklch(45% 0.15 145)',
+      color: 'oklch(25% 0 0)',
     });
     check.textContent = '\u2713';
     row.appendChild(check);
     const label = el('span', {
-      fontSize: '12px', color: 'oklch(35% 0.1 145)', fontWeight: '600',
+      fontSize: '12px', color: 'oklch(25% 0 0)', fontWeight: '600',
     });
     label.textContent = 'Variant applied';
     row.appendChild(label);
@@ -2404,10 +2361,10 @@
     for (let i = 1; i <= expectedVariants; i++) {
       const arrived = i <= arrivedVariants;
       const active = i === visibleVariant;
-      // active: solid site-brand kinpaku dot. arrived+inactive: muted neutral.
+      // active: solid brand-white dot. arrived+inactive: muted neutral.
       // pending (not yet arrived): faint outline ring. No borders on arrived
       // dots - the previous "accent ring + ash fill" combo read as noisy
-      // kinpaku chips, especially when all variants had arrived and every
+      // accent chips, especially when all variants had arrived and every
       // dot wore an accent ring.
       const dotBg = active ? C.brand
         : arrived ? BP.textDim
@@ -2454,7 +2411,7 @@
 
   function actionLabel() {
     const a = ACTIONS.find(a => a.value === selectedAction);
-    return a ? a.label : 'Freeform';
+    return a ? a.label : 'Idea';
   }
 
   function el(tag, styles) {
@@ -3354,13 +3311,13 @@
         opacity: 0,
         transform: 'scale(0.82)',
         filter: 'brightness(1.2)',
-        boxShadow: '0 0 0 0 oklch(84% 0.19 80.46 / 0.45), 0 8px 24px oklch(0% 0 0 / 0.16)',
+        boxShadow: '0 0 0 0 oklch(97% 0 0 / 0.45), 0 8px 24px oklch(0% 0 0 / 0.16)',
       },
       {
         opacity: 1,
         transform: 'scale(1.08)',
         filter: 'brightness(1.15)',
-        boxShadow: '0 0 0 12px oklch(84% 0.19 80.46 / 0), 0 12px 34px oklch(0% 0 0 / 0.22)',
+        boxShadow: '0 0 0 12px oklch(97% 0 0 / 0), 0 12px 34px oklch(0% 0 0 / 0.22)',
         offset: 0.55,
       },
       {
@@ -5890,9 +5847,7 @@
 
   function handleGo() {
     if (pendingApplyInFlight) { showManualApplyBusyToast(); return; }
-    if (!selectedElement || state !== 'CONFIGURING') return;
-    stopVoice({ suppressSubmit: true });
-    const input = uiGetById(PREFIX + '-input');
+    if (!selectedElement || state !== 'CONFIGURING') return;    const input = uiGetById(PREFIX + '-input');
     const prompt = input ? input.value.trim() : '';
 
     // Commit any pending pin edit BEFORE we snapshot annotations.
@@ -5973,8 +5928,6 @@
       strokes: annotState.strokes.map(s => ({ points: s.points.map(p => [p[0], p[1]]) })),
     };
     if (!canCreateInsert({ prompt, comments: snapshot.comments, strokes: snapshot.strokes })) return;
-
-    stopVoice({ suppressSubmit: true });
     pendingAcceptedSession = null;
     currentSessionId = id8();
     expectedVariants = selectedCount;
@@ -6367,7 +6320,7 @@
   //
   // Shader overlay - renders the captured screenshot as a WebGL texture and
   // runs an editorial "ink-wash" fragment shader over it during generation.
-  // A single rolling band sweeps top-to-bottom, desaturating + tinting kinpaku
+  // A single rolling band sweeps top-to-bottom, desaturating + tinting brand ink
   // and leaving a soft trail. Makes the wait feel like a letterpress scan
   // instead of a dead spinner.
   //
@@ -6426,7 +6379,7 @@ void main() {
   // from dot size (its own halftone) and never bleeds through as raw pixels
   // behind the dots:
   //   1. cover  - the element flattens to the uniform paper ground first.
-  //   2. dotAmt - kinpaku dots then emerge, sized by each cell's luma.
+  //   2. dotAmt - brand-ink dots then emerge, sized by each cell's luma.
   // A plain mix(base, halftone, band) instead left the raw element visible
   // through the band's soft core/trail. The paper ground is u_paper (the
   // element's own bg tone) rather than a fixed white, so the dissolve reads the
@@ -6442,8 +6395,8 @@ void main() {
   gl_FragColor = vec4(mix(ground, u_accent, dotAmt), tex.a);
 }`;
 
-  // Kinpaku gold converted to approximate sRGB 0-1 (matches oklch(84% 0.19 80.46))
-  const SHADER_ACCENT = [1.0, 0.78, 0.31];
+  // Brand ink converted to sRGB 0-1 (matches #171717 brand black)
+  const SHADER_ACCENT = [0.09, 0.09, 0.09];
   // Fallback ground when an element and all its ancestors are transparent -
   // matches the original off-white risograph paper.
   const SHADER_PAPER_FALLBACK = [0.975, 0.965, 0.955];
@@ -6617,7 +6570,7 @@ void main() {
     fallback.style.backgroundImage = 'url("' + objectUrl + '")';
     fallback.style.backgroundSize = '100% 100%';
     fallback.style.backgroundRepeat = 'no-repeat';
-    fallback.style.outline = '2px dashed ' + C.brand;
+    fallback.style.outline = '2px dashed ' + C.mark;
     fallback.style.outlineOffset = '-2px';
     uiAppend(fallback);
     shaderState = { canvas: fallback, gl: null, program: null, texture: null, rafId: 0, startTime: 0, objectUrl };
@@ -7174,27 +7127,39 @@ void main() {
     // the two never overlap. Read the bar's actual rect - its height varies
     // with hover-expanded labels - and fall back to a sensible default
     // when the bar isn't mounted yet.
-    const barRect = globalBarEl?.getBoundingClientRect();
-    const barTopFromBottom = barRect && barRect.height > 0
-      ? Math.max(16, window.innerHeight - barRect.top + 12)
-      : 16;
+    const toastBottom = () => {
+      const barRect = globalBarEl?.getBoundingClientRect();
+      // When the bar hasn't mounted/laid out yet (early boot toasts), fall
+      // back to a height that clears a typical bar (bottom 14 + ~44 + gap)
+      // instead of 16px, which sat exactly on top of the pill.
+      return barRect && barRect.height > 0
+        ? Math.max(16, window.innerHeight - barRect.top + 12)
+        : 72;
+    };
     toastEl = el('div', {
-      position: 'fixed', bottom: barTopFromBottom + 'px', left: '50%',
+      position: 'fixed', bottom: toastBottom() + 'px', left: '50%',
       transform: 'translateX(-50%) translateY(8px)',
       background: C.ink, color: C.white,
       fontFamily: FONT, fontSize: '12px',
       padding: '8px 16px', borderRadius: '8px',
       zIndex: Z.toast, opacity: '0',
       transition: 'opacity 0.25s ' + EASE + ', transform 0.25s ' + EASE,
-      pointerEvents: 'none', maxWidth: '420px', textAlign: 'center',
+      // Wide enough that the common one-sentence toasts (e.g. the missing
+      // PRODUCT.md notice) stay on a single line; very long errors still wrap.
+      pointerEvents: 'none', maxWidth: 'min(680px, calc(100vw - 24px))', textAlign: 'center',
     });
     toastEl.id = PREFIX + '-toast';
     toastEl.textContent = message;
     uiAppend(toastEl);
+    const repositionToast = () => { if (toastEl) toastEl.style.bottom = toastBottom() + 'px'; };
     requestAnimationFrame(() => {
       toastEl.style.opacity = '1';
       toastEl.style.transform = 'translateX(-50%) translateY(0)';
+      repositionToast();
     });
+    // The global bar can mount a beat after an early boot toast; re-anchor
+    // once it has real geometry so the toast never overlaps the pill.
+    setTimeout(repositionToast, 300);
     setTimeout(() => {
       if (toastEl) {
         toastEl.style.opacity = '0';
@@ -7241,7 +7206,13 @@ void main() {
     }
 
     if (wrapper.dataset.tcherPreview === 'svelte-component') {
-      if (!svelteComponentSession?.mountedVariant) {
+      if (!(svelteComponentSession?.mountedVariant > 0)) {
+        // The in-memory session matches this wrapper but nothing is mounted:
+        // the initial mount failed or was torn down. Returning "handled"
+        // here used to strand the bar (CYCLING 0/0, issue-150 handoff);
+        // abort instead, which restores the original element, clears the
+        // session, and resets to PICKING.
+        abortSvelteComponentInjection(sessionId, 'Live variants could not be restored. Pick the element again.');
         return true;
       }
       currentSessionId = sessionId;
@@ -7437,7 +7408,6 @@ void main() {
   let pageChatEl = null;
   let pageChatInput = null;
   let pageChatHint = null;
-  let pageChatVoiceBtn = null;
   let pageChatExpanded = false;
   let steerLocked = false;
   let steerRequestId = null;
@@ -7445,26 +7415,18 @@ void main() {
   let steerInputWasFocused = false;
   let pageChatDotsEl = null;
   let steerAwaitTimer = null;
-  let voiceRecognition = null;
-  let voiceListening = false;
-  let voiceSuppressSubmit = false;
-  let voiceInterimBase = '';
-  /** @type {{ mode: 'steer'|'configure', input: HTMLInputElement, submit: () => void, beforeStart?: () => void } | null} */
-  let voiceCtx = null;
-  const PAGE_CHAT_COLLAPSED_W = '88px';
+  const PAGE_CHAT_COLLAPSED_W = '112px';
   const PAGE_CHAT_PROCESSING_W = '76px';
   const STEER_AWAIT_TIMEOUT_MS = 120000;
   const AGENT_STATUS_POLL_MS = 5000;
-  const AGENT_DISCONNECTED_MARK = 'oklch(56% 0.032 82 / 0.78)';
+  const AGENT_DISCONNECTED_MARK = 'oklch(56% 0 0 / 0.78)';
   const AGENT_DISCONNECTED_TIP = 'Agent disconnected - run live-poll.mjs to connect';
   const GLOBAL_BAR_SECTION_GAP = 8;
   const GLOBAL_BAR_INNER_GAP = 2;
   const GLOBAL_BAR_INNER_PAD_LEFT = 2;
   const PAGE_CHAT_EXPANDED_W = 'min(280px, 38vw)';
   const ICON_PAGE_CHAT =
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-  const ICON_PAGE_VOICE =
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.7134 8.12811L20.4668 8.69379C20.2864 9.10792 19.7136 9.10792 19.5331 8.69379L19.2866 8.12811C18.8471 7.11947 18.0555 6.31641 17.0677 5.87708L16.308 5.53922C15.8973 5.35653 15.8973 4.75881 16.308 4.57612L17.0252 4.25714C18.0384 3.80651 18.8442 2.97373 19.2761 1.93083L19.5293 1.31953C19.7058 0.893489 20.2942 0.893489 20.4706 1.31953L20.7238 1.93083C21.1558 2.97373 21.9616 3.80651 22.9748 4.25714L23.6919 4.57612C24.1027 4.75881 24.1027 5.35653 23.6919 5.53922L22.9323 5.87708C21.9445 6.31641 21.1529 7.11947 20.7134 8.12811ZM10 3H14V5H10C6.68629 5 4 7.68629 4 11C4 14.61 6.46208 16.9656 12 19.4798V17H14C17.3137 17 20 14.3137 20 11H22C22 15.4183 18.4183 19 14 19V22.5C9 20.5 2 17.5 2 11C2 6.58172 5.58172 3 10 3Z"/></svg>';
 
   // Theme-aware color palette for the global bar. We detect the page's
   // ambient background and invert - dark bar on light pages, light bar on
@@ -7508,31 +7470,30 @@ void main() {
   }
 
   function barPaletteForTheme(_theme) {
-    // Picker chrome always uses neo-kinpaku styling (homepage /live-mode demo
-    // bars in kinpaku-kit.css), regardless of host page light/dark theme.
+    // Picker chrome always uses tcher-kit mono styling, regardless of host
+    // page light/dark theme: deep black surface, white accents, gray states.
     return {
       surface: C.ink,
       surfaceDeep: C.ink,
-      // Quiet neutral hairline (was the loud kinpaku gold border). Gold lives on
-      // the brand mark and the active control instead.
+      // Quiet neutral hairline; the bright accent lives on the brand mark
+      // and the active control instead of the container outline.
       border: 'oklch(92% 0 0 / 0.13)',
-      // Crisp graphite pill behind the active toggle (was a murky kinpaku-dim
-      // wash); the gold text/icon carries the "selected" signal.
+      // Crisp graphite pill behind the active toggle; the white text/icon
+      // carries the "selected" signal.
       toggleActive: 'oklch(27% 0 0)',
-      // Neutral hairline for internal control borders / dividers (was a warm
-      // gold rule that read as muddy champagne edges on the pill / input / count).
+      // Neutral hairline for internal control borders / dividers.
       hairline: 'oklch(92% 0 0 / 0.12)',
-      text: 'oklch(84% 0.035 82)',
-      textDim: 'oklch(63% 0.024 82)',
+      text: 'oklch(92% 0 0)',
+      textDim: 'oklch(63% 0 0)',
       accent: C.brand,
       accentSoft: C.brandSoft,
-      exitHover: 'oklch(58% 0.15 35 / 0.18)',
+      exitHover: 'oklch(98% 0 0 / 0.14)',
       shadow: PICKER_SHADOW,
-      chatSurface: 'oklch(22% 0.012 82)',
-      // Verdigris patina - secondary state (see site/styles/kinpaku-tokens.css)
-      patina: 'oklch(70% 0.12 188)',
-      patinaPale: 'oklch(82% 0.07 188)',
-      patinaSoft: 'oklch(70% 0.12 188 / 0.28)',
+      chatSurface: 'oklch(20% 0 0)',
+      // Secondary "processing / steer" state - mid gray (was verdigris patina).
+      patina: 'oklch(75% 0 0)',
+      patinaPale: 'oklch(88% 0 0)',
+      patinaSoft: 'oklch(75% 0 0 / 0.28)',
     };
   }
 
@@ -7551,12 +7512,6 @@ void main() {
     const chatIcon = pageChatEl?.firstElementChild;
     if (chatIcon) chatIcon.style.color = steerLocked ? P.patinaPale : P.textDim;
     if (pageChatInput) pageChatInput.style.color = P.text;
-    if (pageChatVoiceBtn) {
-      const listening = pageChatVoiceBtn.dataset.listening === 'true';
-      pageChatVoiceBtn.style.color = listening || pageChatVoiceBtn.dataset.active === 'true'
-        ? P.accent
-        : P.textDim;
-    }
   }
 
   function syncPageChatVisual() {
@@ -7599,7 +7554,7 @@ void main() {
     clearSteerFocusRecoverTimer();
     const attempt = () => {
       steerFocusRecoverTimer = null;
-      if (state === 'CONFIGURING' || steerLocked || voiceListening) return;
+      if (state === 'CONFIGURING' || steerLocked) return;
       if (pageChatEl?.contains(activeElementDeep())) return;
       if (pageHasHostTextSelection()) {
         steerFocusRecoverTimer = setTimeout(attempt, 120);
@@ -7842,16 +7797,10 @@ void main() {
   }
 
   function lockSteerChat() {
-    if (!pageChatEl || !pageChatInput) return;
-    stopVoice({ suppressSubmit: true });
-    steerLocked = true;
+    if (!pageChatEl || !pageChatInput) return;    steerLocked = true;
     pageChatEl.dataset.processing = 'true';
     pageChatInput.disabled = true;
     preparePageChatInputForTyping();
-    if (pageChatVoiceBtn) {
-      pageChatVoiceBtn.disabled = true;
-      pageChatVoiceBtn.style.display = 'none';
-    }
     pageChatEl.style.cursor = 'default';
     pageChatInput.style.pointerEvents = 'none';
     if (pageChatHint) {
@@ -7878,7 +7827,7 @@ void main() {
     if (!pageChatEl) return;
     pageChatEl.dataset.processing = 'false';
     pageChatEl.removeAttribute('aria-busy');
-    pageChatEl.setAttribute('aria-label', 'Steer the page');
+    pageChatEl.setAttribute('aria-label', 'What needs to be changed?');
     pageChatExpanded = keepExpanded;
     pageChatEl.dataset.expanded = keepExpanded ? 'true' : 'false';
     pageChatEl.style.width = keepExpanded ? PAGE_CHAT_EXPANDED_W : PAGE_CHAT_COLLAPSED_W;
@@ -7891,12 +7840,8 @@ void main() {
       pageChatInput.style.opacity = keepExpanded ? '1' : '0';
       pageChatInput.style.pointerEvents = 'auto';
     }
-    if (pageChatVoiceBtn) {
-      pageChatVoiceBtn.disabled = false;
-      pageChatVoiceBtn.style.display = '';
-    }
     if (pageChatHint) {
-      pageChatHint.textContent = 'Steer';
+      pageChatHint.textContent = 'Type Here';
       pageChatHint.style.display = keepExpanded ? 'none' : '';
       pageChatHint.style.visibility = keepExpanded ? 'hidden' : '';
       pageChatHint.style.opacity = keepExpanded ? '0' : '1';
@@ -7921,222 +7866,7 @@ void main() {
     else syncPageChatFocus('steer-unlock');
   }
 
-  function steerSpeechRecognitionCtor() {
-    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  }
-
-  function isEmbeddedPreviewBrowser() {
-    const ua = navigator.userAgent || '';
-    if (/Electron/i.test(ua)) return true;
-    if (/Cursor/i.test(ua)) return true;
-    try {
-      return !!(window.cursor || window.__CURSOR__ || window.__GLASS_BROWSER__);
-    } catch { return false; }
-  }
-
-  function steerVoiceUnavailableMessage() {
-    return 'Voice input works in Chrome or Safari. Cursor\'s preview browser cannot reach speech services.';
-  }
-
-  function steerVoiceErrorMessage(code) {
-    switch (code) {
-      case 'not-allowed':
-        return 'Microphone access blocked';
-      case 'audio-capture':
-        return 'No microphone found';
-      case 'network':
-        return isEmbeddedPreviewBrowser()
-          ? steerVoiceUnavailableMessage()
-          : 'Voice input needs a network connection (browser speech uses a cloud service)';
-      case 'service-not-allowed':
-        return 'Voice input is not available in this browser tab';
-      case 'language-not-supported':
-        return 'Speech language not supported';
-      case 'no-speech':
-      case 'aborted':
-        return null;
-      default:
-        return 'Voice input failed (' + code + ')';
-    }
-  }
-
-  function syncVoiceUi(listening) {
-    voiceListening = !!listening;
-    if (voiceCtx?.mode === 'steer') {
-      if (pageChatVoiceBtn) {
-        pageChatVoiceBtn.dataset.active = listening ? 'true' : 'false';
-        pageChatVoiceBtn.dataset.listening = listening ? 'true' : 'false';
-        pageChatVoiceBtn.setAttribute('aria-label', listening ? 'Stop voice input' : 'Voice input');
-        pageChatVoiceBtn.setAttribute('aria-pressed', listening ? 'true' : 'false');
-      }
-      if (pageChatEl) pageChatEl.dataset.voiceListening = listening ? 'true' : 'false';
-      syncPageChatChrome();
-    } else if (voiceCtx?.mode === 'configure') {
-      const voiceBtn = uiGetById(PREFIX + '-configure-voice');
-      if (voiceBtn) {
-        voiceBtn.dataset.active = listening ? 'true' : 'false';
-        voiceBtn.dataset.listening = listening ? 'true' : 'false';
-        voiceBtn.setAttribute('aria-label', listening ? 'Stop voice input' : 'Voice input');
-        voiceBtn.setAttribute('aria-pressed', listening ? 'true' : 'false');
-      }
-      syncConfigureInputChrome();
-    }
-  }
-
-  function releaseVoiceEngine(opts) {
-    if (opts && opts.suppressSubmit) voiceSuppressSubmit = true;
-    const rec = voiceRecognition;
-    voiceRecognition = null;
-    if (!rec) return;
-    rec.onstart = null;
-    rec.onresult = null;
-    rec.onerror = null;
-    rec.onend = null;
-    try {
-      if (opts && opts.abort) rec.abort();
-      else rec.stop();
-    } catch { /* already ended */ }
-  }
-
-  function stopVoice(opts) {
-    releaseVoiceEngine(opts);
-    syncVoiceUi(false);
-    voiceCtx = null;
-    if (opts && opts.message) showToast(String(opts.message), opts.duration || 4000);
-  }
-
-  function finishVoiceSession() {
-    voiceRecognition = null;
-    const ctx = voiceCtx;
-    syncVoiceUi(false);
-    const suppress = voiceSuppressSubmit;
-    voiceSuppressSubmit = false;
-    voiceCtx = null;
-    const input = ctx?.input;
-    const text = input?.value.trim() || '';
-    if (suppress || !text || !ctx) return;
-    if (ctx.mode === 'steer' && !steerLocked) ctx.submit();
-    else if (ctx.mode === 'configure' && state === 'CONFIGURING') ctx.submit();
-  }
-
-  function startVoice(ctx) {
-    if (!ctx?.input || voiceListening) return;
-    if (ctx.mode === 'steer' && (steerLocked || state === 'CONFIGURING')) return;
-    if (ctx.mode === 'configure' && state !== 'CONFIGURING') return;
-    const Ctor = steerSpeechRecognitionCtor();
-    if (!Ctor) {
-      showToast('Voice input needs Speech Recognition (Chrome, Safari, or Edge)', 4500);
-      return;
-    }
-    if (!window.isSecureContext) {
-      showToast('Voice input needs HTTPS or localhost', 4500);
-      return;
-    }
-    if (isEmbeddedPreviewBrowser()) {
-      showToast(steerVoiceUnavailableMessage(), 5200);
-      return;
-    }
-
-    releaseVoiceEngine({ suppressSubmit: true, abort: true });
-    voiceSuppressSubmit = false;
-    voiceCtx = ctx;
-    if (ctx.beforeStart) ctx.beforeStart();
-
-    voiceInterimBase = ctx.input.value.trim()
-      ? ctx.input.value.trim() + ' '
-      : '';
-
-    const rec = new Ctor();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = document.documentElement.lang || navigator.language || 'en-US';
-    rec.maxAlternatives = 1;
-
-    rec.onstart = () => {
-      syncVoiceUi(true);
-    };
-
-    rec.onresult = (event) => {
-      if (!voiceCtx?.input) return;
-      let transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0]?.transcript || '';
-      }
-      voiceCtx.input.value = (voiceInterimBase + transcript).trim();
-      if (voiceCtx.mode === 'steer') syncPageChatVisual();
-      else syncConfigureInputChrome();
-    };
-
-    rec.onerror = (event) => {
-      const code = event.error || 'unknown';
-      console.warn('[tcher.voice] recognition error:', code);
-      const message = steerVoiceErrorMessage(code);
-      stopVoice({ suppressSubmit: true, message: message || undefined });
-    };
-
-    rec.onend = () => {
-      if (voiceRecognition !== rec) return;
-      finishVoiceSession();
-    };
-
-    voiceRecognition = rec;
-    try {
-      rec.start();
-    } catch (err) {
-      console.warn('[tcher.voice] start failed:', err);
-      stopVoice({
-        suppressSubmit: true,
-        message: err?.message?.includes('already started')
-          ? 'Voice input already running'
-          : 'Could not start voice input',
-      });
-    }
-  }
-
-  function steerVoiceContext() {
-    return {
-      mode: 'steer',
-      input: pageChatInput,
-      beforeStart: () => {
-        if (!pageChatExpanded) expandPageChat({ focus: false });
-      },
-      submit: submitSteerMessage,
-    };
-  }
-
-  function configureVoiceContext() {
-    const input = uiGetById(
-      configureKind === 'insert' ? PREFIX + '-insert-input' : PREFIX + '-input',
-    );
-    return {
-      mode: 'configure',
-      input,
-      beforeStart: () => { input?.focus(); },
-      submit: configureKind === 'insert' ? handleInsertCreate : handleGo,
-    };
-  }
-
-  function toggleSteerVoice() {
-    if (voiceListening && voiceCtx?.mode === 'steer') {
-      voiceSuppressSubmit = true;
-      stopVoice({ suppressSubmit: true, abort: true });
-      return;
-    }
-    startVoice(steerVoiceContext());
-  }
-
-  function toggleConfigureVoice() {
-    if (voiceListening && voiceCtx?.mode === 'configure') {
-      voiceSuppressSubmit = true;
-      stopVoice({ suppressSubmit: true, abort: true });
-      return;
-    }
-    startVoice(configureVoiceContext());
-  }
-
-  function submitSteerMessage() {
-    stopVoice({ suppressSubmit: true });
-    const text = pageChatInput?.value.trim();
+  function submitSteerMessage() {    const text = pageChatInput?.value.trim();
     if (!text || steerLocked) return;
     const id = id8();
     steerRequestId = id;
@@ -8187,7 +7917,6 @@ void main() {
 
   function collapsePageChat(opts) {
     const blur = opts && opts.blur === true;
-    if (voiceListening) return;
     if (!pageChatEl || !pageChatInput) return;
     pageChatExpanded = false;
     pageChatEl.dataset.expanded = 'false';
@@ -8203,7 +7932,6 @@ void main() {
       pageChatHint.style.display = '';
       pageChatHint.style.opacity = '1';
     }
-    if (pageChatVoiceBtn) pageChatVoiceBtn.dataset.active = 'false';
     syncPageChatChrome();
     syncPageChatFocusRing();
   }
@@ -8223,7 +7951,7 @@ void main() {
     });
     pageChatEl.id = PREFIX + '-page-chat';
     pageChatEl.dataset.expanded = 'false';
-    pageChatEl.title = 'Steer the page';
+    pageChatEl.title = 'What needs to be changed?';
 
     const chatIcon = el('span', {
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -8240,13 +7968,13 @@ void main() {
       pointerEvents: 'none',
       transition: 'opacity 0.15s ease',
     });
-    pageChatHint.textContent = 'Steer';
+    pageChatHint.textContent = 'Type Here';
 
     pageChatInput = document.createElement('input');
     pageChatInput.id = PREFIX + '-page-chat-input';
     pageChatInput.type = 'text';
-    pageChatInput.placeholder = 'Steer the page…';
-    pageChatInput.setAttribute('aria-label', 'Steer the page');
+    pageChatInput.placeholder = 'What needs to be changed?';
+    pageChatInput.setAttribute('aria-label', 'What needs to be changed?');
     Object.assign(pageChatInput.style, {
       flex: '1', minWidth: '0', width: '0',
       padding: '0', border: 'none', background: 'transparent',
@@ -8255,38 +7983,19 @@ void main() {
       transition: 'opacity 0.15s ease',
     });
 
-    pageChatVoiceBtn = el('button', {
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0', boxSizing: 'border-box',
-      width: '28px', height: '28px', flexShrink: '0',
-      border: 'none', background: 'transparent',
-      color: P.textDim, cursor: 'pointer',
-      transition: 'color 0.12s ease, background 0.12s ease',
-    });
-    pageChatVoiceBtn.id = PREFIX + '-page-chat-voice';
-    pageChatVoiceBtn.type = 'button';
-    pageChatVoiceBtn.setAttribute('aria-label', 'Voice input');
-    pageChatVoiceBtn.innerHTML = ICON_PAGE_VOICE;
-
     pageChatEl.appendChild(chatIcon);
     pageChatEl.appendChild(pageChatHint);
     pageChatEl.appendChild(pageChatInput);
-    pageChatEl.appendChild(pageChatVoiceBtn);
 
     if (!uiGetById(PREFIX + '-page-chat-style')) {
       const s = document.createElement('style');
       s.id = PREFIX + '-page-chat-style';
       s.textContent =
         '@keyframes tcher-steer-dot { 0%, 70%, 100% { opacity: 0.28; transform: scale(0.82); } 35% { opacity: 1; transform: scale(1); } }' +
-        '@keyframes tcher-steer-processing { 0%, 100% { border-color: oklch(70% 0.12 188 / 0.28); box-shadow: 0 0 0 0 oklch(70% 0.12 188 / 0); } 50% { border-color: oklch(82% 0.07 188 / 0.55); box-shadow: 0 0 14px oklch(70% 0.12 188 / 0.18); } }' +
-        '@keyframes tcher-voice-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }' +
+        '@keyframes tcher-steer-processing { 0%, 100% { border-color: oklch(75% 0 0 / 0.28); box-shadow: 0 0 0 0 oklch(75% 0 0 / 0); } 50% { border-color: oklch(88% 0 0 / 0.55); box-shadow: 0 0 14px oklch(75% 0 0 / 0.18); } }' +
         '#' + PREFIX + '-page-chat[data-processing="true"] { animation: tcher-steer-processing 1.6s ease-in-out infinite; }' +
-        '@media (prefers-reduced-motion: reduce) { #' + PREFIX + '-page-chat[data-processing="true"] { animation: none; border-color: oklch(70% 0.12 188 / 0.45); } #' + PREFIX + '-page-chat[data-processing="true"] [aria-hidden="true"] span { animation: none; opacity: 0.85; } }' +
-        '#' + PREFIX + '-page-chat[data-voice-listening="true"] { border-color: oklch(70% 0.12 188 / 0.45); }' +
-        '#' + PREFIX + '-page-chat-voice[data-listening="true"] svg { animation: tcher-voice-pulse 1.1s ease-in-out infinite; }' +
-        '@media (prefers-reduced-motion: reduce) { #' + PREFIX + '-page-chat-voice[data-listening="true"] svg { animation: none; opacity: 1; } }' +
-        '#' + PREFIX + '-page-chat-input::placeholder { color: oklch(63% 0.024 82); opacity: 1; }' +
-        '#' + PREFIX + '-page-chat-voice:hover { background: oklch(78% 0.12 82 / 0.12); }';
+        '@media (prefers-reduced-motion: reduce) { #' + PREFIX + '-page-chat[data-processing="true"] { animation: none; border-color: oklch(75% 0 0 / 0.45); } #' + PREFIX + '-page-chat[data-processing="true"] [aria-hidden="true"] span { animation: none; opacity: 0.85; } }' +
+        '#' + PREFIX + '-page-chat-input::placeholder { color: oklch(63% 0 0); opacity: 1; }';
       uiAppendStyle(s);
     }
 
@@ -8295,17 +8004,8 @@ void main() {
     pageChatEl.addEventListener('click', (e) => {
       keepSteerPointerInside(e);
       if (steerLocked) return;
-      if (pageChatVoiceBtn.contains(e.target)) return;
       expandPageChat({ focus: false });
       focusPageChatInput('page-chat-click');
-    });
-
-    pageChatVoiceBtn.addEventListener('pointerdown', keepSteerPointerInside);
-    pageChatVoiceBtn.addEventListener('mousedown', keepSteerPointerInside);
-    pageChatVoiceBtn.addEventListener('click', (e) => {
-      keepSteerPointerInside(e);
-      if (steerLocked) return;
-      toggleSteerVoice();
     });
 
     pageChatInput.addEventListener('pointerdown', keepSteerPointerInside);
@@ -8326,7 +8026,7 @@ void main() {
     pageChatInput.addEventListener('blur', () => {
       syncPageChatFocusRing();
       setTimeout(() => {
-        if (state === 'CONFIGURING' || steerLocked || voiceListening) return;
+        if (state === 'CONFIGURING' || steerLocked) return;
         if (pageChatEl?.contains(activeElementDeep())) return;
         if (!pageChatInput.value.trim()) collapsePageChat();
         scheduleSteerFocusRecover('steer-blur-recover');
@@ -8356,18 +8056,19 @@ void main() {
     steerFocusLog('page-chat-mounted', {});
   }
 
-  // Tcher mark - same paths as site/components/Header.astro + favicon.svg.
-  function brandMarkSvg(color = C.brand, size = 18) {
-    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}" aria-hidden="true">
-      <path d="M5 2.5 L13.5 2.5 L5.5 21.5 L5 21.5 Q2.5 21.5 2.5 19 L2.5 5 Q2.5 2.5 5 2.5 Z"/>
-      <path d="M16.5 2.5 L19 2.5 Q21.5 2.5 21.5 5 L21.5 19 Q21.5 21.5 19 21.5 L8.5 21.5 Z"/>
+  // Tcher mark - same artwork as brand.svg (repo root): dark rounded tile +
+  // the Tcher glyph. `color` tints the glyph only; the tile stays brand-dark
+  // so the mark reads on both light and dark bar surfaces.
+  function brandMarkSvg(color = '#fff', size = 18) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+      <path d="M31.9 0H12.1C5.41735 0 0 5.41735 0 12.1V31.9C0 38.5826 5.41735 44 12.1 44H31.9C38.5826 44 44 38.5826 44 31.9V12.1C44 5.41735 38.5826 0 31.9 0Z" fill="#171717"/>
+      <path d="M12.7169 18.3021L15.744 16.6701L14.0543 13.9357H29.9457L22.0026 26.8008L20.3128 24.0618L17.2857 25.6985L22.0026 33.3337L36 10.667H8L12.7169 18.3021Z" fill="${color}"/>
     </svg>`;
   }
 
   function syncAgentPollingUi(connected) {
     agentPollingConnected = !!connected;
     if (!globalBarBrandEl) return;
-    const P = barPaletteForTheme(globalBarEl?.dataset.theme || detectPageTheme());
     globalBarBrandEl.dataset.agentConnected = connected ? 'true' : 'false';
     globalBarBrandEl.setAttribute('aria-label', connected
       ? 'Tcher live mode'
@@ -8376,7 +8077,7 @@ void main() {
     globalBarBrandEl.style.cursor = connected ? 'default' : 'help';
     const mark = globalBarBrandEl.querySelector('[data-brand-mark]');
     if (mark) {
-      mark.innerHTML = brandMarkSvg(connected ? P.accent : AGENT_DISCONNECTED_MARK, 18);
+      mark.innerHTML = brandMarkSvg(connected ? '#fff' : AGENT_DISCONNECTED_MARK, 18);
       mark.style.opacity = '1';
     }
     const dot = globalBarBrandEl.querySelector('[data-agent-dot]');
@@ -8496,7 +8197,7 @@ void main() {
     globalBarEl.id = PREFIX + '-global-bar';
     globalBarEl.dataset.theme = theme;
 
-    // Brand mark - kinpaku Tcher icon (site header / favicon paths).
+    // Brand mark - tcher tile icon (brand.svg).
     const brand = el('span', {
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       alignSelf: 'stretch', position: 'relative',
@@ -8515,12 +8216,14 @@ void main() {
       position: 'relative',
     });
     brandMark.dataset.brandMark = 'true';
-    brandMark.innerHTML = brandMarkSvg(P.accent, 18);
+    brandMark.innerHTML = brandMarkSvg('#fff', 18);
 
     const agentDot = el('span', {
-      position: 'absolute', right: '-1px', bottom: '7px',
+      // Corner badge on the brand tile (the old offsets nested the dot
+      // inside the slash mark's diagonal gap).
+      position: 'absolute', right: '-2px', bottom: '-2px',
       width: '6px', height: '6px', borderRadius: '50%',
-      background: 'oklch(78% 0.14 75)',
+      background: 'oklch(96% 0 0)',
       boxShadow: '0 0 0 2px ' + P.surface,
       display: 'none', pointerEvents: 'none',
     });
@@ -8582,12 +8285,12 @@ void main() {
       return b;
     }
 
-    // Pick toggle - restored from localStorage; both pick and insert may be off.
+    // Select toggle - restored from localStorage; both select and insert may be off.
     const pickBtn = makeIconBtn({
       id: PREFIX + '-pick-toggle',
-      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>',
-      label: 'Pick',
-      ariaLabel: 'Pick element',
+      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 1.99999C12.5523 1.99999 13 2.4477 13 2.99999C12.9999 3.55224 12.5522 3.99999 12 3.99999C7.58172 3.99999 4 7.58171 4 12C4.00004 16.4182 7.58174 20 12 20C16.4182 20 19.9999 16.4182 20 12C20 11.4477 20.4477 11 21 11C21.5523 11 22 11.4477 22 12C21.9999 17.5228 17.5228 22 12 22C6.47717 22 2.00004 17.5228 2 12C2 6.47714 6.47715 1.99999 12 1.99999ZM12 5.99999C12.5523 5.99999 13 6.4477 13 6.99999C12.9999 7.55224 12.5522 7.99999 12 7.99999C9.79085 7.99999 7.99999 9.79085 7.99999 12C8.00004 14.2091 9.79088 16 12 16C14.2091 16 15.9999 14.2091 16 12C16 11.4477 16.4477 11 17 11C17.5523 11 18 11.4477 18 12C17.9999 15.3137 15.3137 18 12 18C8.68631 18 6.00004 15.3137 6 12C6 8.68628 8.68629 5.99999 12 5.99999ZM17.6562 2.10057C18.0468 1.71005 18.6807 1.71005 19.0713 2.10057C19.4614 2.49105 19.4615 3.12419 19.0713 3.51463L18.3633 4.22069L18.3642 4.22167C17.9737 4.61219 17.9737 5.2452 18.3642 5.63573C18.7548 6.02612 19.3878 6.02621 19.7783 5.63573L20.4853 4.9287C20.8759 4.53839 21.5089 4.53826 21.8994 4.9287C22.2899 5.31915 22.2897 5.95222 21.8994 6.34276L19.7783 8.46483C19.5909 8.65223 19.3363 8.75671 19.0713 8.75682H16.6572L12.707 12.707C12.3165 13.0974 11.6834 13.0974 11.293 12.707C10.9025 12.3165 10.9026 11.6835 11.293 11.293L15.2422 7.34374V4.9287C15.2422 4.66356 15.3477 4.40916 15.5351 4.22167L17.6562 2.10057Z"/></svg>',
+      label: 'Select',
+      ariaLabel: 'Select element',
       onClick: () => togglePick(),
     });
     inner.appendChild(pickBtn);
@@ -8601,12 +8304,12 @@ void main() {
     });
     inner.appendChild(insertBtn);
 
-    // Detect toggle
+    // UX check toggle (the detect overlay; severity-coded red/orange/yellow)
     const detectBtn = makeIconBtn({
       id: PREFIX + '-detect-toggle',
-      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-      label: 'Detect',
-      ariaLabel: 'Detect anti-patterns',
+      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M5 19H9V21H3V16H5V19ZM21 21H15V19H19V16H21V21ZM21 13H3V11H21V13ZM18.5293 1.31934C18.7058 0.893559 19.2942 0.893545 19.4707 1.31934L19.7236 1.93067C20.1555 2.97348 20.9615 3.80618 21.9746 4.25685L22.6914 4.57619C23.1022 4.75887 23.1022 5.3564 22.6914 5.53908L21.9326 5.87697C20.945 6.31625 20.1534 7.11948 19.7139 8.12795L19.4668 8.69338C19.2863 9.10751 18.7136 9.10751 18.5332 8.69338L18.2861 8.12795C17.8466 7.11947 17.0551 6.31625 16.0674 5.87697L15.3076 5.53908C14.8974 5.35622 14.8974 4.75899 15.3076 4.57619L16.0254 4.25685C17.0384 3.80618 17.8445 2.97348 18.2764 1.93067L18.5293 1.31934ZM9 5.00001H5V8.00002H3V3.00001H9V5.00001Z"/></svg>',
+      label: 'Detect UX',
+      ariaLabel: 'Run UX check (findings color-coded by severity)',
       onClick: () => toggleDetect(),
     });
     const detectBadge = el('span', {
@@ -8622,11 +8325,11 @@ void main() {
     // DESIGN.md panel toggle - quartet of color squares as the mark.
     const designBtn = makeIconBtn({
       id: PREFIX + '-design-toggle',
-      svg: `<span style="display:inline-grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:14px;height:14px;border-radius:3px;overflow:hidden;box-shadow:inset 0 0 0 1px oklch(58% 0.065 82 / 0.55);flex-shrink:0">
-        <span style="background:oklch(84% 0.19 80.46)"></span>
-        <span style="background:oklch(70% 0.12 188)"></span>
-        <span style="background:oklch(84% 0.035 82)"></span>
-        <span style="background:oklch(34% 0.014 82)"></span>
+      svg: `<span style="display:inline-grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:14px;height:14px;border-radius:3px;overflow:hidden;box-shadow:inset 0 0 0 1px oklch(58% 0 0 / 0.55);flex-shrink:0">
+        <span style="background:oklch(96% 0 0)"></span>
+        <span style="background:oklch(70% 0 0)"></span>
+        <span style="background:oklch(45% 0 0)"></span>
+        <span style="background:oklch(20% 0 0)"></span>
       </span>`,
       label: 'DESIGN.md',
       ariaLabel: 'Toggle DESIGN.md panel',
@@ -8841,7 +8544,7 @@ void main() {
     exitBtn.id = PREFIX + '-exit';
     exitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="3" x2="11" y2="11"/><line x1="11" y1="3" x2="3" y2="11"/></svg>';
     exitBtn.title = 'Exit live mode';
-    exitBtn.addEventListener('mouseenter', () => { exitBtn.style.color = 'oklch(58% 0.15 35)'; exitBtn.style.background = P.exitHover; });
+    exitBtn.addEventListener('mouseenter', () => { exitBtn.style.color = 'oklch(98% 0 0)'; exitBtn.style.background = P.exitHover; });
     exitBtn.addEventListener('mouseleave', () => { exitBtn.style.color = P.textDim; exitBtn.style.background = 'transparent'; });
     exitBtn.addEventListener('click', () => { sendEvent({ type: 'exit' }); teardown(); });
     inner.appendChild(exitBtn);
@@ -9024,7 +8727,8 @@ void main() {
     if (detectScriptLoaded) return;
     detectScriptLoaded = true;
     const s = document.createElement('script');
-    s.src = 'http://localhost:' + PORT + '/detect.js';
+    // Cache-bust: the overlay must never run a stale cached bundle.
+    s.src = 'http://localhost:' + PORT + '/detect.js?v=' + Date.now();
     s.dataset.tcherExtension = 'true';
     document.head.appendChild(s);
   }
@@ -9059,9 +8763,7 @@ void main() {
     if (agentPollTooltipEl) {
       agentPollTooltipEl.remove();
       agentPollTooltipEl = null;
-    }
-    stopVoice({ suppressSubmit: true });
-    clearSteerFocusRecoverTimer();
+    }    clearSteerFocusRecoverTimer();
     steerFocusSuspended = false;
     steerFocusPauseUntil = 0;
     pagePointerGesture = null;
@@ -9091,7 +8793,6 @@ void main() {
     pageChatEl = null;
     pageChatInput = null;
     pageChatHint = null;
-    pageChatVoiceBtn = null;
     pageChatExpanded = false;
     if (insertCreateTooltipEl) { insertCreateTooltipEl.remove(); insertCreateTooltipEl = null; }
     if (highlightEl) { highlightEl.remove(); highlightEl = null; }
@@ -9207,8 +8908,8 @@ void main() {
     meta:     'oklch(55% 0 0)',
     hairline: 'oklch(88% 0 0)',
     hairlineSoft: 'oklch(92% 0 0)',
-    amber:    'oklch(70% 0.13 65)',         // stale-hint accent
-    amberBg:  'oklch(95% 0.05 80)',
+    amber:    'oklch(45% 0 0)',             // stale-hint accent (mono)
+    amberBg:  'oklch(95% 0 0)',
   };
 
   function designPanelCss(BP) {
@@ -9299,7 +9000,7 @@ void main() {
       }
       .empty strong { color: ${DP.ink}; display: block; margin-bottom: 6px; font-size: 14px; }
       .empty code { font-family: ${MONO}; background: ${DP.canvas}; padding: 1px 6px; border-radius: 4px; font-size: 12px; color: ${DP.ink}; }
-      .error { color: oklch(45% 0.15 25); }
+      .error { color: oklch(30% 0 0); }
 
       /* Stale hint */
       .stale {
@@ -9451,8 +9152,8 @@ void main() {
         content: ''; position: absolute; left: 4px; top: 13px;
         width: 8px; height: 8px; border-radius: 50%;
       }
-      .coll .do::before { background: oklch(62% 0.16 145); }
-      .coll .dont::before { background: oklch(58% 0.22 25); }
+      .coll .do::before { background: oklch(20% 0 0); }
+      .coll .dont::before { background: oklch(70% 0 0); }
 
       .coll .overview-body {
         font-size: 12px; line-height: 1.55; color: ${DP.ink2};

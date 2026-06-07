@@ -13,6 +13,9 @@ import {
 import {
   checkElementTextOverflowDOM,
   isScreenReaderOnlyTextStyle,
+  checkTapTargetsCrowded,
+  checkTapTargetSpacing,
+  checkOversizedImage,
 } from '../cli/engine/rules/checks.mjs';
 
 const FIXTURES = path.join(import.meta.dir, 'fixtures', 'antipatterns');
@@ -1544,5 +1547,114 @@ describe('CLI -- dev server suggestion', () => {
     const { stderr } = run(path.join(FIXTURES, 'framework-vite'));
     expect(stderr).toContain('Vite');
     expect(stderr).toContain('8080');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// UX rules: browser-only pure checks (rect math runs here; the DOM adapters
+// live in browser/injected and have no static-engine counterpart)
+// ---------------------------------------------------------------------------
+
+describe('checkTapTargetsCrowded', () => {
+  const t = (left, top, width, height, label) => ({ left, top, width, height, label });
+
+  test('flags a cluster of small targets packed under 8px apart', () => {
+    const f = checkTapTargetsCrowded([
+      t(0, 0, 32, 32, 'a.prev'),
+      t(36, 0, 32, 32, 'a.next'),   // 4px gap
+      t(72, 0, 32, 32, 'a.last'),   // 4px gap
+    ]);
+    expect(f.length).toBe(1);
+    expect(f[0].id).toBe('tap-targets-crowded');
+    expect(f[0].snippet).toContain('3');
+  });
+
+  test('passes targets with comfortable spacing', () => {
+    const f = checkTapTargetsCrowded([
+      t(0, 0, 32, 32, 'a.prev'),
+      t(44, 0, 32, 32, 'a.next'),   // 12px gap
+    ]);
+    expect(f.length).toBe(0);
+  });
+
+  test('passes large targets even when adjacent', () => {
+    const f = checkTapTargetsCrowded([
+      t(0, 0, 160, 48, 'button.save'),
+      t(164, 0, 160, 48, 'button.cancel'),
+    ]);
+    expect(f.length).toBe(0);
+  });
+
+  test('vertical stacking counts too', () => {
+    const f = checkTapTargetsCrowded([
+      t(0, 0, 40, 24, 'a.row1'),
+      t(0, 26, 40, 24, 'a.row2'),   // 2px gap below
+    ]);
+    expect(f.length).toBe(1);
+  });
+});
+
+describe('checkOversizedImage', () => {
+  test('flags a 3000px natural image squeezed into 400px', () => {
+    const f = checkOversizedImage({ naturalWidth: 3000, naturalHeight: 2000, displayWidth: 400, displayHeight: 267, src: 'hero.jpg', dpr: 1 });
+    expect(f.length).toBe(1);
+    expect(f[0].id).toBe('oversized-image-payload');
+    expect(f[0].snippet).toContain('hero.jpg');
+  });
+
+  test('passes small naturals below the payload floor', () => {
+    expect(checkOversizedImage({ naturalWidth: 800, naturalHeight: 600, displayWidth: 320, displayHeight: 240, src: 'thumb.png', dpr: 1 }).length).toBe(0);
+  });
+
+  test('passes a 2x asset on a 2x display', () => {
+    expect(checkOversizedImage({ naturalWidth: 3000, naturalHeight: 2000, displayWidth: 700, displayHeight: 467, src: 'retina.jpg', dpr: 2 }).length).toBe(0);
+  });
+
+  test('flags waste even after accounting for dpr', () => {
+    const f = checkOversizedImage({ naturalWidth: 4200, naturalHeight: 2800, displayWidth: 700, displayHeight: 467, src: 'huge.jpg', dpr: 2 });
+    expect(f.length).toBe(1);
+  });
+
+  test('ignores images with unknown display size', () => {
+    expect(checkOversizedImage({ naturalWidth: 4000, naturalHeight: 3000, displayWidth: 0, displayHeight: 0, src: 'x.png', dpr: 1 }).length).toBe(0);
+  });
+});
+
+describe('checkTapTargetSpacing (WCAG 2.5.8 spacing alternative)', () => {
+  const t = (left, top, width, height, label) => ({ left, top, width, height, label, selector: label });
+
+  test('flags small targets with a neighbor center inside 24px', () => {
+    const f = checkTapTargetSpacing([
+      t(0, 0, 18, 18, 'button.prev'),
+      t(22, 0, 18, 18, 'button.next'), // centers 22px apart
+    ]);
+    expect(f.length).toBe(2);
+    expect(f[0].id).toBe('tap-target-too-small');
+  });
+
+  test('passes small text links in a roomy nav row', () => {
+    // 15px-tall links with ~60px center spacing: WCAG spacing alternative
+    const f = checkTapTargetSpacing([
+      t(0, 0, 50, 15, 'a.products'),
+      t(60, 0, 50, 15, 'a.pricing'),
+      t(120, 0, 50, 15, 'a.docs'),
+    ]);
+    expect(f.length).toBe(0);
+  });
+
+  test('passes isolated small targets', () => {
+    expect(checkTapTargetSpacing([t(0, 0, 16, 16, 'button.close')]).length).toBe(0);
+  });
+
+  test('inline prose links are exempt regardless of spacing', () => {
+    const f = checkTapTargetSpacing([
+      { ...t(0, 0, 40, 15, 'a.inline'), inlineProse: true },
+      t(10, 0, 18, 18, 'button.near'),
+    ]);
+    expect(f.every(x => x.snippet.includes('button.near'))).toBe(true);
+  });
+
+  test('comfortable targets never flag', () => {
+    expect(checkTapTargetSpacing([t(0, 0, 44, 44, 'b.a'), t(46, 0, 44, 44, 'b.b')]).length).toBe(0);
   });
 });

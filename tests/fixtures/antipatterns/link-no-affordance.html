@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>link-no-affordance fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; color: #222222; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+
+  /* ── should flag: links stripped of every distinguishing cue ── */
+  .flag-inherit a { color: inherit; text-decoration: none; }
+  a.flag-same { color: #222222; text-decoration: none; }
+  .flag-list a { color: #222222; text-decoration: none; font-weight: 400; }
+  .flag-quote a { color: inherit; text-decoration: none; }
+
+  /* ── should pass: at least one cue survives ── */
+  a.pass-underline { color: #222222; text-decoration: underline; }
+  a.pass-color { color: #0a5dd6; text-decoration: none; }
+  a.pass-weight { color: #222222; text-decoration: none; font-weight: 700; }
+  a.pass-border { color: #222222; text-decoration: none; border-bottom: 1px solid #222222; }
+  .pass-nav a { color: #222222; text-decoration: none; }
+</style>
+</head>
+<body>
+<h1>Link affordance cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <p class="flag-inherit">The migration guide walks through every step, and <a href="/guide">read the guide</a> before upgrading production.</p>
+  <p>Billing changes take effect immediately, so <a class="flag-same" href="/billing">review your plan</a> before confirming.</p>
+  <ul class="flag-list">
+    <li>Exports run nightly, and <a href="/exports">the export log</a> shows each run.</li>
+  </ul>
+  <blockquote class="flag-quote">The docs said <a href="/quota">check your quota</a> first, and they were right.</blockquote>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <p>Underlined links read as links: <a class="pass-underline" href="/docs">browse the docs</a> mid-sentence.</p>
+  <p>Color contrast alone can carry it: <a class="pass-color" href="/api">the API reference</a> sits in this paragraph.</p>
+  <p>Weight is a cue too: <a class="pass-weight" href="/changelog">the changelog</a> stands out in bold.</p>
+  <p>A bottom border works like an underline: <a class="pass-border" href="/status">status page</a> inline.</p>
+  <nav class="pass-nav"><a href="/">Home</a> <a href="/pricing">Pricing</a></nav>
+  <p>Unstyled links keep browser defaults, like <a href="/community">the community forum</a> here.</p>
+</div>
+
+</body>
+</html>

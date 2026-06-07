@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>form-field-overload fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  h2 { font-size: 20px; }
+  form { width: 600px; padding: 20px; }
+  input, select, textarea { width: 280px; height: 36px; }
+</style>
+</head>
+<body>
+<h1>Form chunking cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<form id="flag-signup" aria-label="Signup wall">
+  <input type="text" aria-label="First name">
+  <input type="text" aria-label="Last name">
+  <input type="email" aria-label="Email">
+  <input type="tel" aria-label="Phone">
+  <input type="text" aria-label="Company">
+  <input type="text" aria-label="Job title">
+  <input type="text" aria-label="Address line 1">
+  <input type="text" aria-label="City">
+  <input type="text" aria-label="Postal code">
+</form>
+<form id="flag-survey" aria-label="Survey wall">
+  <input type="text" aria-label="Q1">
+  <input type="text" aria-label="Q2">
+  <input type="text" aria-label="Q3">
+  <input type="text" aria-label="Q4">
+  <select aria-label="Q5"><option>A</option></select>
+  <select aria-label="Q6"><option>A</option></select>
+  <textarea aria-label="Q7"></textarea>
+  <textarea aria-label="Q8"></textarea>
+</form>
+<form id="flag-profile" aria-label="Profile wall">
+  <input type="text" aria-label="P1">
+  <input type="text" aria-label="P2">
+  <input type="text" aria-label="P3">
+  <input type="text" aria-label="P4">
+  <input type="text" aria-label="P5">
+  <input type="text" aria-label="P6">
+  <input type="text" aria-label="P7">
+  <input type="text" aria-label="P8">
+  <input type="text" aria-label="P9">
+  <input type="text" aria-label="P10">
+  <input type="text" aria-label="P11">
+  <input type="text" aria-label="P12">
+</form>
+<form id="flag-billing" aria-label="Billing wall">
+  <input type="text" aria-label="B1">
+  <input type="text" aria-label="B2">
+  <input type="text" aria-label="B3">
+  <input type="text" aria-label="B4">
+  <input type="text" aria-label="B5">
+  <input type="text" aria-label="B6">
+  <input type="text" aria-label="B7">
+  <input type="text" aria-label="B8">
+</form>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<form id="pass-seven" aria-label="Seven fields">
+  <input type="text" aria-label="S1">
+  <input type="text" aria-label="S2">
+  <input type="text" aria-label="S3">
+  <input type="text" aria-label="S4">
+  <input type="text" aria-label="S5">
+  <input type="text" aria-label="S6">
+  <input type="text" aria-label="S7">
+</form>
+<form id="pass-fieldsets" aria-label="Grouped checkout">
+  <fieldset>
+    <legend>Contact</legend>
+    <input type="text" aria-label="G1">
+    <input type="email" aria-label="G2" autocomplete="email">
+    <input type="tel" aria-label="G3" autocomplete="tel">
+    <input type="text" aria-label="G4">
+    <input type="text" aria-label="G5">
+  </fieldset>
+  <fieldset>
+    <legend>Shipping</legend>
+    <input type="text" aria-label="G6">
+    <input type="text" aria-label="G7">
+    <input type="text" aria-label="G8">
+    <input type="text" aria-label="G9">
+    <input type="text" aria-label="G10">
+  </fieldset>
+</form>
+<form id="pass-headings" aria-label="Sectioned application">
+  <h2>About you</h2>
+  <input type="text" aria-label="H1">
+  <input type="text" aria-label="H2">
+  <input type="text" aria-label="H3">
+  <input type="text" aria-label="H4">
+  <input type="text" aria-label="H5">
+  <h2>Your team</h2>
+  <input type="text" aria-label="H6">
+  <input type="text" aria-label="H7">
+  <input type="text" aria-label="H8">
+  <input type="text" aria-label="H9">
+</form>
+<form id="pass-checkboxes" aria-label="Preference toggles">
+  <input type="checkbox" aria-label="C1">
+  <input type="checkbox" aria-label="C2">
+  <input type="checkbox" aria-label="C3">
+  <input type="checkbox" aria-label="C4">
+  <input type="checkbox" aria-label="C5">
+  <input type="checkbox" aria-label="C6">
+  <input type="checkbox" aria-label="C7">
+  <input type="checkbox" aria-label="C8">
+  <input type="checkbox" aria-label="C9">
+  <input type="text" aria-label="Other preference">
+</form>
+<form id="pass-search" aria-label="Search">
+  <input type="search" aria-label="Query">
+</form>
+
+</body>
+</html>

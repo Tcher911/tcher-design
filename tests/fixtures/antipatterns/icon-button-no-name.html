@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>icon-button-no-name fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  button, a { width: 40px; height: 40px; display: inline-block; }
+  .wide { width: 160px; }
+</style>
+</head>
+<body>
+<h1>Icon button naming cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <button type="button" class="icon-close"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <a href="/settings" class="icon-settings"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="8"/></svg></a>
+  <button type="button" class="icon-upload"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='20' height='20'/%3E%3C/svg%3E" alt=""></button>
+  <button type="button" class="icon-menu"><span class="hamburger"></span></button>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <button type="button" class="named-close" aria-label="Close dialog"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <a href="/profile" class="named-profile" aria-labelledby="profile-text"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="8"/></svg></a>
+  <span id="profile-text">Your profile</span>
+  <button type="button" class="named-img"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='20' height='20'/%3E%3C/svg%3E" alt="Upload file"></button>
+  <button type="button" class="wide with-text"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h16"/></svg> Download</button>
+  <span class="decorative-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h16"/></svg></span>
+  <a href="/help" class="named-title" title="Help center"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10"/></svg></a>
+</div>
+
+</body>
+</html>

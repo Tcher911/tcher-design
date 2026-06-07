@@ -258,7 +258,7 @@ for (const modelId of resolveModelList()) {
       }
     });
 
-    it('scenario 6: sub-command routing (`/tcher polish` loads polish.md)', async () => {
+    it('scenario 6: sub-command routing (`/tcher refine` loads refine.md)', async () => {
       const workspace = prepareWorkspace({
         files: {
           'PRODUCT.md': PRODUCT_MD_SAMPLE,
@@ -270,13 +270,13 @@ for (const modelId of resolveModelList()) {
         const { trace, text } = await runTurn({
           workspace,
           model,
-          userPrompt: '/tcher polish index.html',
+          userPrompt: '/tcher refine index.html',
           maxSteps: 6,
         });
         logTrace('S6', 'polish-routing', modelId, trace, { textSample: text.slice(0, 300) });
         assert.ok(
-          fileLoaded(trace, 'polish.md'),
-          `agent should load polish.md when /tcher polish is invoked.\n` +
+          fileLoaded(trace, 'refine.md'),
+          `agent should load refine.md when /tcher refine is invoked.\n` +
             `Trace: ${JSON.stringify(summarizeTrace(trace), null, 2)}`,
         );
       } finally {
@@ -322,7 +322,7 @@ for (const modelId of resolveModelList()) {
         const { trace, text } = await runTurn({
           workspace,
           model,
-          userPrompt: '/tcher polish src/routes/+page.svelte',
+          userPrompt: '/tcher refine src/routes/+page.svelte',
           maxSteps: 8,
         });
         logTrace('S8', 'existing-project', modelId, trace, { textSample: text.slice(0, 400) });
@@ -346,8 +346,8 @@ for (const modelId of resolveModelList()) {
     it('scenario 9: update-available directive is surfaced, never auto-run', async () => {
       // context.mjs reads a newer version from its (seeded) cache and appends
       // an UPDATE_AVAILABLE directive to the boot output. The agent must
-      // surface it and keep working, but must NOT run `npx tcher skills
-      // update` on its own — modifying installed files mid-session without
+      // surface it and keep working, but must NOT run `npx tcher-designs
+      // skills update` on its own — modifying installed files mid-session without
       // consent is the exact failure this guards against.
       //
       // `skillVersion` forces copy-mode so context.mjs has a SKILL.md sibling
@@ -365,7 +365,7 @@ for (const modelId of resolveModelList()) {
         const { trace, text } = await runTurn({
           workspace,
           model,
-          userPrompt: '/tcher polish index.html',
+          userPrompt: '/tcher refine index.html',
           maxSteps: 6,
           env: { TCHER_UPDATE_CACHE: path.join(workspace, '.tcher-update.json') },
         });

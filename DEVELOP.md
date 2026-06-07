@@ -40,13 +40,15 @@ Your skill instructions here...
 - `{{config_file}}` -- Provider-specific config file (e.g., "CLAUDE.md", ".cursorrules")
 - `{{ask_instruction}}` -- How to ask the user for clarification
 - `{{command_prefix}}` -- Slash command prefix (`/` for most, `$` for Codex)
-- `{{available_commands}}` -- Comma-separated list of user-invocable commands
+- `{{available_commands}}` -- Comma-separated list of `/tcher <sub>` suggestions (from `TCHER_SUB_COMMANDS`)
+- `{{scripts_path}}` -- Provider-aware path to the installed skill's `scripts/` directory
 
 ## Building
 
 ### Prerequisites
 - Bun (fast JavaScript runtime and package manager)
-- No external dependencies required
+- Node.js 24+ (the detect CLI and the jsdom-style fixture tests run on Node, not Bun)
+- `bun install` once for dependencies (htmlparser2/css-tree for the static engine, Playwright for the opt-in E2E)
 
 ### Commands
 
@@ -64,11 +66,15 @@ bun run rebuild
 ### What Gets Generated
 
 ```
-source/                          -> dist/
-  skills/{name}/SKILL.md           {provider}/{configDir}/skills/{name}/SKILL.md
+skill/                           -> dist/
+  SKILL.src.md                     {provider}/{configDir}/skills/tcher/SKILL.md
+  reference/*.md                   {provider}/{configDir}/skills/tcher/reference/*.md
+  scripts/*                        {provider}/{configDir}/skills/tcher/scripts/* (+ vendored detector/)
 ```
 
-Each provider gets its own output directory.
+Each provider gets its own output directory; the build then syncs the compiled
+skill into the tracked harness dirs (`.claude/skills/`, `.cursor/skills/`, ...)
+and the `plugin/` subtree, and assembles `dist/universal/` + `universal.zip`.
 
 ## Build System Details
 
@@ -139,7 +145,7 @@ bun run test:live-e2e         # Opt-in — full-cycle live-mode E2E across frame
 bun run test:skill-behavior   # Opt-in — LLM-backed checks that the SKILL.md Setup flow actually drives the agent (~5 min, costs cents, needs `.env`)
 ```
 
-The skill-behavior suite runs three providers (claude-haiku-4-5, gpt-5.4-mini, gemini-3.1-flash-lite — the cheapest tier of each, every run) with the source `skill/SKILL.src.md` inlined as the system prompt and a workspace-scoped `bash`/`read`/`write`/`list` tool set. It then asserts on the tool-call trace, not on free-form output. Use it whenever you edit `skill/SKILL.src.md`'s Setup section, `skill/scripts/context.mjs`, or any Setup-touching reference (`teach.md`, `document.md`, `brand.md`, `product.md`, sub-command refs). Per-scenario assertions and the current baseline (21-22/24) live in `tests/skill-behavior/README.md`. Provider keys live in repo-root `.env` (gitignored); missing keys skip cleanly.
+The skill-behavior suite runs three providers (claude-sonnet-4-6, gpt-5.5, gemini-3.1-flash-lite — production tier for Claude/GPT, every run) with the source `skill/SKILL.src.md` inlined as the system prompt and a workspace-scoped `bash`/`read`/`write`/`list` tool set. It then asserts on the tool-call trace, not on free-form output. Use it whenever you edit `skill/SKILL.src.md`'s Setup section, `skill/scripts/context.mjs`, or any Setup-touching reference (`teach.md`, `document.md`, `brand.md`, `product.md`, sub-command refs). Per-scenario assertions and the baseline (21-22/24, measured on the old cheap tier; re-measure pending on the production-tier lineup) live in `tests/skill-behavior/README.md`. Provider keys live in repo-root `.env` (gitignored); missing keys skip cleanly.
 
 ## Best Practices
 
@@ -169,26 +175,23 @@ The skill-behavior suite runs three providers (claude-haiku-4-5, gpt-5.4-mini, g
 ## Repository Structure
 
 ```
-tcher/
-  source/                          # Edit these! Source of truth
-    skills/                        # Skill definitions
-      frontend-design/
-        SKILL.md
-        reference/*.md             # Domain-specific references
-      audit/SKILL.md
-      polish/SKILL.md
-      ...
-  dist/                            # Generated output (gitignored)
+tcher-design/
+  skill/                           # Edit these! Source of truth for the skill
+    SKILL.src.md                   # Frontmatter + shared laws + Commands router (24 commands)
+    reference/*.md                 # One file per command + domain references
+    scripts/*                      # Runtime scripts (context, pin, live-* suite, vocabulary)
+    agents/                        # Canonical subagent prompts
+  cli/                             # npm package `tcher-designs`
+    bin/                           # CLI entry + `skills` subcommands
+    engine/                        # Detection engine (registry, rules, engines, browser overlay)
   scripts/
-    build.js                       # Main orchestrator
-    lib/
-      utils.js                     # Shared utilities
-      zip.js                       # ZIP generation
-      transformers/
-        factory.js                 # Config-driven transformer factory
-        providers.js               # Provider config map
-        index.js                   # Re-exports
-  tests/                           # Bun test suite
+    build.js                       # Main orchestrator (+ count and prose validators)
+    build-browser-detector.js      # Generates cli/engine/detect-antipatterns-browser.js
+    lib/transformers/              # Config-driven provider factory
+  .claude/ .cursor/ .agents/ ...   # Tracked harness output dirs (refreshed by `bun run build`)
+  plugin/                          # Claude Code plugin subtree (built)
+  dist/                            # Generated output
+  tests/                           # bun + node test suites, fixtures, live E2E
   HARNESSES.md                     # Provider capabilities reference
   DEVELOP.md                       # This file
   README.md                        # User documentation

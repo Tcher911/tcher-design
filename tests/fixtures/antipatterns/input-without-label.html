@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>input-without-label fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  input, select, textarea { width: 280px; height: 36px; }
+</style>
+</head>
+<body>
+<h1>Input labelling cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <input type="text" placeholder="Search projects">
+  <input type="email" placeholder="Work email">
+  <select>
+    <option>Engineering</option>
+    <option>Design</option>
+  </select>
+  <textarea placeholder="Tell us more"></textarea>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <label for="city">City</label>
+  <input type="text" id="city" placeholder="Bangkok">
+  <label>Country
+    <input type="text" placeholder="Thailand">
+  </label>
+  <input type="text" aria-label="Street address">
+  <span id="zone-label">Time zone</span>
+  <select aria-labelledby="zone-label">
+    <option>UTC+7</option>
+  </select>
+  <input type="hidden" value="token">
+  <input type="submit" value="Send">
+</div>
+
+</body>
+</html>

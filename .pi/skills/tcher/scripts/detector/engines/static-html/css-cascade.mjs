@@ -253,6 +253,11 @@ const STATIC_DEFAULT_STYLE = {
   letterSpacing: 'normal',
   textTransform: 'none',
   textAlign: 'start',
+  // Empty (not 'none'): only an explicit text-decoration: none should gate
+  // ux link-affordance checks; UA defaults differ per tag (a is underlined).
+  textDecoration: '',
+  textDecorationLine: '',
+  visibility: 'visible',
   hyphens: 'manual',
   webkitHyphens: 'manual',
   transitionProperty: '',
@@ -300,6 +305,9 @@ const STATIC_PROP_MAP = {
   'letter-spacing': 'letterSpacing',
   'text-transform': 'textTransform',
   'text-align': 'textAlign',
+  'text-decoration': 'textDecoration',
+  'text-decoration-line': 'textDecorationLine',
+  'visibility': 'visibility',
   'hyphens': 'hyphens',
   '-webkit-hyphens': 'webkitHyphens',
   'transition-property': 'transitionProperty',

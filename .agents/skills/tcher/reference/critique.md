@@ -137,7 +137,7 @@ For each issue, tag with **P0-P3 severity** (see [Issue Severity below](#issue-s
 - **[P?] What**: Name the problem clearly
 - **Why it matters**: How this hurts users or undermines goals
 - **Fix**: What to do about it (be concrete)
-- **Suggested command**: Which command could address this (from: $tcher adapt, $tcher animate, $tcher audit, $tcher bolder, $tcher clarify, $tcher colorize, $tcher critique, $tcher delight, $tcher distill, $tcher document, $tcher harden, $tcher layout, $tcher onboard, $tcher optimize, $tcher overdrive, $tcher polish, $tcher quieter, $tcher shape, $tcher typeset)
+- **Suggested command**: Which command could address this (from: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo)
 
 #### Persona Red Flags
 > *Consult the [Personas reference](#persona-based-design-testing) below.*
@@ -176,7 +176,7 @@ Codex Run Notes are final-chat only. Do not include this section in the persiste
 
 ### Persist the Snapshot
 
-Once the report above is finalized, write it to `.tcher/critique/` so the user can refer back, and so `$tcher polish` can pick up the priority issues without a copy-paste.
+Once the report above is finalized, write it to `.tcher/critique/` so the user can refer back, and so `$tcher refine` can pick up the priority issues without a copy-paste.
 
 Skip this step if the Setup slug was null (vague or root-level target).
 
@@ -243,14 +243,14 @@ List recommended commands in priority order, based on the user's answers:
 ...
 
 **Rules for recommendations**:
-- Only recommend commands from: $tcher adapt, $tcher animate, $tcher audit, $tcher bolder, $tcher clarify, $tcher colorize, $tcher critique, $tcher delight, $tcher distill, $tcher document, $tcher harden, $tcher layout, $tcher onboard, $tcher optimize, $tcher overdrive, $tcher polish, $tcher quieter, $tcher shape, $tcher typeset
+- Only recommend commands from: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo
 - Order by the user's stated priorities first, then by impact
 - Each item's description should carry enough context that the command knows what to focus on
 - Map each Priority Issue to the appropriate command
 - Skip commands that would address zero issues
 - If the user chose a limited scope, only include items within that scope
 - If the user marked areas as off-limits, exclude commands that would touch those areas
-- End with `$tcher polish` as the final step if any fixes were recommended
+- End with `$tcher refine` as the final step if any fixes were recommended
 
 After presenting the summary, tell the user:
 

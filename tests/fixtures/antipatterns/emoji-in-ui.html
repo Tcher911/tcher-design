@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>emoji-in-ui fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; }
+  .col { width: 600px; padding: 20px; }
+  h1 { font-size: 40px; }
+  h2 { font-size: 28px; }
+  h3 { font-size: 22px; }
+  p, li, blockquote { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <h1>Welcome to Acme 👋</h1>
+  <h2>🚀 Ship faster than ever</h2>
+  <h3>✨ Magic Features</h3>
+  <button type="button">Get started 🎉</button>
+  <a href="#">Try it free 🎉</a>
+  <span>🚀</span>
+  <ul>
+    <li>⚡ Fast performance on every device</li>
+    <li>🔒 Secure storage by default</li>
+    <li>🎯 Precise targeting controls</li>
+  </ul>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <h2>Pricing that scales</h2>
+  <button type="button">Get started</button>
+  <p>We rebuilt the importer last sprint and honestly the cutover went better than anyone expected 🎉 with all four hundred workspaces migrated before lunch, which is the kind of small win worth writing down.</p>
+  <blockquote>"Support replied in four minutes 🙏 and stayed on the call until the webhook fired", a happy customer told us.</blockquote>
+  <ul>
+    <li>🍜 Tom yum with river prawns</li>
+    <li>🍣 Sashimi set, twelve pieces</li>
+    <li>Seasonal specials change weekly</li>
+  </ul>
+  <h2>Acme™ Platform</h2>
+  <p>Chat transcript excerpt: 😀 sure, send it over and I will take a look this afternoon.</p>
+  <p>Catch the full story in the launch <a href="#">🧵 thread on social</a> when it goes out tomorrow morning.</p>
+  <a href="#">Read the changelog and the migration notes for the new importer pipeline, including every breaking change we shipped 🛠 this quarter in one long annotated document</a>
+</div>
+
+</body>
+</html>

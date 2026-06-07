@@ -1,6 +1,6 @@
 # STYLE.md
 
-Editorial brief for tcher.design. Read this before writing or editing user-facing copy: the homepage, sub-pages, command editorials, tutorials, and READMEs.
+Editorial brief for Tcher. Read this before writing or editing user-facing copy: the READMEs, release notes, plugin/marketplace descriptions, and any future site copy.
 
 The bar: **for every paragraph, point to the sentence that makes it specifically yours.** If you can't, the paragraph is AI by default, even if a human typed it.
 

@@ -2099,7 +2099,7 @@ colors: {}
         token: server.token,
         type: 'generate',
         id: 'a1b2c3d4',
-        action: 'bolder',
+        action: 'brave',
         count: 2,
         element: { outerHTML: '<div>test</div>', tagName: 'div' },
       }),
@@ -2110,7 +2110,7 @@ colors: {}
     const event = await pollPromise;
     assert.equal(event.type, 'generate');
     assert.equal(event.id, 'a1b2c3d4');
-    assert.equal(event.action, 'bolder');
+    assert.equal(event.action, 'brave');
     assert.equal(event.count, 2);
 
     await fetch(`http://localhost:${server.port}/poll`, {
@@ -2199,7 +2199,7 @@ colors: {}
           token: firstServer.token,
           type: 'generate',
           id: 'a1b2c3d8',
-          action: 'polish',
+          action: 'refine',
           count: 2,
           pageUrl: 'http://localhost:4321/',
           element: { outerHTML: '<section>restart</section>', tagName: 'section' },
@@ -2300,7 +2300,7 @@ colors: {}
         token: server.token,
         type: 'generate',
         id: 'a1b2c3da',
-        action: 'polish',
+        action: 'refine',
         count: 2,
         element: { outerHTML: '<section>lease</section>', tagName: 'section' },
       }),
@@ -2340,7 +2340,7 @@ colors: {}
         token: server.token,
         type: 'generate',
         id: 'a1b2c3db',
-        action: 'polish',
+        action: 'refine',
         count: 1,
         element: { outerHTML: '<section>wakeup</section>', tagName: 'section' },
       }),
@@ -2578,7 +2578,7 @@ colors: {}
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: server.token, type: 'generate',
-        id: 'aa11bb22', action: 'polish', count: 2,
+        id: 'aa11bb22', action: 'refine', count: 2,
         element: { outerHTML: '<div>x</div>', tagName: 'div' },
         screenshotPath: '/tmp/fake.png',
         comments: [{ x: 10, y: 20, text: 'tighten this' }],
@@ -2600,7 +2600,7 @@ colors: {}
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: server.token, type: 'generate',
-        id: 'cc33dd44', action: 'polish', count: 2,
+        id: 'cc33dd44', action: 'refine', count: 2,
         element: { outerHTML: '<div>x</div>', tagName: 'div' },
         comments: 'not-an-array',
       }),

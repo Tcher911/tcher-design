@@ -13,8 +13,23 @@ The `tcher` skill in this project builds on Anthropic's original frontend-design
 
 This project extends the original with:
 - 7 domain-specific reference files (typography, color-and-contrast, spatial-design, motion-design, interaction-design, responsive-design, ux-writing)
-- 23 commands
+- 24 commands
 - Expanded patterns and anti-patterns
+
+## Remix Icon
+
+The live-mode overlay UI (`skill/scripts/live-vocabulary.mjs` and `skill/scripts/live-browser.js`) embeds SVG path data from the Remix Icon set.
+
+**Original work:** https://github.com/Remix-Design/RemixIcon
+**Original license:** Apache License 2.0
+**Copyright:** Remix Design Studio
+
+## Laws of UX
+
+The UX rule set (the `ux` category in `cli/engine/registry/antipatterns.mjs`, the audit command's UX dimension) operationalizes principles catalogued by Jon Yablonski's Laws of UX. Only the principle names are referenced; all rule descriptions and check logic are original to this project.
+
+**Original work:** https://lawsofux.com/
+**Author:** Jon Yablonski
 
 ## Typecraft Guide Skill
 

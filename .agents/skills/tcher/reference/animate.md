@@ -198,4 +198,4 @@ Test animations thoroughly:
 - **Doesn't block**: Users can interact during/after animations
 - **Adds value**: Makes interface clearer or more delightful
 
-When the motion clarifies state instead of decorating it, hand off to `$tcher polish` for the final pass.
+When the motion clarifies state instead of decorating it, hand off to `$tcher refine` for the final pass.

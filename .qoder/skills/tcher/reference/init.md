@@ -162,11 +162,11 @@ Summarize tersely:
 Then recommend the **best commands to run next**, drawn from what your Step 2 crawl already surfaced. Do not run a fresh analysis here; surface observations you already have. Tailor to register and to what you saw, offer the 2-4 most relevant (not a menu dump), and give the exact command to type. Group by intent:
 
 - **Build something new**: `/tcher craft <feature>` (shape, then build end-to-end) or `/tcher shape <feature>` (plan first). Lead with this for empty or early-stage projects.
-- **Improve what's there**: name the specific surface. `/tcher critique <page>` for a scored UX review; `/tcher audit <area>` for a11y / perf / responsive checks; `/tcher polish <component>` for a pre-ship pass. When the crawl flagged a specific weakness, point the matching command at it: thin hierarchy or spacing → `layout`, flat or gray palette → `colorize`, missing error / empty states → `harden` or `onboard`, dull or unclear copy → `clarify`.
+- **Improve what's there**: name the specific surface. `/tcher critique <page>` for a scored UX review; `/tcher audit <area>` for a11y / perf / responsive checks; `/tcher refine <component>` for a pre-ship pass. When the crawl flagged a specific weakness, point the matching command at it: thin hierarchy or spacing → `layout`, flat or gray palette → `palette`, missing error / empty states → `harden` or `onboard`, dull or unclear copy → `clarify`.
 - **Iterate visually**: `/tcher live` (configured in Step 6) to pick elements in the browser and generate variants in place.
 
 The full command menu is one bare `/tcher` away; keep this list short and pointed.
 
-If init was invoked as a blocker by another tcher command (e.g. the user ran `/tcher polish` with no PRODUCT.md), resume that original task now. Your own writes are the freshest source; no reload needed.
+If init was invoked as a blocker by another tcher command (e.g. the user ran `/tcher refine` with no PRODUCT.md), resume that original task now. Your own writes are the freshest source; no reload needed.
 
 Optionally ask the user directly to clarify what you cannot infer. Ask whether they'd like a brief summary of PRODUCT.md appended to AGENTS.md for easier agent reference. If yes, append a short **Design Context** pointer section there.

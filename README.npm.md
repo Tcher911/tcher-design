@@ -1,33 +1,33 @@
 # Tcher CLI
 
-Detect UI anti-patterns and design quality issues from the command line. Scans HTML, CSS, JSX, TSX, Vue, and Svelte files for 27 specific patterns including AI-generated UI tells, accessibility violations, and general design quality problems.
+Detect UI anti-patterns, design quality issues, and UX problems from the command line. Scans HTML, CSS, JSX, TSX, Vue, and Svelte files for 56 specific patterns: AI-generated UI tells, design craft problems, and a usability rule set built on Laws of UX principles. Every rule carries a severity tier (critical / major / minor / advisory); the live-mode overlay color-codes findings by tier.
 
 ## Quick Start
 
 ```bash
 # Install skills into your AI harness (Claude, Cursor, Gemini, etc.)
-npx tcher skills install
+npx tcher-designs skills install
 
 # Update skills to the latest version
-npx tcher skills update
+npx tcher-designs skills update
 
 # Link skills from a Git submodule checkout
-npx tcher skills link --source=.tcher --providers=claude,cursor
+npx tcher-designs skills link --source=.tcher --providers=claude,cursor
 
 # List all available commands
-npx tcher skills help
+npx tcher-designs skills help
 
 # Scan files or directories for anti-patterns
-npx tcher detect src/
+npx tcher-designs detect src/
 
 # Scan a live URL (requires Puppeteer)
-npx tcher detect https://example.com
+npx tcher-designs detect https://example.com
 
 # JSON output for CI/tooling
-npx tcher detect --json src/
+npx tcher-designs detect --json src/
 
-# Regex-only mode (faster, no jsdom)
-npx tcher detect --fast src/
+# Only the UX/usability rule set
+npx tcher-designs detect --mode=ux src/
 ```
 
 ## What It Detects
@@ -47,7 +47,9 @@ npx tcher detect --fast src/
 
 **Quality**: tiny body text, cramped padding, long line lengths, small touch targets
 
-25 detections in total. See the full list at [tcher.style](https://tcher.style).
+**UX (Laws of UX)**: sub-24px tap targets (Fitts's Law), nav choice overload (Hick's Law), links indistinguishable from prose (Law of Similarity), ungrouped form walls (Miller's Law), missing autocomplete (Postel's Law), plus inputs without labels, icon buttons without names, missing alt, killed focus outlines, missing viewport meta. Rule names follow Jon Yablonski's [lawsofux.com](https://lawsofux.com/); JSON output carries the law per finding.
+
+56 detections in total. See the full list at [tcher-designs.vercel.app](https://tcher-designs.vercel.app/).
 
 ## Exit Codes
 
@@ -57,22 +59,23 @@ npx tcher detect --fast src/
 ## Options
 
 ```
-tcher detect [options] [file-or-dir-or-url...]
+tcher-designs detect [options] [file-or-dir-or-url...]
 
-  --fast    Regex-only mode (skip jsdom, faster but less accurate)
-  --json    Output findings as JSON
-  --help    Show help
+  --json         Output findings as JSON
+  --mode=<set>   all (default), design, or ux
+  --gpt          Also report GPT-specific provider tells
+  --gemini       Also report Gemini-specific provider tells
+  --help         Show help
 ```
 
 ## Requirements
 
 - Node.js 24+
-- `jsdom` (included as dependency, used for HTML scanning)
 - `puppeteer` (optional, only needed for URL scanning)
 
 ## Part of Tcher
 
-This CLI is part of [Tcher](https://tcher.style), a cross-provider design skill pack for AI-powered development tools. The full suite includes 22 steering commands for Claude, Cursor, Gemini, Codex, and more.
+This CLI is part of [Tcher](https://tcher-designs.vercel.app/), a cross-provider design skill pack for AI-powered development tools. The full suite includes 24 commands for Claude, Cursor, Gemini, Codex, and more.
 
 ## License
 

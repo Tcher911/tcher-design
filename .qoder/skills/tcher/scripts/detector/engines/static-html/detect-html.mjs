@@ -22,6 +22,14 @@ import {
   checkPageLayout,
   checkPageQualityFromDoc,
   checkRepeatedSectionKickersFromDoc,
+  checkElementEmojiUi,
+  checkEmojiBulletsFromDoc,
+  checkElementMissingAlt,
+  checkElementIconButtonName,
+  checkElementTapTargetStatic,
+  checkElementLinkAffordance,
+  checkFocusOutlineCss,
+  checkUxPageFromDoc,
   resolveBackground,
   resolveBorderRadiusPx,
 } from '../../rules/checks.mjs';
@@ -92,10 +100,16 @@ const STATIC_ELEMENT_RULES = [
   { id: 'italic-serif-display', selector: 'h1,h2', run: (el, tag, style) => checkElementItalicSerif(el, style, tag) },
   { id: 'hero-eyebrow-chip', selector: 'h1', run: (el, tag, style, window, customPropMap) => checkElementHeroEyebrow(el, style, tag, window, customPropMap) },
   { id: 'broken-image', selector: 'img', run: (el) => checkElementBrokenImage(el) },
+  { id: 'emoji-in-ui', selector: 'h1,h2,h3,h4,h5,h6,button,a,summary,span,div,i,em,strong,b', run: (el, tag) => checkElementEmojiUi(el, tag) },
   { id: 'quality-rules', selector: '*', run: (el, tag, style, window) => checkElementQuality(el, style, tag, window) },
   { id: 'oversized-h1', selector: 'h1', run: (el, tag, style, window) => checkElementOversizedH1(el, style, tag, window) },
   { id: 'clipped-overflow-container', selector: '*', run: (el, tag, style, window) => checkElementClippedOverflow(el, style, tag, window) },
   { id: 'gpt-thin-border-wide-shadow', selector: '*', run: (el, tag, style) => checkElementGptBorderShadow(el, style) },
+  // ux rules: element-scoped adapters shared with the browser engine
+  { id: 'missing-alt', selector: 'img', run: (el, tag) => checkElementMissingAlt(el, tag) },
+  { id: 'icon-button-no-name', selector: 'button,a', run: (el, tag) => checkElementIconButtonName(el, tag) },
+  { id: 'tap-target-too-small', selector: 'a,button,input,select,[role="button"]', run: (el, tag, style) => checkElementTapTargetStatic(el, tag, style) },
+  { id: 'link-no-affordance', selector: 'a', run: (el, tag, style, window) => checkElementLinkAffordance(el, tag, style, window) },
 ];
 
 async function detectHtml(filePath, options = {}) {
@@ -178,6 +192,9 @@ async function detectHtml(filePath, options = {}) {
     for (const f of runPageCheck('repeated-section-kickers', () => checkRepeatedSectionKickersFromDoc(document, window))) {
       findings.push(finding(f.id, filePath, f.snippet));
     }
+    for (const f of runPageCheck('emoji-in-ui', () => checkEmojiBulletsFromDoc(document))) {
+      findings.push(finding(f.id, filePath, f.snippet));
+    }
     for (const f of runPageCheck('layout-rules', () => checkPageLayout(document, window))) {
       findings.push(finding(f.id, filePath, f.snippet));
     }
@@ -185,6 +202,15 @@ async function detectHtml(filePath, options = {}) {
       findings.push(finding(f.id, filePath, f.snippet));
     }
     for (const f of runPageCheck('skipped-heading', () => checkPageQualityFromDoc(document))) {
+      findings.push(finding(f.id, filePath, f.snippet));
+    }
+    // ux page rules: viewport meta, nav/select/form overload, logo link,
+    // autocomplete, input labels (shared adapter; `el` is overlay-only)
+    for (const f of runPageCheck('ux-page-rules', () => checkUxPageFromDoc(document, (el) => window.getComputedStyle(el)))) {
+      findings.push(finding(f.id, filePath, f.snippet));
+    }
+    // ux: focus-outline-removed runs over the aggregated stylesheet text
+    for (const f of runPageCheck('focus-outline-removed', () => checkFocusOutlineCss(cssText))) {
       findings.push(finding(f.id, filePath, f.snippet));
     }
     for (const f of runPageCheck('html-patterns', () => checkHtmlPatterns(html).filter(item =>

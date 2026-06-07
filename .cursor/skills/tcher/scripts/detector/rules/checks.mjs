@@ -2310,6 +2310,642 @@ function checkElementTextOverflowDOM(el) {
   return [];
 }
 
+// ─── Emoji as UI ornament ────────────────────────────────────────────────
+// ©/®/™ count as Extended_Pictographic but are not the tell we mean.
+const EMOJI_UI_RE = /(?![©®™])\p{Extended_Pictographic}/u;
+const EMOJI_UI_HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const EMOJI_UI_CTA_TAGS = new Set(['button', 'a', 'summary']);
+const EMOJI_UI_ICON_TAGS = new Set(['span', 'div', 'i', 'em', 'strong', 'b']);
+
+function checkEmojiUiElement(opts) {
+  const { tag, text, hasElementChildren = false, inProse = false } = opts;
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (!clean || !EMOJI_UI_RE.test(clean)) return [];
+  if (EMOJI_UI_HEADINGS.has(tag)) {
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" uses emoji as UI ornament` }];
+  }
+  if (EMOJI_UI_CTA_TAGS.has(tag)) {
+    // Short link/button text reads as a UI control; emoji inside running
+    // prose or long descriptive link text is conversational, not chrome.
+    if (inProse || clean.length > 60) return [];
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" uses emoji as UI ornament` }];
+  }
+  if (EMOJI_UI_ICON_TAGS.has(tag)) {
+    if (inProse || hasElementChildren) return [];
+    if (clean.length > 8 || !isEmojiOnlyText(clean)) return [];
+    return [{ id: 'emoji-in-ui', snippet: `${tag} "${clean.slice(0, 50)}" used as an emoji icon` }];
+  }
+  return [];
+}
+
+function checkEmojiBullets(opts) {
+  const { items, minCount = 3 } = opts;
+  if (!Array.isArray(items)) return [];
+  const leads = items
+    .map(t => (t || '').replace(/\s+/g, ' ').trim())
+    .filter(t => t && EMOJI_UI_RE.test(t.slice(0, 4)));
+  if (leads.length < minCount) return [];
+  return [{ id: 'emoji-in-ui', snippet: `${leads.length} list items use emoji bullets ("${leads[0].slice(0, 40)}")` }];
+}
+
+function emojiUiHasProseAncestor(el) {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const t = (p.tagName || '').toLowerCase();
+    if (t === 'p' || t === 'blockquote' || t === 'figcaption') return true;
+    if (t === 'body' || t === 'html') break;
+  }
+  return false;
+}
+
+// Shared adapter: both the static (jsdom-style) and browser engines expose
+// textContent/parentElement, so one element adapter serves both loops.
+// `children` differs (htmlparser2 includes text nodes), hence the type check.
+function checkElementEmojiUi(el, tag) {
+  if (!EMOJI_UI_HEADINGS.has(tag) && !EMOJI_UI_CTA_TAGS.has(tag) && !EMOJI_UI_ICON_TAGS.has(tag)) return [];
+  const hasElementChildren = [...(el.children || [])]
+    .some(c => c.nodeType === 1 || c.type === 'tag');
+  return checkEmojiUiElement({
+    tag,
+    text: el.textContent || '',
+    hasElementChildren,
+    inProse: emojiUiHasProseAncestor(el),
+  });
+}
+
+function checkEmojiBulletsFromDoc(doc) {
+  const findings = [];
+  for (const list of doc.querySelectorAll('ul, ol')) {
+    if (list.closest?.('.tcher-overlay, .tcher-banner, [id^="tcher-live-"]')) continue;
+    const items = [...list.children]
+      .filter(c => (c.tagName || '').toLowerCase() === 'li')
+      .map(li => li.textContent || '');
+    // Carry the list element so the browser overlay can outline the actual
+    // <ul> (the static engine ignores `el` and just reads id/snippet).
+    findings.push(...checkEmojiBullets({ items }).map(f => ({ ...f, el: list })));
+  }
+  return findings;
+}
+
+// ─── Browser-only additions ──────────────────────────────────────────────
+
+// Broken image: only a real browser knows whether the fetch failed, so this
+// check is browser-only (the static engine can only flag missing/empty src).
+function checkElementBrokenImageDOM(el) {
+  if (el.tagName !== 'IMG') return [];
+  const src = (el.getAttribute('src') || '').trim();
+  if (!src || src === '#') return [{ id: 'broken-image', snippet: '<img> with empty src' }];
+  if (el.complete && el.naturalWidth === 0) {
+    return [{ id: 'broken-image', snippet: `<img src="${src.slice(0, 60)}"> failed to load` }];
+  }
+  return [];
+}
+
+// Rendered page text, skipping tcher's own overlay chrome (labels and the
+// banner quote finding text, which would otherwise feed back into rescans).
+function collectPageTextDOM() {
+  const SKIP = '.tcher-overlay, .tcher-label, .tcher-banner, .tcher-tooltip, [id^="tcher-live-"]';
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      const tag = parent.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return NodeFilter.FILTER_REJECT;
+      if (parent.closest(SKIP)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let text = '';
+  while (walker.nextNode()) text += walker.currentNode.nodeValue + ' ';
+  return text.replace(/\s+/g, ' ');
+}
+
+// Mirrors the regex engine's em-dash + buzzword passes (see
+// engines/regex/detect-text.mjs) over the rendered page, so the live overlay
+// surfaces them too. Keep thresholds + the phrase list in sync by hand.
+const PAGE_TEXT_BUZZWORDS = [
+  'streamline your', 'empower your', 'supercharge your',
+  'unleash your', 'unleash the power', 'leverage the power',
+  'built for the modern', 'trusted by leading', 'trusted by the world',
+  'best-in-class', 'industry-leading', 'world-class', 'enterprise-grade',
+  'next-generation', 'cutting-edge', 'transform your business',
+  'revolutionize', 'game-changer', 'game changing',
+  'mission-critical', 'best of breed', 'future-proof', 'future proof',
+  'seamless experience', 'seamlessly integrate',
+  'drive engagement', 'drive growth', 'drive results',
+  'harness the power',
+];
+
+function checkPageTextDOM() {
+  const findings = [];
+  const text = collectPageTextDOM();
+  let dashCount = 0;
+  const dashRe = /[—]|--(?=\S)/g;
+  while (dashRe.exec(text) !== null) dashCount++;
+  if (dashCount >= 5) {
+    findings.push({ id: 'em-dash-overuse', snippet: `${dashCount} em-dashes in body text` });
+  }
+  const lower = text.toLowerCase();
+  let buzzCount = 0;
+  let firstSample = '';
+  for (const phrase of PAGE_TEXT_BUZZWORDS) {
+    let from = 0;
+    while (true) {
+      const idx = lower.indexOf(phrase, from);
+      if (idx === -1) break;
+      buzzCount += 1;
+      if (!firstSample) {
+        firstSample = text.slice(Math.max(0, idx - 12), Math.min(text.length, idx + phrase.length + 12)).trim();
+      }
+      from = idx + phrase.length;
+    }
+  }
+  if (buzzCount > 0) {
+    findings.push({ id: 'marketing-buzzword', snippet: `${buzzCount} buzzword phrase${buzzCount === 1 ? '' : 's'}: "${firstSample}"` });
+  }
+  return findings;
+}
+
+// ─── UX rules (category: 'ux') ───────────────────────────────────────────
+// Deterministic usability checks; several operationalize a Laws of UX
+// principle (the registry's `law` field). Pure functions first, then the
+// shared doc/element adapters both engines call.
+
+// Fitts's Law: minimum acquirable size. Inline links in prose are exempt
+// (the line box constrains the target, mirroring WCAG 2.5.8's exception).
+function checkTapTargetSize(opts) {
+  const { width, height, selector = '', hidden = false, inlineProse = false } = opts;
+  if (hidden || inlineProse) return [];
+  if (!(width > 0) || !(height > 0)) return []; // unmeasurable → stay quiet
+  if (width >= 24 && height >= 24) return [];
+  return [{
+    id: 'tap-target-too-small',
+    snippet: `"${selector}" tap target is ${Math.round(width)}×${Math.round(height)}px (24×24 minimum, 44×44 comfortable)`,
+  }];
+}
+
+function checkInputLabel(opts) {
+  const {
+    tag, type = '', hasLabel = false, ariaLabel = '', ariaLabelledby = '',
+    title = '', ident = '',
+  } = opts;
+  const t = (type || '').toLowerCase();
+  if (tag === 'input' && ['hidden', 'submit', 'button', 'reset', 'image'].includes(t)) return [];
+  if (hasLabel || ariaLabel.trim() || ariaLabelledby.trim() || title.trim()) return [];
+  return [{
+    id: 'input-without-label',
+    snippet: `${tag}${t ? `[type=${t}]` : ''} "${(ident || '(unnamed)').slice(0, 40)}" has no associated label (a placeholder is not a label)`,
+  }];
+}
+
+function checkIconButtonName(opts) {
+  const {
+    tag, text = '', ariaLabel = '', ariaLabelledby = '', title = '',
+    imgAlt = '', hasIconChild = false, selector = '',
+  } = opts;
+  if (!hasIconChild) return [];
+  if ((text || '').trim()) return [];
+  if (ariaLabel.trim() || ariaLabelledby.trim() || title.trim() || imgAlt.trim()) return [];
+  return [{
+    id: 'icon-button-no-name',
+    snippet: `icon-only ${tag} "${selector}" has no accessible name`,
+  }];
+}
+
+function checkImgAlt(opts) {
+  const { hasAlt, role = '', ariaHidden = '', src = '' } = opts;
+  if (hasAlt) return []; // alt present (even alt="") is an explicit decision
+  if (role === 'presentation' || role === 'none' || ariaHidden === 'true') return [];
+  const name = (String(src).split('/').pop() || String(src)).slice(0, 50);
+  return [{ id: 'missing-alt', snippet: `<img src="${name}"> has no alt attribute` }];
+}
+
+// Page-level pass over raw CSS text. Walks rule blocks; tolerant of nesting
+// (an @media prefix just rides along in the selector string).
+function checkFocusOutlineCss(cssText) {
+  const findings = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(cssText || '')) !== null) {
+    // Strip comments riding along before the selector, then normalize.
+    const selector = m[1].replace(/\/\*[\s\S]*?\*\//g, '').trim().replace(/\s+/g, ' ');
+    const body = m[2];
+    if (!/:focus(-visible|-within)?\b/.test(selector)) continue;
+    if (!/outline\s*:\s*(none|0)(\s*;|\s|$)/.test(body)) continue;
+    // A replacement cue in the same block keeps focus visible.
+    if (/box-shadow\s*:|\bborder(-bottom|-top|-color|-width)?\s*:|outline\s*:\s*[^n0\s]/.test(body)) continue;
+    findings.push({
+      id: 'focus-outline-removed',
+      snippet: `"${selector.slice(0, 60)}" sets outline: none with no replacement cue`,
+    });
+  }
+  return findings;
+}
+
+// Law of Similarity: links must look different from the prose around them.
+function checkLinkAffordance(opts) {
+  const { inProse, decorationNone, sameColor, hasCue, text = '' } = opts;
+  if (!inProse || !decorationNone || !sameColor || hasCue) return [];
+  return [{
+    id: 'link-no-affordance',
+    snippet: `link "${(text || '').trim().slice(0, 40)}" is indistinguishable from the text around it`,
+  }];
+}
+
+// Hick's Law: top-level choices grow decision time. Footer sitemaps exempt.
+function checkNavChoices(opts) {
+  const { count, label = '', inFooter = false } = opts;
+  if (inFooter || count <= 8) return [];
+  return [{ id: 'choice-overload-nav', snippet: `nav "${label}" offers ${count} top-level choices` }];
+}
+
+const SELECT_CANONICAL_RE = /(countr|year|month|day|date|state|province|region|timezone|time-zone|currency|locale|language)/i;
+
+// Choice Overload: long flat dropdowns force linear scanning.
+function checkSelectChoices(opts) {
+  const { optionCount, hasOptgroups = false, label = '', exempt = false } = opts;
+  if (exempt || hasOptgroups || optionCount <= 25) return [];
+  return [{ id: 'select-overload', snippet: `select "${label}" lists ${optionCount} flat options` }];
+}
+
+// Jakob's Law: the logo links home everywhere else, so it must here too.
+function checkLogoHomeLink(opts) {
+  const { ident = '', linked, sizePx = 0 } = opts;
+  if (linked || sizePx < 24) return [];
+  return [{ id: 'logo-not-home-link', snippet: `header logo "${ident}" is not a link to home` }];
+}
+
+const AUTOCOMPLETE_FIELD_RE = /(^|[\s_-])(email|e-mail|phone|tel|mobile|name|address|street|city|postal|zip)([\s_-]|$)/;
+
+// Postel's Law: the browser already knows these values; accept its help.
+function checkAutocomplete(opts) {
+  const { type = '', name = '', id = '', ariaLabel = '', hasAutocomplete, inForm } = opts;
+  if (!inForm || hasAutocomplete) return [];
+  const t = (type || '').toLowerCase();
+  const hay = `${name} ${id} ${ariaLabel}`.toLowerCase();
+  const wants = t === 'email' || t === 'tel'
+    || ((t === '' || t === 'text') && AUTOCOMPLETE_FIELD_RE.test(hay));
+  if (!wants) return [];
+  const ident = name || id || ariaLabel || t;
+  return [{ id: 'autocomplete-missing', snippet: `input "${ident}" could autofill but has no autocomplete attribute` }];
+}
+
+// Miller's Law: chunk long forms; ~7 fields is where scanning breaks down.
+function checkFormFieldChunking(opts) {
+  const { textFieldCount, hasFieldsets = false, hasHeadings = false, label = '' } = opts;
+  if (hasFieldsets || hasHeadings || textFieldCount <= 7) return [];
+  return [{ id: 'form-field-overload', snippet: `form "${label}" packs ${textFieldCount} fields with no grouping` }];
+}
+
+// ─── UX: browser-only pure checks (need real layout / load data) ─────────
+
+// Fitts's Law / WCAG 2.5.8 with the spacing alternative: a sub-24px target
+// is fine when every other target's center sits at least 24px away (text
+// links in a roomy nav pass); it only flags when small AND crowded. The
+// static engine keeps the simpler explicit-dimensions check instead — it
+// has no layout, so it cannot know the neighbors.
+function checkTapTargetSpacing(targets) {
+  const findings = [];
+  const list = targets || [];
+  for (let i = 0; i < list.length; i++) {
+    const t = list[i];
+    if (!(t.width > 0) || !(t.height > 0)) continue;
+    if (t.width >= 24 && t.height >= 24) continue;
+    if (t.inlineProse) continue;
+    const cx = t.left + t.width / 2;
+    const cy = t.top + t.height / 2;
+    let crowded = false;
+    for (let j = 0; j < list.length; j++) {
+      if (j === i) continue;
+      const o = list[j];
+      if (Math.hypot(cx - (o.left + o.width / 2), cy - (o.top + o.height / 2)) < 24) {
+        crowded = true;
+        break;
+      }
+    }
+    if (!crowded) continue;
+    findings.push({
+      id: 'tap-target-too-small',
+      snippet: `"${t.selector || t.label || 'control'}" tap target is ${Math.round(t.width)}×${Math.round(t.height)}px with a neighbor inside 24px (24×24 minimum, 44×44 comfortable)`,
+      el: t.el,
+    });
+  }
+  return findings;
+}
+
+// Fitts's Law, crowding half: clusters of small targets packed together.
+// Takes measured rects so the math is unit-testable without a DOM.
+function checkTapTargetsCrowded(targets, opts = {}) {
+  const { minGap = 8, smallMax = 44 } = opts;
+  const small = (targets || []).filter(t => t.width > 0 && t.height > 0 && t.width < smallMax && t.height < smallMax);
+  const n = small.length;
+  if (n < 2) return [];
+  const parent = [...Array(n).keys()];
+  const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const dist = (a, b) => {
+    const dx = Math.max(a.left - (b.left + b.width), b.left - (a.left + a.width), 0);
+    const dy = Math.max(a.top - (b.top + b.height), b.top - (a.top + a.height), 0);
+    return Math.hypot(dx, dy);
+  };
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (dist(small[i], small[j]) < minGap) parent[find(i)] = find(j);
+    }
+  }
+  const clusters = new Map();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    if (!clusters.has(root)) clusters.set(root, []);
+    clusters.get(root).push(small[i]);
+  }
+  const findings = [];
+  for (const group of clusters.values()) {
+    if (group.length < 2) continue;
+    findings.push({
+      id: 'tap-targets-crowded',
+      snippet: `${group.length} small targets ("${group[0].label || group[0].selector || 'control'}", …) packed closer than ${minGap}px apart`,
+      el: group[0].el,
+    });
+  }
+  return findings;
+}
+
+// Doherty Threshold: serving multi-thousand-pixel naturals into small slots
+// delays first feedback for no visual gain. dpr-aware.
+function checkOversizedImage(opts) {
+  const { naturalWidth = 0, naturalHeight = 0, displayWidth = 0, displayHeight = 0, src = '', dpr = 1 } = opts;
+  if (!(displayWidth > 0) || !(naturalWidth > 0)) return [];
+  if (naturalWidth < 1200) return []; // below the floor the payload barely matters
+  const budget = displayWidth * Math.max(1, dpr) * 2.5;
+  if (naturalWidth <= budget) return [];
+  const name = (String(src).split('/').pop() || String(src)).split('?')[0].slice(0, 50);
+  return [{
+    id: 'oversized-image-payload',
+    snippet: `"${name}" ships ${naturalWidth}×${naturalHeight} natural pixels into a ${Math.round(displayWidth)}×${Math.round(displayHeight)} slot`,
+  }];
+}
+
+// ─── UX: shared doc/element adapters ─────────────────────────────────────
+// Both engines expose tagName/getAttribute/parentElement/querySelectorAll,
+// so these adapters serve the static loop and the browser loop alike.
+
+const UX_SKIP_SELECTOR = '.tcher-overlay, .tcher-label, .tcher-banner, .tcher-banner-panel, .tcher-tooltip, [id^="tcher-live-"]';
+
+function uxAttr(el, attr) {
+  const v = el.getAttribute ? el.getAttribute(attr) : el.attribs?.[attr];
+  return v === undefined ? null : v;
+}
+
+function uxClassSelector(el) {
+  const tag = (el.tagName || '').toLowerCase();
+  const cls = String(uxAttr(el, 'class') || '').trim().split(/\s+/).filter(Boolean);
+  return cls.length ? `${tag}.${cls[0]}` : tag;
+}
+
+function uxAncestor(el, match) {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const t = (p.tagName || '').toLowerCase();
+    if (match(t, p)) return p;
+    if (t === 'body' || t === 'html') break;
+  }
+  return null;
+}
+
+function uxInTcherChrome(el) {
+  return Boolean(el.closest?.(UX_SKIP_SELECTOR));
+}
+
+function checkElementMissingAlt(el, tag) {
+  if (tag !== 'img') return [];
+  const alt = uxAttr(el, 'alt');
+  return checkImgAlt({
+    hasAlt: alt !== null,
+    role: uxAttr(el, 'role') || '',
+    ariaHidden: uxAttr(el, 'aria-hidden') || '',
+    src: uxAttr(el, 'src') || '',
+  });
+}
+
+function checkElementIconButtonName(el, tag) {
+  if (tag !== 'button' && !(tag === 'a' && uxAttr(el, 'href') !== null)) return [];
+  if (uxInTcherChrome(el)) return [];
+  const text = (el.textContent || '').trim();
+  const svgOrImg = el.querySelectorAll ? el.querySelectorAll('svg, img') : [];
+  const hasElementChildren = [...(el.children || [])].some(c => c.nodeType === 1 || c.type === 'tag');
+  let imgAlt = '';
+  for (const child of svgOrImg) {
+    imgAlt = imgAlt || (uxAttr(child, 'alt') || '').trim() || (uxAttr(child, 'aria-label') || '').trim();
+  }
+  return checkIconButtonName({
+    tag,
+    text,
+    ariaLabel: uxAttr(el, 'aria-label') || '',
+    ariaLabelledby: uxAttr(el, 'aria-labelledby') || '',
+    title: uxAttr(el, 'title') || '',
+    imgAlt,
+    hasIconChild: svgOrImg.length > 0 || (hasElementChildren && !text),
+    selector: uxClassSelector(el),
+  });
+}
+
+// Static engine variant: jsdom does no layout, so only explicit CSS
+// dimensions are measurable. The browser variant reads real rects.
+function checkElementTapTargetStatic(el, tag, style) {
+  if (tag === 'a' && uxAttr(el, 'href') === null) return [];
+  if ((style.display || '') === 'none' || (style.visibility || '') === 'hidden') return [];
+  const inlineProse = Boolean(uxAncestor(el, t => t === 'p' || t === 'li' || t === 'blockquote' || t === 'figcaption' || t === 'td'));
+  return checkTapTargetSize({
+    width: parseFloat(style.width) || 0,
+    height: parseFloat(style.height) || 0,
+    selector: uxClassSelector(el),
+    inlineProse,
+  });
+}
+
+// Browser tap-target sizing goes through checkTapTargetSpacing (page pass
+// over collected rects) rather than a per-element check: the WCAG spacing
+// alternative needs every neighbor's position to decide.
+function uxCollectTargetRect(el) {
+  const tag = el.tagName.toLowerCase();
+  if (tag === 'a' && uxAttr(el, 'href') === null) return null;
+  if (uxInTcherChrome(el)) return null;
+  const style = getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden') return null;
+  const rect = el.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return null;
+  const inlineProse = style.display.startsWith('inline')
+    && Boolean(uxAncestor(el, t => t === 'p' || t === 'li' || t === 'blockquote' || t === 'figcaption' || t === 'td'));
+  return {
+    left: rect.left, top: rect.top, width: rect.width, height: rect.height,
+    selector: uxClassSelector(el), label: uxClassSelector(el), inlineProse, el,
+  };
+}
+
+// Link affordance needs resolved colors; each engine resolves, this shapes.
+function linkAffordanceFromResolved(el, linkStyle, parentColorResolved) {
+  const decoration = `${linkStyle.textDecorationLine || ''} ${linkStyle.textDecoration || ''}`;
+  if (!/\bnone\b/.test(decoration)) return [];
+  if (/underline|overline/.test(decoration)) return [];
+  const linkColor = parseAnyColor(linkStyle.color || '');
+  const parentColor = parentColorResolved;
+  let sameColor;
+  if (!linkStyle.color || linkStyle.color === 'inherit') {
+    sameColor = true;
+  } else if (linkColor && parentColor) {
+    sameColor = Math.abs(linkColor.r - parentColor.r) <= 8
+      && Math.abs(linkColor.g - parentColor.g) <= 8
+      && Math.abs(linkColor.b - parentColor.b) <= 8;
+  } else {
+    sameColor = false;
+  }
+  const weight = parseInt(linkStyle.fontWeight, 10) || 400;
+  const hasCue = (parseFloat(linkStyle.borderBottomWidth) || 0) > 0
+    || weight >= 600
+    || Boolean(linkStyle.backgroundColor && !/transparent|rgba\(0,\s*0,\s*0,\s*0\)/.test(linkStyle.backgroundColor));
+  const prose = uxAncestor(el, t => t === 'p' || t === 'li' || t === 'td' || t === 'blockquote');
+  const inProse = Boolean(prose)
+    && (prose.textContent || '').trim().length > (el.textContent || '').trim().length + 10;
+  return checkLinkAffordance({
+    inProse,
+    decorationNone: true,
+    sameColor,
+    hasCue,
+    text: el.textContent || '',
+  });
+}
+
+function checkElementLinkAffordance(el, tag, style, window) {
+  if (tag !== 'a' || uxAttr(el, 'href') === null) return [];
+  if (uxInTcherChrome(el)) return [];
+  if (uxAncestor(el, t => t === 'nav')) return [];
+  // Resolve nearest explicit ancestor color for the comparison.
+  let parentColor = null;
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const c = (window ? window.getComputedStyle(p) : getComputedStyle(p)).color;
+    if (c && c !== 'inherit') { parentColor = parseAnyColor(c); break; }
+    if ((p.tagName || '').toLowerCase() === 'html') break;
+  }
+  return linkAffordanceFromResolved(el, style, parentColor);
+}
+
+// Doc-level UX pass shared by both engines: viewport meta, nav choice
+// counts, select overload, header logo link, form chunking, autocomplete,
+// and input labelling. Findings carry `el` so the overlay can outline the
+// concrete element (the static engine just reads id/snippet). `getStyle`
+// resolves computed style per engine (static window vs real browser).
+function checkUxPageFromDoc(doc, getStyle) {
+  const findings = [];
+  const push = (f, el) => { if (f.length) findings.push(...f.map(x => ({ ...x, el }))); };
+
+  // no-viewport-meta
+  if (!doc.querySelector('meta[name="viewport"]')) {
+    findings.push({ id: 'no-viewport-meta', snippet: 'missing "viewport" meta tag; mobile browsers will render desktop-width' });
+  }
+
+  // choice-overload-nav
+  for (const nav of doc.querySelectorAll('nav')) {
+    if (nav.closest?.(UX_SKIP_SELECTOR)) continue;
+    const links = nav.querySelectorAll('a[href]');
+    const label = uxAttr(nav, 'aria-label') || (links[0] ? (links[0].textContent || '').trim() : 'navigation');
+    push(checkNavChoices({
+      count: links.length,
+      label,
+      inFooter: Boolean(uxAncestor(nav, t => t === 'footer')),
+    }), nav);
+  }
+
+  // select-overload
+  for (const select of doc.querySelectorAll('select')) {
+    if (select.closest?.(UX_SKIP_SELECTOR)) continue;
+    const hay = `${uxAttr(select, 'name') || ''} ${uxAttr(select, 'id') || ''} ${uxAttr(select, 'aria-label') || ''}`;
+    push(checkSelectChoices({
+      optionCount: select.querySelectorAll('option').length,
+      hasOptgroups: select.querySelectorAll('optgroup').length > 0,
+      label: uxAttr(select, 'aria-label') || uxAttr(select, 'name') || uxAttr(select, 'id') || 'select',
+      exempt: SELECT_CANONICAL_RE.test(hay),
+    }), select);
+  }
+
+  // logo-not-home-link: first sizeable img/svg per header
+  const HOME_HREFS = new Set(['/', '#', '', './', 'index.html', '/index.html', '#/', '/#']);
+  for (const header of doc.querySelectorAll('header, [role="banner"]')) {
+    if (header.closest?.(UX_SKIP_SELECTOR)) continue;
+    for (const mark of header.querySelectorAll('img, svg')) {
+      let sizePx = parseFloat(uxAttr(mark, 'width')) || 0;
+      if (!sizePx && getStyle) {
+        try { sizePx = parseFloat(getStyle(mark).width) || 0; } catch { /* unstyleable node */ }
+      }
+      if (sizePx < 24) continue;
+      const linkAncestor = uxAncestor(mark, (t, p) => t === 'a' && uxAttr(p, 'href') !== null);
+      const href = linkAncestor ? String(uxAttr(linkAncestor, 'href')).trim() : null;
+      const ident = (mark.tagName || '').toLowerCase() === 'img'
+        ? (String(uxAttr(mark, 'src') || '').split('/').pop() || 'logo')
+        : (uxAttr(mark, 'aria-label') || 'svg mark');
+      push(checkLogoHomeLink({
+        ident: ident.slice(0, 50),
+        linked: href !== null && HOME_HREFS.has(href),
+        sizePx,
+      }), mark);
+      break; // only the first qualifying mark per header
+    }
+  }
+
+  // form-field-overload + autocomplete-missing
+  const TEXTY = new Set(['', 'text', 'email', 'tel', 'url', 'password', 'number', 'search']);
+  for (const form of doc.querySelectorAll('form')) {
+    if (form.closest?.(UX_SKIP_SELECTOR)) continue;
+    let textFieldCount = 0;
+    for (const field of form.querySelectorAll('input, textarea, select')) {
+      const tag = (field.tagName || '').toLowerCase();
+      const type = (uxAttr(field, 'type') || '').toLowerCase();
+      if (tag === 'textarea' || tag === 'select' || (tag === 'input' && TEXTY.has(type))) textFieldCount++;
+      if (tag === 'input') {
+        push(checkAutocomplete({
+          type,
+          name: uxAttr(field, 'name') || '',
+          id: uxAttr(field, 'id') || '',
+          ariaLabel: uxAttr(field, 'aria-label') || '',
+          hasAutocomplete: uxAttr(field, 'autocomplete') !== null,
+          inForm: true,
+        }), field);
+      }
+    }
+    push(checkFormFieldChunking({
+      textFieldCount,
+      hasFieldsets: form.querySelectorAll('fieldset').length > 0,
+      hasHeadings: form.querySelectorAll('h2, h3, h4, h5, h6').length > 0,
+      label: uxAttr(form, 'aria-label') || uxAttr(form, 'id') || 'form',
+    }), form);
+  }
+
+  // input-without-label (needs the doc for label[for] lookups)
+  const labelFor = new Set();
+  for (const label of doc.querySelectorAll('label[for]')) {
+    labelFor.add(uxAttr(label, 'for'));
+  }
+  for (const field of doc.querySelectorAll('input, select, textarea')) {
+    if (field.closest?.(UX_SKIP_SELECTOR)) continue;
+    const tag = (field.tagName || '').toLowerCase();
+    const id = uxAttr(field, 'id');
+    const wrapped = Boolean(uxAncestor(field, t => t === 'label'));
+    const firstOption = tag === 'select' ? field.querySelectorAll('option')[0] : null;
+    const ident = uxAttr(field, 'placeholder')
+      || uxAttr(field, 'name')
+      || (firstOption ? (firstOption.textContent || '').trim() : '')
+      || id || '';
+    push(checkInputLabel({
+      tag,
+      type: uxAttr(field, 'type') || '',
+      hasLabel: wrapped || (id !== null && labelFor.has(id)),
+      ariaLabel: uxAttr(field, 'aria-label') || '',
+      ariaLabelledby: uxAttr(field, 'aria-labelledby') || '',
+      title: uxAttr(field, 'title') || '',
+      ident,
+    }), field);
+  }
+
+  return findings;
+}
+
 export {
   checkBorders,
   isEmojiOnlyText,
@@ -2381,4 +3017,30 @@ export {
   checkElementClippedOverflowDOM,
   isScreenReaderOnlyTextStyle,
   checkElementTextOverflowDOM,
+  checkElementBrokenImageDOM,
+  checkPageTextDOM,
+  checkEmojiUiElement,
+  checkEmojiBullets,
+  checkElementEmojiUi,
+  checkEmojiBulletsFromDoc,
+  checkTapTargetSize,
+  checkInputLabel,
+  checkIconButtonName,
+  checkImgAlt,
+  checkFocusOutlineCss,
+  checkLinkAffordance,
+  checkNavChoices,
+  checkSelectChoices,
+  checkLogoHomeLink,
+  checkAutocomplete,
+  checkFormFieldChunking,
+  checkTapTargetSpacing,
+  checkTapTargetsCrowded,
+  checkOversizedImage,
+  checkElementMissingAlt,
+  checkElementIconButtonName,
+  checkElementTapTargetStatic,
+  uxCollectTargetRect,
+  checkElementLinkAffordance,
+  checkUxPageFromDoc,
 };

@@ -74,15 +74,17 @@ async function confirm(question) {
 }
 
 function printUsage() {
-  console.log(`Usage: tcher detect [options] [file-or-dir-or-url...]
+  console.log(`Usage: tcher-designs detect [options] [file-or-dir-or-url...]
 
 Scan files or URLs for UI anti-patterns and design quality issues.
 
 Options:
-  --json    Output results as JSON
-  --gpt     Also report GPT-specific provider tells (off by default)
-  --gemini  Also report Gemini-specific provider tells (off by default)
-  --help    Show this help message
+  --json         Output results as JSON
+  --mode=<set>   Rule set: all (default), design (AI tells + craft), or
+                 ux (Laws of UX + usability checks)
+  --gpt          Also report GPT-specific provider tells (off by default)
+  --gemini       Also report Gemini-specific provider tells (off by default)
+  --help         Show this help message
 
 Detection modes:
   HTML files     Static HTML/CSS analysis (default, catches linked CSS)
@@ -118,7 +120,19 @@ async function detectCli() {
   if (args.includes('--gpt')) providers.push('gpt');
   if (args.includes('--gemini')) providers.push('gemini');
   const scanOptions = { providers };
-  const targets = args.filter(a => !a.startsWith('--'));
+  // --mode=ux|design|all picks the rule set: design covers the slop +
+  // quality categories, ux covers the Laws-of-UX/usability category.
+  const modeArg = args.find(a => a.startsWith('--mode'));
+  let mode = 'all';
+  if (modeArg) {
+    mode = (modeArg.includes('=') ? modeArg.split('=')[1] : args[args.indexOf(modeArg) + 1] || '').toLowerCase();
+    if (!['all', 'design', 'ux'].includes(mode)) {
+      process.stderr.write(`Unknown --mode "${mode}". Use all, design, or ux.\n`);
+      process.exit(1);
+    }
+  }
+  const MODE_CATEGORIES = { design: new Set(['slop', 'quality']), ux: new Set(['ux']) };
+  const targets = args.filter(a => !a.startsWith('--') && !(modeArg && !modeArg.includes('=') && a === mode));
 
   if (helpMode) { printUsage(); process.exit(0); }
 
@@ -158,7 +172,7 @@ async function detectCli() {
                 process.stderr.write(
                   `\n${fwConfig.name} dev server detected on localhost:${fwConfig.port}.\n` +
                   `For more accurate results, scan the running site:\n` +
-                  `  npx tcher detect http://localhost:${fwConfig.port}\n\n`
+                  `  npx tcher-designs detect http://localhost:${fwConfig.port}\n\n`
                 );
               } else if (probe.listening && !probe.matched) {
                 process.stderr.write(
@@ -169,7 +183,7 @@ async function detectCli() {
                 process.stderr.write(
                   `\n${fwConfig.name} project detected (${path.basename(fwConfig.configPath)}).\n` +
                   `Start the dev server and scan via URL for best results:\n` +
-                  `  npx tcher detect http://localhost:${fwConfig.port}\n\n`
+                  `  npx tcher-designs detect http://localhost:${fwConfig.port}\n\n`
                 );
               }
             }
@@ -230,6 +244,11 @@ async function detectCli() {
     } finally {
       if (browserDetector) await browserDetector.close();
     }
+  }
+
+  if (mode !== 'all') {
+    const wanted = MODE_CATEGORIES[mode];
+    allFindings = allFindings.filter(f => wanted.has(f.category));
   }
 
   if (allFindings.length > 0) {

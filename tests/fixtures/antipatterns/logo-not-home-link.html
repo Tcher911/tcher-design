@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>logo-not-home-link fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  header { width: 900px; padding: 16px; }
+  header img, header svg { width: 40px; height: 40px; }
+  .tiny { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<h1>Header logo cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<header id="flag-bare-img">
+  <img src="acme-logo.svg" alt="Acme">
+  <span>Acme</span>
+</header>
+<header id="flag-svg-logo">
+  <svg viewBox="0 0 24 24" aria-label="Brand mark"><circle cx="12" cy="12" r="10"/></svg>
+</header>
+<header id="flag-nested">
+  <div class="brand"><img src="nested-logo.png" alt="Nested"></div>
+</header>
+<header id="flag-h1-logo">
+  <h1><img src="wordmark.svg" alt="Wordmark"></h1>
+</header>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<header id="pass-root-link">
+  <a href="/"><img src="linked-logo.svg" alt="Linked"></a>
+</header>
+<header id="pass-index-link">
+  <a href="index.html"><img src="index-logo.svg" alt="Index"></a>
+</header>
+<header id="pass-hash-link">
+  <a href="#"><svg viewBox="0 0 24 24" aria-label="SPA mark"><rect width="24" height="24"/></svg></a>
+</header>
+<header id="pass-tiny-icon">
+  <img class="tiny" src="favicon-ish.png" alt="">
+  <a href="/">Acme home</a>
+</header>
+<main>
+  <img src="content-figure.png" alt="Diagram outside any header" style="width: 200px; height: 120px;">
+</main>
+
+</body>
+</html>

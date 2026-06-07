@@ -369,7 +369,177 @@ const ANTIPATTERNS = [
     skillSection: 'Motion',
     skillGuideline: 'image scale or rotate on hover',
   },
+  {
+    id: 'emoji-in-ui',
+    category: 'slop',
+    severity: 'advisory',
+    name: 'Emoji as UI ornament',
+    description:
+      'Emoji in headings, buttons, or as list bullets is a recognizable generated-UI tell — the playful-emoji reflex. Advisory because some brands use emoji as a deliberate voice decision; keep it only when it is a choice, not a default.',
+    skillSection: 'Visual Details',
+    skillGuideline: 'emoji as interface ornament',
+  },
+
+  // ── UX: usability rules the engine can measure deterministically ──
+  // The `law` field names the Laws of UX principle (lawsofux.com, Jon
+  // Yablonski) a rule operationalizes; descriptions are our own wording.
+  // Rules without a `law` are core usability/WCAG checks.
+  {
+    id: 'tap-target-too-small',
+    category: 'ux',
+    severity: 'critical',
+    law: "Fitts's Law",
+    name: 'Tap target too small',
+    description:
+      'Interactive element smaller than 24×24px. Small targets take longer to acquire and cause mis-taps, especially on touch screens. WCAG 2.2 sets 24×24 as the floor; 44×44 is the comfortable target.',
+  },
+  {
+    id: 'tap-targets-crowded',
+    category: 'ux',
+    severity: 'major',
+    law: "Fitts's Law",
+    name: 'Tap targets crowded',
+    description:
+      'Small interactive elements packed closer than 8px apart. Adjacent targets without breathing room turn every tap into a precision task and cause wrong-action errors.',
+  },
+  {
+    id: 'input-without-label',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Input without a label',
+    description:
+      'Form field with no label, aria-label, or aria-labelledby. A placeholder is not a label: it vanishes on focus, screen readers may skip it, and users forget what the half-filled field asked for.',
+  },
+  {
+    id: 'icon-button-no-name',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Icon button without a name',
+    description:
+      'Icon-only button or link with no accessible name (aria-label, title, or img alt). Screen readers announce it as "button", and the action is a guess.',
+  },
+  {
+    id: 'missing-alt',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Image missing alt attribute',
+    description:
+      'Content <img> with no alt attribute at all. Screen readers fall back to the filename. Use alt="" for decorative images and a real description for content images.',
+  },
+  {
+    id: 'focus-outline-removed',
+    category: 'ux',
+    severity: 'critical',
+    name: 'Focus outline removed',
+    description:
+      'A stylesheet sets outline: none on :focus without any replacement cue (box-shadow, border, or a new outline). Keyboard users lose their position on the page entirely.',
+  },
+  {
+    id: 'no-viewport-meta',
+    category: 'ux',
+    severity: 'major',
+    name: 'Missing viewport meta tag',
+    description:
+      'Page has no <meta name="viewport">. Mobile browsers will render it at desktop width and shrink it, making text unreadable and targets untappable.',
+  },
+  {
+    id: 'link-no-affordance',
+    category: 'ux',
+    severity: 'major',
+    law: 'Law of Similarity',
+    name: 'Link indistinguishable from text',
+    description:
+      'Link inside prose styled with the body text color and no underline, weight, or border cue. Readers cannot tell what is clickable; links must look different from the text around them.',
+  },
+  {
+    id: 'choice-overload-nav',
+    category: 'ux',
+    severity: 'minor',
+    law: "Hick's Law",
+    name: 'Too many navigation choices',
+    description:
+      'Top-level navigation with more than 8 items. Decision time grows with every added choice; group secondary destinations under a parent or move them to the footer.',
+  },
+  {
+    id: 'select-overload',
+    category: 'ux',
+    severity: 'advisory',
+    law: 'Choice Overload',
+    name: 'Select with too many options',
+    description:
+      'Dropdown with more than 25 ungrouped options. Long flat lists force linear scanning; group with optgroup, or switch to a searchable combobox. Country, year, and similar canonical lists are exempt.',
+  },
+  {
+    id: 'logo-not-home-link',
+    category: 'ux',
+    severity: 'advisory',
+    law: "Jakob's Law",
+    name: 'Header logo is not a home link',
+    description:
+      'The site logo in the header is not wrapped in a link to home. Users expect the logo to take them back; the convention is universal enough that breaking it reads as broken.',
+  },
+  {
+    id: 'autocomplete-missing',
+    category: 'ux',
+    severity: 'advisory',
+    law: "Postel's Law",
+    name: 'Autofillable field without autocomplete',
+    description:
+      'Email, phone, name, or address field in a form without an autocomplete attribute. The browser already knows these values; one attribute saves the user the whole field.',
+  },
+  {
+    id: 'form-field-overload',
+    category: 'ux',
+    severity: 'minor',
+    law: "Miller's Law",
+    name: 'Form fields without grouping',
+    description:
+      'More than 7 text fields in one form with no fieldset or section headings. Working memory holds about 7 items; chunk long forms into labelled groups or steps.',
+  },
+  {
+    id: 'oversized-image-payload',
+    category: 'ux',
+    severity: 'major',
+    law: 'Doherty Threshold',
+    name: 'Oversized image payload',
+    description:
+      'Image whose natural size is far larger than its rendered size (beyond 2.5× even on a high-density screen). The wasted bytes delay load past the 400ms feedback window for no visual gain.',
+  },
 ];
+
+// Severity drives the detect overlay's color coding.
+//   critical = breaks readability or usability for real users; fix first (red).
+//   major    = clearly hurts design quality or is a loud AI-template tell (orange).
+//   minor    = stylistic tell worth a look (yellow).
+//   advisory = pre-existing lowest tier: heads-up, lower-confidence rules
+//              (set per-entry above; never overwritten here) (muted yellow).
+// Defaults for entries without an explicit severity: quality and ux rules
+// are major, slop rules are minor; the map below lists the exceptions.
+const SEVERITY_OVERRIDES = {
+  // quality → critical
+  'broken-image': 'critical',
+  'gray-on-color': 'critical',
+  'low-contrast': 'critical',
+  'tiny-text': 'critical',
+  'skipped-heading': 'critical',
+  'text-overflow': 'critical',
+  'clipped-overflow-container': 'critical',
+  // slop → major (the loudest AI tells)
+  'side-tab': 'major',
+  'border-accent-on-rounded': 'major',
+  'ai-color-palette': 'major',
+  'gradient-text': 'major',
+  'icon-tile-stack': 'major',
+  'bounce-easing': 'major',
+  'dark-glow': 'major',
+  'flat-type-hierarchy': 'major',
+  'nested-cards': 'major',
+};
+for (const ap of ANTIPATTERNS) {
+  if (!ap.severity) {
+    ap.severity = SEVERITY_OVERRIDES[ap.id] || (ap.category === 'slop' ? 'minor' : 'major');
+  }
+}
 
 const RULE_ENGINE_SUPPORT = {
   regex: new Set(['source', 'page-analyzer']),

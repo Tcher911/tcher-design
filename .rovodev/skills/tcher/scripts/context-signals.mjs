@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Context-signals gatherer for the bare `{{command_prefix}}tcher`
+ * Context-signals gatherer for the bare `/tcher`
  * (no-argument) path. Collects cheap, deterministic signals about the current
  * project and emits them as JSON.
  *
  * It does NOT score or rank. The agent reasons over the raw signals using its
  * knowledge of the command catalog (see SKILL.md routing rule 1). Deliberately
- * light: no LLM calls, no detector run (`npx tcher detect` is heavier and
+ * light: no LLM calls, no detector run (`npx tcher-designs detect` is heavier and
  * opt-in), no file writes. Every probe is best-effort and never throws; the
  * output is always valid JSON.
  *

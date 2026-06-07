@@ -2,11 +2,11 @@
  * CLI client for the live variant mode poll/reply protocol.
  *
  * Usage:
- *   npx tcher poll                         # Block until browser event, print JSON
- *   npx tcher poll --stream                # Experimental: keep polling; one JSON line per event
- *   npx tcher poll --timeout=600000        # Custom timeout (ms); default is long-poll friendly
- *   npx tcher poll --reply <id> done       # Reply "done" to event <id>
- *   npx tcher poll --reply <id> error "msg" # Reply with error
+ *   node <scripts_path>/live-poll.mjs                          # Block until browser event, print JSON
+ *   node <scripts_path>/live-poll.mjs --stream                 # Experimental: keep polling; one JSON line per event
+ *   node <scripts_path>/live-poll.mjs --timeout=600000         # Custom timeout (ms); default is long-poll friendly
+ *   node <scripts_path>/live-poll.mjs --reply <id> done        # Reply "done" to event <id>
+ *   node <scripts_path>/live-poll.mjs --reply <id> error "msg" # Reply with error
  */
 
 import { execFileSync } from 'node:child_process';
@@ -24,10 +24,14 @@ export const DEFAULT_EVENT_LEASE_MS = 600_000;
 
 const EVENT_TYPES_NEEDING_AGENT_REPLY = new Set(['generate', 'steer', 'manual_edit_apply']);
 
+// Where this script lives; used to print copy-runnable commands in errors.
+const SCRIPTS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const LIVE_SERVER_CMD = `node ${path.join(SCRIPTS_DIR, 'live.mjs')}`;
+
 function readServerInfo() {
   const record = readLiveServerInfo(process.cwd());
   if (!record) {
-    console.error('No running live server found. Start one with: npx tcher live');
+    console.error(`No running live server found. Start one with: ${LIVE_SERVER_CMD}`);
     process.exit(1);
   }
   return record.info;
@@ -82,7 +86,7 @@ export function parseReplyArgs(args) {
 }
 
 function validateReplyArgs({ id, status }) {
-  const usage = "Usage: npx tcher poll --reply <id> <status> [--file path] [--data '<json>'] [message]";
+  const usage = "Usage: node live-poll.mjs --reply <id> <status> [--file path] [--data '<json>'] [message]";
   if (!id || id.startsWith('--')) {
     const err = new Error(`${usage}\nMissing event id after --reply.`);
     err.code = 'INVALID_REPLY_ARGS';
@@ -283,11 +287,11 @@ export async function runPollStream(base, token, {
 function handlePollError(err) {
   if (err.code === 'AUTH_FAILED') {
     console.error(err.message);
-    console.error('Try restarting: npx tcher live stop && npx tcher live');
+    console.error(`Try restarting the live server: ${LIVE_SERVER_CMD}`);
     process.exit(1);
   }
   if (err.cause?.code === 'ECONNREFUSED') {
-    console.error('Live server not running. Start one with: npx tcher live');
+    console.error(`Live server not running. Start one with: ${LIVE_SERVER_CMD}`);
     process.exit(1);
   }
   if (err.code === 'ACK_TIMEOUT') {
@@ -331,7 +335,7 @@ Harness note:
   const info = readServerInfo();
   const base = `http://localhost:${info.port}`;
 
-  // Reply mode: npx tcher poll --reply <id> <status> [--file path] [--data '<json>'] [message]
+  // Reply mode: node live-poll.mjs --reply <id> <status> [--file path] [--data '<json>'] [message]
   if (args.includes('--reply')) {
     let reply;
     try {
@@ -345,7 +349,7 @@ Harness note:
       await postReply(base, info.token, reply);
     } catch (err) {
       if (err.cause?.code === 'ECONNREFUSED') {
-        console.error('Live server not running. Start one with: npx tcher live');
+        console.error(`Live server not running. Start one with: ${LIVE_SERVER_CMD}`);
       } else {
         console.error('Reply failed:', err.message);
       }

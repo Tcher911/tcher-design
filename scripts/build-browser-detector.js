@@ -26,9 +26,18 @@ const OUTPUT = path.join(ROOT, 'cli/engine/detect-antipatterns-browser.js');
 function browserSafeModule(relPath) {
   let code = fs.readFileSync(path.join(ROOT, relPath), 'utf-8');
   if (relPath === 'cli/engine/registry/antipatterns.mjs') {
-    const match = code.match(/const ANTIPATTERNS = \[[\s\S]*?\n\];/);
-    if (!match) throw new Error('Could not extract browser antipattern registry');
-    code = match[0];
+    // The registry's severity lives partly OUTSIDE the array (the
+    // SEVERITY_OVERRIDES map + the default-assignment loop), so extract all
+    // three blocks. Missing the loop once shipped an all-minor (all-yellow)
+    // overlay.
+    const arrayMatch = code.match(/const ANTIPATTERNS = \[[\s\S]*?\n\];/);
+    if (!arrayMatch) throw new Error('Could not extract browser antipattern registry');
+    const overridesMatch = code.match(/const SEVERITY_OVERRIDES = \{[\s\S]*?\n\};/);
+    const loopMatch = code.match(/for \(const ap of ANTIPATTERNS\) \{[\s\S]*?\n\}/);
+    if (!overridesMatch || !loopMatch) {
+      throw new Error('Could not extract severity assignment for the browser registry');
+    }
+    code = [arrayMatch[0], overridesMatch[0], loopMatch[0]].join('\n\n');
   }
   code = code.replace(/^import[\s\S]*?;\n/gm, '');
   code = code.replace(/^export\s+\{[\s\S]*?^};\n?/gm, '');

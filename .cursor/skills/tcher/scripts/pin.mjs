@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -25,13 +25,17 @@ const HARNESS_DIRS = [
   '.trae', '.trae-cn', '.pi', '.opencode', '.kiro', '.rovodev',
 ];
 
+// Codex discovers skills in .codex/ and .agents/ and invokes them as `$name`;
+// every other harness uses `/name`.
+const COMMAND_PREFIX_BY_HARNESS = { '.codex': '$', '.agents': '$' };
+
 // Valid sub-command names
 const VALID_COMMANDS = [
-  'craft', 'init', 'extract', 'document', 'shape',
+  'craft', 'init', 'extract', 'document', 'shape', 'idea',
   'critique', 'audit',
-  'polish', 'bolder', 'quieter', 'distill', 'harden', 'onboard', 'live',
-  'animate', 'colorize', 'typeset', 'layout', 'delight', 'overdrive',
-  'clarify', 'adapt', 'optimize',
+  'refine', 'brave', 'calm', 'trim', 'harden', 'onboard', 'live',
+  'animate', 'palette', 'typo', 'layout', 'motion', 'extreme',
+  'clarify', 'responsive', 'optimize',
 ];
 
 // Marker to identify pinned skills (so unpin doesn't delete user skills)
@@ -87,8 +91,8 @@ function loadCommandMetadata() {
 /**
  * Generate a pinned skill's SKILL.md content.
  */
-function generatePinnedSkill(command, metadata) {
-  const desc = metadata[command]?.description || `Shortcut for /tcher ${command}.`;
+function generatePinnedSkill(command, metadata, cmdPrefix) {
+  const desc = metadata[command]?.description || `Shortcut for ${cmdPrefix}tcher ${command}.`;
   const hint = metadata[command]?.argumentHint || '[target]';
 
   return `---
@@ -100,9 +104,9 @@ user-invocable: true
 
 ${PIN_MARKER}
 
-This is a pinned shortcut for \`{{command_prefix}}tcher ${command}\`.
+This is a pinned shortcut for \`${cmdPrefix}tcher ${command}\`.
 
-Invoke {{command_prefix}}tcher ${command}, passing along any arguments provided here, and follow its instructions.
+Invoke ${cmdPrefix}tcher ${command}, passing along any arguments provided here, and follow its instructions.
 `;
 }
 
@@ -118,10 +122,13 @@ function pin(command, projectRoot) {
     return false;
   }
 
-  const content = generatePinnedSkill(command, metadata);
   let created = 0;
 
   for (const skillsDir of harnessDirs) {
+    // Match the shortcut text to the harness it lands in (Codex invokes
+    // skills with `$name`; everything else uses `/name`).
+    const cmdPrefix = COMMAND_PREFIX_BY_HARNESS[basename(dirname(skillsDir))] || '/';
+    const content = generatePinnedSkill(command, metadata, cmdPrefix);
     // Check if skill already exists (and isn't a pin)
     const skillDir = join(skillsDir, command);
     if (existsSync(skillDir)) {

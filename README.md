@@ -1,292 +1,290 @@
-# Tcher
+# tcher-design
 
-The vocabulary you didn't know you needed. 1 skill, 23 commands, and curated anti-patterns for flawless frontend design.
+1 skill, 24 commands, and curated anti-patterns for exceptional frontend design.
 
-> **Quick start:** Visit [tcher.style](https://tcher.style) to download ready-to-use bundles.
+> **Quick start:** `npx tcher-designs skills install`
 
-## Why Tcher?
+---
 
-Anthropic's [frontend-design](https://github.com/anthropics/skills/tree/main/skills/frontend-design) was the first widely-used design skill for Claude. Tcher started from there.
+## Why tcher-design?
 
-Every model trained on the same SaaS templates. Skip the guidance and you get the same handful of tells on every project: Inter for everything, purple-to-blue gradients, cards nested in cards, gray text on colored backgrounds, the rounded-square icon tile above every heading.
+Every LLM learned from the same generic templates. Without guidance, you get the same predictable output: Inter font, purple gradients, cards nested in cards, gray text on colored backgrounds.
 
-Tcher adds:
-- **7 domain reference files** ([view source](skill/)). Typography, color, motion, spatial, interaction, responsive, UX writing. Load on every command, alongside a brand-vs-product register that adjusts the defaults.
-- **23 commands.** A shared design vocabulary with your AI: `polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`, and more.
-- **27 deterministic anti-pattern rules** plus a 12-rule LLM critique pass. CLI and browser extension run the deterministic ones with no LLM and no API key. Each is tied to specific design guidance the skill teaches against.
+tcher-design fights that bias with:
 
-## What's Included
+- **An expanded skill** with 7 domain-specific reference files
+- **24 commands** to audit, critique, refine, trim, animate, and more
+- **Curated anti-patterns** that explicitly tell the AI what NOT to do
 
-### The Skill: tcher
+---
 
-A comprehensive design skill with 7 domain-specific references ([view skill](skill/SKILL.src.md)):
+## Installation
+
+**Option 1: npx (Recommended)**
+
+```bash
+npx tcher-designs skills install
+```
+
+**Option 2: Copy from repository**
+
+| Tool | Command |
+|------|---------|
+| Claude Code (project) | `cp -r dist/claude-code/.claude your-project/` |
+| Claude Code (global) | `cp -r dist/claude-code/.claude/* ~/.claude/` |
+| Cursor | `cp -r dist/cursor/.cursor your-project/` |
+| Gemini CLI | `cp -r dist/gemini/.gemini your-project/` |
+| Codex CLI | `cp -r dist/agents/.agents your-project/` |
+| GitHub Copilot | `cp -r dist/github/.github your-project/` |
+| Trae | `cp -r dist/trae/.trae/skills/* ~/.trae/skills/` |
+| Rovo Dev | `cp -r dist/rovo-dev/.rovodev your-project/` |
+
+---
+
+## The Skill: /tcher
+
+7 domain-specific reference files that guide the AI to think along the right axes:
 
 | Reference | Covers |
 |-----------|--------|
-| [typography](skill/reference/typography.md) | Type systems, font pairing, modular scales, OpenType |
-| [color-and-contrast](skill/reference/color-and-contrast.md) | OKLCH, tinted neutrals, dark mode, accessibility |
-| [spatial-design](skill/reference/spatial-design.md) | Spacing systems, grids, visual hierarchy |
-| [motion-design](skill/reference/motion-design.md) | Easing curves, staggering, reduced motion |
-| [interaction-design](skill/reference/interaction-design.md) | Forms, focus states, loading patterns |
-| [responsive-design](skill/reference/responsive-design.md) | Mobile-first, fluid design, container queries |
-| [ux-writing](skill/reference/ux-writing.md) | Button labels, error messages, empty states |
+| typography | Type systems, font pairing, modular scales, OpenType |
+| color-and-contrast | OKLCH, tinted neutrals, dark mode, accessibility |
+| spatial-design | Spacing systems, grids, visual hierarchy |
+| motion-design | Easing curves, staggering, reduced motion |
+| interaction-design | Forms, focus states, loading patterns |
+| responsive-design | Mobile-first, fluid design, container queries |
+| ux-writing | Button labels, error messages, empty states |
 
-### 23 Commands
+---
 
-All commands are accessed through `/tcher`:
+## 24 Commands
+
+### Setup & Planning
 
 | Command | What it does |
-|---------|--------------|
-| `/tcher craft` | Full shape-then-build flow with visual iteration |
-| `/tcher init` | One-time setup: gather design context, write PRODUCT.md and DESIGN.md, configure live mode, recommend next steps |
-| `/tcher document` | Generate root DESIGN.md from existing project code |
+|---------|-------------|
+| `/tcher init` | One-time setup: reads the project, writes `PRODUCT.md` and `DESIGN.md` |
+| `/tcher document` | Generate `DESIGN.md` from existing code (if you skipped init) |
 | `/tcher extract` | Pull reusable components and tokens into the design system |
 | `/tcher shape` | Plan UX/UI before writing code |
+| `/tcher idea` | Explore distinct design directions from a short brief |
+| `/tcher craft` | Full shape → build → iterate flow in one go |
+
+### Review & Audit
+
+| Command | What it does |
+|---------|-------------|
 | `/tcher critique` | UX design review: hierarchy, clarity, emotional resonance |
-| `/tcher audit` | Run technical quality checks (a11y, performance, responsive) |
-| `/tcher polish` | Final pass, design system alignment, and shipping readiness |
-| `/tcher bolder` | Amplify boring designs |
-| `/tcher quieter` | Tone down overly bold designs |
-| `/tcher distill` | Strip to essence |
+| `/tcher audit` | Technical quality checks: a11y, performance, responsive |
+
+### Refine & Polish
+
+| Command | What it does |
+|---------|-------------|
+| `/tcher refine` | Final pass: design system alignment and shipping readiness |
+| `/tcher trim` | Strip to essence, remove everything unnecessary |
+| `/tcher brave` | Amplify designs that are too timid |
+| `/tcher calm` | Tone down designs that are too loud |
 | `/tcher harden` | Error handling, i18n, text overflow, edge cases |
-| `/tcher onboard` | First-run flows, empty states, activation paths |
-| `/tcher animate` | Add purposeful motion |
-| `/tcher colorize` | Introduce strategic color |
-| `/tcher typeset` | Fix font choices, hierarchy, sizing |
+
+### Visual Styling
+
+| Command | What it does |
+|---------|-------------|
+| `/tcher palette` | Introduce strategic color: different hue families, not just tints |
+| `/tcher typo` | Fix font choices, hierarchy, sizing |
 | `/tcher layout` | Fix layout, spacing, visual rhythm |
-| `/tcher delight` | Add moments of joy |
-| `/tcher overdrive` | Add technically extraordinary effects |
+| `/tcher animate` | Add purposeful motion |
+| `/tcher motion` | Add moments of joy: micro-interactions, personality, easter eggs |
+| `/tcher extreme` | Add technically extraordinary effects |
+
+### UX & Content
+
+| Command | What it does |
+|---------|-------------|
 | `/tcher clarify` | Improve unclear UX copy |
-| `/tcher adapt` | Adapt for different devices |
+| `/tcher onboard` | First-run flows, empty states, activation paths |
+
+### Adaptation & Performance
+
+| Command | What it does |
+|---------|-------------|
+| `/tcher responsive` | Adapt for different devices or contexts |
 | `/tcher optimize` | Performance improvements |
-| `/tcher live` | Visual variant mode: iterate on elements in the browser |
 
-Use `/tcher pin <command>` to create standalone shortcuts (e.g., `pin audit` creates `/audit`).
+### Live Mode
 
-#### Usage Examples
+| Command | What it does |
+|---------|-------------|
+| `/tcher live` | Visual variant mode: iterate on elements in the browser in real time |
+
+**Usage examples**
 
 ```
 /tcher audit blog           # Audit blog hub + post pages
 /tcher critique landing     # UX design review
-/tcher polish settings      # Final pass before shipping
+/tcher refine settings      # Final pass before shipping
 /tcher harden checkout      # Add error handling + edge cases
-```
-
-Or use `/tcher` directly with a description:
-```
 /tcher redo this hero section
 ```
 
-### Anti-Patterns
+**Shortcut:** `/tcher pin <command>` creates a standalone alias, e.g. `pin audit` → `/audit`
 
-The skill includes explicit guidance on what to avoid:
+---
 
-- Don't use overused fonts (Arial, Inter, system defaults)
-- Don't use gray text on colored backgrounds
-- Don't use pure black/gray (always tint)
-- Don't wrap everything in cards or nest cards inside cards
-- Don't use bounce/elastic easing (feels dated)
+## Live Mode: `/tcher live`
 
-## See It In Action
+Select an element in the browser → AI generates variants → preview them live → accept and the change is written back to real source code.
 
-Visit [tcher.style](https://tcher.style#casestudies) to see before/after case studies of real projects transformed with Tcher commands.
+### Prerequisites
 
-## Installation
+- `/tcher init` has been run (variants will align with `PRODUCT.md` / `DESIGN.md`)
+- A dev server with HMR is running: Vite, Next.js, SvelteKit, Astro, Nuxt, Bun, or a static HTML file
 
-### Option 1: CLI installer (Recommended)
+### Flow
 
-From the root of your project, run:
-
-```bash
-npx tcher skills install
+**1. Start**
 ```
-
-This auto-detects your harness and writes the build compiled for it to the right location (`.claude/skills/`, `.cursor/skills/`, etc.). Works with Cursor, Claude Code, Gemini CLI, Codex CLI, and every other supported tool. Reload your harness afterward.
-
-Claude Code users can alternatively install the plugin with `/plugin marketplace add Tcher911/tcher-design`. The general-purpose `npx skills add Tcher911/tcher-design` also works, though it installs one shared build for all harnesses rather than the one compiled for yours.
-
-### Option 2: Git Submodule
-
-For teams that want to keep Tcher vendored and updated through Git, add this repo as a submodule and link the compiled provider build into your harness folders:
-
-```bash
-git submodule add https://github.com/Tcher911/tcher-design .tcher
-npx tcher skills link --source=.tcher --providers=claude,cursor
-git add .gitmodules .tcher .claude .cursor
-git commit -m "Add Tcher skills"
+/tcher live
 ```
+Opens a helper server on port `8400` and injects a picker script into your entry file. On first run it will ask you to create a `config.json` and offer a dev-only CSP patch if needed (safe, guarded by `NODE_ENV === "development"`).
 
-Use the providers your project needs, for example `claude`, `cursor`, `gemini`, `codex`, `github`, `opencode`, `pi`, `qoder`, `trae`, `trae-cn`, or `rovo-dev`. The command links individual skill folders from `.tcher/dist/universal/` and leaves existing real skill directories untouched unless you pass `--force`.
+**2. Open your dev server**
+Navigate to your own dev server URL, e.g. `localhost:5173`.
+⚠️ Not port `8400`; that's the helper only.
+You'll see a dark pill bar at the bottom of the screen with a Select button.
 
-To update later:
+**3. Select an element**
+Click any element you want to change (hero, card, button, section). An outline and context bar will appear.
 
-```bash
-git submodule update --remote .tcher
-npx tcher skills link --source=.tcher --providers=claude,cursor
-```
+| Input | Effect |
+|-------|--------|
+| Command chip | Choose a focused action: brave, motion, layout, typo, etc. |
+| Idea field | Natural language direction, e.g. "more playful", "less SaaS" |
+| Comment pin | Pin position matters: a pin near the title comments on the title, not the whole block |
+| Stroke drawing | Circle = emphasize · Arrow = direction/move · Cross = remove |
 
-### Option 3: Download from Website
+> If at least one annotation is present, the system sends a screenshot with your markings to the agent before generating.
 
-Visit [tcher.style](https://tcher.style), download the ZIP for your tool, and extract to your project.
+**4. Press Enter**
+The AI generates 2–4 genuinely different variants and hot-swaps them into the page via HMR. Toggle between `1/2` `2/2` on the real element in the real page. Some variants include sliders (density, color amount, etc.) you can tune without regenerating.
 
-### Option 4: Copy from Repository
+**5. Decide**
+- **Accept** → variant is written back to source code, all temporary code is cleaned up
+- **Discard** → reverts to the original
+- Type a refinement and hit Go again to iterate further
 
-**Cursor:**
-```bash
-cp -r dist/cursor/.cursor your-project/
-```
+**6. Exit**
+Press exit on the pill; the injected script is removed cleanly.
 
-> **Note:** Cursor skills require setup:
-> 1. Switch to Nightly channel in Cursor Settings → Beta
-> 2. Enable Agent Skills in Cursor Settings → Rules
->
-> [Learn more about Cursor skills](https://cursor.com/docs/context/skills)
+> **Tip:** Select a small enough element that you can hold the whole thing in your head (one card, one hero). You'll get sharper variants than if you select the entire page. Don't queue other tasks while a generation is in progress.
 
-**Claude Code:**
-```bash
-# Project-specific
-cp -r dist/claude-code/.claude your-project/
+### Controls
 
-# Or global (applies to all projects)
-cp -r dist/claude-code/.claude/* ~/.claude/
-```
+| Control | Description |
+|---------|-------------|
+| "Describe what you need." | Free prompt that steers all variants, e.g. "feel like a newspaper front page" |
+| Variations ×2 / ×3 / ×4 | Number of variants per run. Click to cycle (default ×2). More = more options, longer wait. |
+| Enter | Send the task to the agent |
+| Type Here (on the pill bar) | Page-level direction without selecting an element; type what needs to change and press Enter |
+| Detect UX | Run the 56-rule design + UX check on the current page (see below) |
 
-**OpenCode:**
-```bash
-cp -r dist/opencode/.opencode your-project/
-```
+### 12 Live Mode Actions
 
-**Pi:**
-```bash
-cp -r dist/pi/.pi your-project/
-```
+Each action loads its own reference file (`reference/brave.md`, etc.) to ensure variants differ along the right axis. Idea uses the project's core design laws and brand register instead.
 
-**Gemini CLI:**
-```bash
-cp -r dist/gemini/.gemini your-project/
-```
+| Action | What it does | Use when |
+|--------|-------------|----------|
+| **Idea** | No locked direction: agent explores genuinely different archetypes | You want to see the full possibility space, or you already have a prompt |
+| **Brave** | Make it more daring: each variant pushes a different dimension (scale / color / structure) | The design feels timid, flat, or lacks a focal point |
+| **Calm** | Reduce visual noise: each variant pulls back a different thing (color / decoration / spacing) | The design feels cluttered or overly loud |
+| **Trim** | Cut what's unnecessary: visual noise / redundant content / over-nested structure | The element feels bloated |
+| **Refine** | Refine the details: spacing rhythm / hierarchy / micro details like corner radius, focus states | The structure is solid, needs a final pass |
+| **Typo** | Typography only: each variant uses a different font pair and scale ratio | You want to change personality through type |
+| **Palette** | Rethink the entire color set: different hue families, not just three shades of the same color | You want a completely different color world |
+| **Layout** | Restructure the arrangement: stacked / side-by-side / grid / asymmetric | The current layout isn't working |
+| **Responsive** | Adjust for a different context: mobile-first / tablet / desktop / print-low-data | You need a version for another screen or environment |
+| **Animate** | Add motion: cascade stagger / clip wipe / scale-focus / morph / parallax | You want life, not the same fade three ways |
+| **Motion** | Add personality: micro-interaction / typographic surprise / illustrated accent / easter egg | The design is correct but boring |
+| **Extreme** | Break conventions entirely: each variant challenges a different rule (scale / structure / motion / input model) | You want something technically extraordinary |
 
-> **Note:** Gemini CLI skills require setup:
-> 1. Install preview version: `npm i -g @google/gemini-cli@preview`
-> 2. Run `/settings` and enable "Skills"
-> 3. Run `/skills list` to verify installation
->
-> [Learn more about Gemini CLI skills](https://geminicli.com/docs/cli/skills/)
+---
 
-**Codex CLI:**
-```bash
-# Project-local
-cp -r dist/agents/.agents your-project/
+## UX Check: Detect UX
 
-# Or user-wide
-mkdir -p ~/.agents/skills
-cp -r dist/agents/.agents/skills/* ~/.agents/skills/
-```
+Press **Detect UX** on the pill bar to scan the live page with **56 deterministic rules**. No AI call, no network: the engine walks the real DOM with computed styles and flags problems in about a second.
 
-> The asset-producer subagent ships nested inside the skill's own `agents/` folder, which Codex auto-discovers. No separate `.codex/agents/` copy is needed.
+The rules split into two sets, and the findings popover has a tab for each:
 
-**GitHub Copilot:**
-```bash
-cp -r dist/github/.github your-project/
-```
+- **Design (42)**: AI-template tells and craft problems. Purple gradient text, side-tab borders, icon-tile stacks, low contrast, cramped padding, marketing buzzwords.
+- **UX (14)**: usability checks, several operationalizing principles from Jon Yablonski's [Laws of UX](https://lawsofux.com/). Tap targets under 24px (Fitts's Law), navs past 8 choices (Hick's Law), prose links with no visual cue (Law of Similarity), forms past 7 ungrouped fields (Miller's Law), autofillable fields without `autocomplete` (Postel's Law), multi-thousand-pixel images in small slots (Doherty Threshold), plus inputs without labels, icon buttons without names, missing `alt`, killed focus outlines, and a missing viewport meta.
 
-**Trae:**
-```bash
-# Trae China (domestic version)
-cp -r dist/trae/.trae-cn/skills/* ~/.trae-cn/skills/
+Findings are color-coded by severity:
 
-# Trae International
-cp -r dist/trae/.trae/skills/* ~/.trae/skills/
-```
+| Tier | Color | Means | Examples |
+|------|-------|-------|----------|
+| critical | red | Breaks readability or usability; fix first | Low contrast, tiny body text, broken images, inputs without labels, 16px tap targets, killed focus outlines |
+| major | orange | Clearly hurts quality, or screams template | Purple gradient text, side-tab borders, nested cards, undistinguishable links, oversized image payloads |
+| minor | yellow | Stylistic tells worth a look | Overused fonts, em-dash overuse, marketing buzzwords, nav choice overload, ungrouped form walls |
+| advisory | muted yellow | Heads-up; sometimes a deliberate choice | Emoji as UI ornament, repeated section kickers, unlinked header logos, missing autocomplete |
 
-> **Note:** Trae has two versions with different config directories:
-> - **Trae China**: `~/.trae-cn/skills/`
-> - **Trae International**: `~/.trae/skills/`
->
-> After copying, restart Trae IDE to activate the skills.
+How it reads on the page:
 
-**Rovo Dev:**
-```bash
-# Project-specific
-cp -r dist/rovo-dev/.rovodev your-project/
+1. Every flagged element gets an outline and a label in its tier color; hover shows the detail (exact contrast ratio, offending colors, sizes).
+2. A banner at the top sums the page up with one status badge per tier, e.g. `UX check: 9 critical · 6 major · 2 minor · 6 advisory`.
+3. **View details** opens a left-docked popover with **All / Design / UX** tabs, findings grouped by tier inside each. UX findings cite their law inline ("Fitts's Law · 16×16px"). Click a finding to jump to its element; the outline flashes blue for a second so you can't miss it.
 
-# Or global (applies to all projects)
-cp -r dist/rovo-dev/.rovodev/skills/* ~/.rovodev/skills/
-```
+The deterministic rules cover what a DOM walk can measure. The judgment half of the Laws of UX (Peak-End, Tesler's, Flow, mental models) lives in `/tcher audit`, which scores a dedicated UX dimension across all 30 laws.
 
-**Qoder:**
-```bash
-# Project-specific
-cp -r dist/qoder/.qoder your-project/
+The same rule engine powers `npx tcher-designs detect` for CI; `--mode=design` or `--mode=ux` scopes the scan to one set. Two differences from the overlay: browser-only checks (broken images, real overflow, crowded tap targets, image payloads) run in the overlay only, and provider-specific tells need `--gpt` / `--gemini` flags on the CLI but always run in the overlay.
 
-# Or global (applies to all projects)
-cp -r dist/qoder/.qoder/skills/* ~/.qoder/skills/
-```
-
-## Usage
-
-Once installed, every command runs through the single `/tcher` skill:
-
-```
-/tcher audit        # Find issues
-/tcher polish       # Final cleanup
-/tcher distill      # Remove complexity
-/tcher critique     # Full design review
-```
-
-Type `/tcher` alone to see the full command list.
-
-Most commands accept an optional argument to focus on a specific area:
-
-```
-/tcher audit the header
-/tcher polish the checkout form
-```
-
-If you reach for one command often, pin it with `/tcher pin audit` to get `/audit` as a standalone shortcut.
-
-**Note:** Codex uses skills here, not `/prompts:` commands. Open `/skills` or type `$tcher`. Repo-local installs live in `.agents/skills/`; user-wide installs live in `~/.agents/skills/`. GitHub Copilot uses `.github/skills/`. Restart the tool if a newly installed skill does not appear.
+---
 
 ## CLI
 
-Tcher includes a standalone CLI for detecting anti-patterns without an AI harness:
+**Skills management**
 
 ```bash
-npx tcher detect src/                   # scan a directory
-npx tcher detect index.html             # scan an HTML file
-npx tcher detect https://example.com    # scan a URL (Puppeteer)
-npx tcher detect --fast --json .        # regex-only, JSON output
+npx tcher-designs skills install          # Install
+npx tcher-designs skills install --force  # Reinstall over existing
+npx tcher-designs skills help             # List all commands
+npx tcher-designs skills check            # Check for updates
+npx tcher-designs skills update           # Update to latest version
 ```
 
-The detector catches 24 issues across AI slop (side-tab borders, purple gradients, bounce easing, dark glows) and general design quality (line length, cramped padding, small touch targets, skipped headings, and more).
+**Detect anti-patterns** (no AI required)
+
+```bash
+npx tcher-designs detect src/
+npx tcher-designs detect index.html
+npx tcher-designs detect https://example.com
+npx tcher-designs detect --json .
+npx tcher-designs detect --mode=ux src/     # only the UX/usability rule set
+npx tcher-designs detect --gpt --gemini .   # include provider-specific tells
+```
+
+---
+
+## Anti-Patterns
+
+Explicit guidance baked into the skill telling the AI what to avoid:
+
+- Don't use overused fonts: Arial, Inter, system defaults
+- Don't use gray text on colored backgrounds
+- Don't use pure black or pure gray; always tint
+- Don't wrap everything in cards or nest cards inside cards
+- Don't use bounce or elastic easing; it feels dated
+
+The Detect UX engine enforces 56 machine-checkable rules (42 design, 14 UX; see **UX Check** above), so the guidance is verified, not just suggested.
+
+---
 
 ## Supported Tools
 
-- [Cursor](https://cursor.com)
-- [Claude Code](https://claude.ai/code)
-- [OpenCode](https://opencode.ai)
-- [Pi](https://pi.dev)
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli)
-- [Codex CLI](https://github.com/openai/codex)
-- [VS Code Copilot](https://code.visualstudio.com)
-- [Kiro](https://kiro.dev)
-- [Trae](https://trae.ai)
-- [Rovo Dev](https://www.atlassian.com/software/rovo)
-- [Qoder](https://qoder.com)
+Claude Code · Cursor · Gemini CLI · Codex CLI · VS Code Copilot · OpenCode · Kiro · Trae · Rovo Dev · Qoder · Pi
 
-## Community & Ecosystem
-
-Join the community and ecosystem conversations:
-
-- GitHub Discussions: file bugs, request features, and help newcomers.
-- [Tcher on npm](https://www.npmjs.com/package/tcher): grab the CLI, follow releases, and star the package.
-
-## Contributing
-
-See [DEVELOP.md](DEVELOP.md) for contributor guidelines and build instructions.
+---
 
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE).
-
-The tcher skill builds on [Anthropic's original frontend-design skill](https://github.com/anthropics/skills/tree/main/skills/frontend-design). See [NOTICE.md](NOTICE.md) for attribution.
+Apache 2.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Created by [Tcher](https://tcher-designs.vercel.app/)

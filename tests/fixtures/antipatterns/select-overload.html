@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>select-overload fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  select { width: 280px; height: 36px; }
+</style>
+</head>
+<body>
+<h1>Select option-count cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <select aria-label="category">
+    <option>c01</option><option>c02</option><option>c03</option><option>c04</option><option>c05</option><option>c06</option><option>c07</option><option>c08</option><option>c09</option><option>c10</option><option>c11</option><option>c12</option><option>c13</option><option>c14</option><option>c15</option><option>c16</option><option>c17</option><option>c18</option><option>c19</option><option>c20</option><option>c21</option><option>c22</option><option>c23</option><option>c24</option><option>c25</option><option>c26</option>
+  </select>
+  <select aria-label="team">
+    <option>t01</option><option>t02</option><option>t03</option><option>t04</option><option>t05</option><option>t06</option><option>t07</option><option>t08</option><option>t09</option><option>t10</option><option>t11</option><option>t12</option><option>t13</option><option>t14</option><option>t15</option><option>t16</option><option>t17</option><option>t18</option><option>t19</option><option>t20</option><option>t21</option><option>t22</option><option>t23</option><option>t24</option><option>t25</option><option>t26</option><option>t27</option><option>t28</option><option>t29</option><option>t30</option>
+  </select>
+  <select aria-label="project">
+    <option>p01</option><option>p02</option><option>p03</option><option>p04</option><option>p05</option><option>p06</option><option>p07</option><option>p08</option><option>p09</option><option>p10</option><option>p11</option><option>p12</option><option>p13</option><option>p14</option><option>p15</option><option>p16</option><option>p17</option><option>p18</option><option>p19</option><option>p20</option><option>p21</option><option>p22</option><option>p23</option><option>p24</option><option>p25</option><option>p26</option><option>p27</option><option>p28</option><option>p29</option><option>p30</option><option>p31</option><option>p32</option><option>p33</option><option>p34</option><option>p35</option><option>p36</option><option>p37</option><option>p38</option><option>p39</option><option>p40</option>
+  </select>
+  <select aria-label="tag">
+    <option>g01</option><option>g02</option><option>g03</option><option>g04</option><option>g05</option><option>g06</option><option>g07</option><option>g08</option><option>g09</option><option>g10</option><option>g11</option><option>g12</option><option>g13</option><option>g14</option><option>g15</option><option>g16</option><option>g17</option><option>g18</option><option>g19</option><option>g20</option><option>g21</option><option>g22</option><option>g23</option><option>g24</option><option>g25</option><option>g26</option><option>g27</option>
+  </select>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <select aria-label="priority">
+    <option>Low</option><option>Medium</option><option>High</option>
+  </select>
+  <select aria-label="page size">
+    <option>z01</option><option>z02</option><option>z03</option><option>z04</option><option>z05</option><option>z06</option><option>z07</option><option>z08</option><option>z09</option><option>z10</option><option>z11</option><option>z12</option><option>z13</option><option>z14</option><option>z15</option><option>z16</option><option>z17</option><option>z18</option><option>z19</option><option>z20</option><option>z21</option><option>z22</option><option>z23</option><option>z24</option><option>z25</option>
+  </select>
+  <select aria-label="country" name="country">
+    <option>k01</option><option>k02</option><option>k03</option><option>k04</option><option>k05</option><option>k06</option><option>k07</option><option>k08</option><option>k09</option><option>k10</option><option>k11</option><option>k12</option><option>k13</option><option>k14</option><option>k15</option><option>k16</option><option>k17</option><option>k18</option><option>k19</option><option>k20</option><option>k21</option><option>k22</option><option>k23</option><option>k24</option><option>k25</option><option>k26</option><option>k27</option><option>k28</option><option>k29</option><option>k30</option>
+  </select>
+  <select aria-label="birth year" id="birth-year">
+    <option>y01</option><option>y02</option><option>y03</option><option>y04</option><option>y05</option><option>y06</option><option>y07</option><option>y08</option><option>y09</option><option>y10</option><option>y11</option><option>y12</option><option>y13</option><option>y14</option><option>y15</option><option>y16</option><option>y17</option><option>y18</option><option>y19</option><option>y20</option><option>y21</option><option>y22</option><option>y23</option><option>y24</option><option>y25</option><option>y26</option><option>y27</option><option>y28</option><option>y29</option><option>y30</option>
+  </select>
+  <select aria-label="grouped catalog">
+    <optgroup label="Fruit">
+      <option>f01</option><option>f02</option><option>f03</option><option>f04</option><option>f05</option><option>f06</option><option>f07</option><option>f08</option><option>f09</option><option>f10</option><option>f11</option><option>f12</option><option>f13</option><option>f14</option><option>f15</option>
+    </optgroup>
+    <optgroup label="Vegetables">
+      <option>v01</option><option>v02</option><option>v03</option><option>v04</option><option>v05</option><option>v06</option><option>v07</option><option>v08</option><option>v09</option><option>v10</option><option>v11</option><option>v12</option><option>v13</option><option>v14</option><option>v15</option>
+    </optgroup>
+  </select>
+</div>
+
+</body>
+</html>

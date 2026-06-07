@@ -618,7 +618,7 @@ describe('replacePlaceholders', () => {
     const result = replacePlaceholders('Commands: {{available_commands}}', 'claude-code', []);
     expect(result.startsWith('Commands: /tcher ')).toBe(true);
     expect(result).toContain('/tcher audit');
-    expect(result).toContain('/tcher polish');
+    expect(result).toContain('/tcher refine');
   });
 
   test('should replace multiple placeholders in the same string', () => {

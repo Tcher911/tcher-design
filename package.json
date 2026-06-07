@@ -1,6 +1,6 @@
 {
-  "name": "tcher",
-  "version": "2.3.2",
+  "name": "tcher-designs",
+  "version": "1.0.0",
   "author": "tcher",
   "description": "Design skills, commands, and anti-pattern detection for AI coding agents",
   "keywords": [
@@ -28,7 +28,7 @@
   },
   "type": "module",
   "bin": {
-    "tcher": "cli/bin/cli.js"
+    "tcher-designs": "cli/bin/cli.js"
   },
   "main": "./cli/engine/detect-antipatterns.mjs",
   "exports": {

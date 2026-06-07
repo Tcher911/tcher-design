@@ -2,15 +2,17 @@
 
 ## Register
 
-brand
+product
+
+(The surfaces designed in this repo are tool chrome: the live overlay, pill bar, UX-check panels. Marketing surfaces like the README or a future site read `brand.md` case by case via the task cue.)
 
 ## Users
 
-Designers, product managers, and engineers who use AI coding tools (Cursor, Claude Code, Gemini CLI, Codex CLI, and others) and want better design output from their AI. They land on the site from GitHub, social media, or word of mouth, already aware that AI-generated UIs have quality problems. They're looking for a practical solution, not education about the problem.
+Designers, product managers, and engineers who use AI coding tools (Cursor, Claude Code, Gemini CLI, Codex CLI, and others) and want better design output from their AI. They find Tcher on GitHub or npm, already aware that AI-generated UIs have quality problems. They're looking for a practical solution, not education about the problem.
 
 ## Product Purpose
 
-Tcher gives builders a shared design vocabulary with their AI, delivered as a plug-and-play skill that works in every major AI coding harness. Success is measured in two ways: (1) the user can steer AI output with design precision instead of vague prose, and (2) the AI produces interfaces that pass professional design review, not "looks like an AI made it" output.
+Tcher gives builders a shared design vocabulary with their AI, delivered as a plug-and-play skill (24 commands) plus a CLI, working in every major AI coding harness. Live mode adds in-browser iteration (select an element, get real variants) and a built-in UX check: 56 deterministic rules (42 design, 14 Laws-of-UX/usability), severity-coded. Success is measured in two ways: (1) the user can steer AI output with design precision instead of vague prose, and (2) the AI produces interfaces that pass professional design review, not "looks like an AI made it" output.
 
 ## Brand Personality
 
@@ -20,7 +22,7 @@ Three-word personality: **expert, decisive, editorial**.
 
 ## Anti-references
 
-The site and brand must be the antithesis of everything Tcher critiques. Specifically, avoid:
+Every Tcher surface and the brand itself must be the antithesis of everything Tcher critiques. Specifically, avoid:
 
 - **Generic AI tool marketing**: dark mode with purple gradients, neon accents, glassmorphism, glowing particles, cyan-on-black.
 - **SaaS landing-page clichés**: hero-metric layouts, identical-card feature grids, sparkline decorations, "boost your productivity" copy.
@@ -30,8 +32,8 @@ The site and brand must be the antithesis of everything Tcher critiques. Specifi
 
 ## Design Principles
 
-1. **Practice what you preach.** The site must pass its own anti-pattern tests with flying colors. If we ship anything we'd flag in an audit, we've lost.
-2. **Show, don't tell.** Demonstrate design quality through execution, not through words about design quality. The site IS the demo.
+1. **Practice what you preach.** Every surface we ship (the live overlay, the UX-check panels, the README) must pass its own anti-pattern tests with flying colors. If we ship anything we'd flag in an audit, we've lost.
+2. **Show, don't tell.** Demonstrate design quality through execution, not through words about design quality. The overlay IS the demo.
 3. **Expert confidence.** Direct, opinionated, decisive. No hedging. Every assertion should sound like it comes from someone who has seen a thousand interfaces and knows what works.
 4. **Editorial over marketing.** Feels like a design publication (Eye Magazine, It's Nice That, A List Apart) rather than a SaaS landing page. Long-form reading, considered typography, breathing room.
 5. **Purposeful restraint.** Every element earns its place. Nothing decorative without function. Nothing included because "landing pages usually have that".

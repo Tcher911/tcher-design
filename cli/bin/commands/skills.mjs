@@ -80,9 +80,9 @@ async function showHelp() {
   const pad = (s, n) => s + ' '.repeat(Math.max(0, n - s.length));
 
   console.log('\n  Tcher Skills & Commands\n');
-  console.log('  Install:  npx tcher skills install');
-  console.log('  Link:     npx tcher skills link --source=.tcher');
-  console.log('  Update:   npx tcher skills update');
+  console.log('  Install:  npx tcher-designs skills install');
+  console.log('  Link:     npx tcher-designs skills link --source=.tcher');
+  console.log('  Update:   npx tcher-designs skills update');
   console.log('  Docs:     https://tcher.style/cheatsheet\n');
   console.log(`  ${pad('Command', 22)} Description`);
   console.log(`  ${'-'.repeat(22)} ${'-'.repeat(52)}`);
@@ -213,7 +213,7 @@ async function check() {
 
   if (!installed) {
     console.log('Tcher is not installed in this project.');
-    console.log('Run `npx tcher skills install` to install.');
+    console.log('Run `npx tcher-designs skills install` to install.');
     process.exit(0);
   }
 
@@ -230,7 +230,7 @@ async function check() {
       console.log(`Skills are up to date${v ? ` (v${v})` : ''}.`);
     } else {
       console.log('Updates available.');
-      console.log('Run `npx tcher skills update` to update.');
+      console.log('Run `npx tcher-designs skills update` to update.');
     }
   } catch (e) {
     console.error(`Could not check for updates: ${e.message}`);
@@ -707,13 +707,13 @@ async function update(flags = []) {
 
   if (providers.length === 0) {
     console.log('No tcher skill folders found in this project.');
-    console.log('Run `npx tcher skills install` to install first.');
+    console.log('Run `npx tcher-designs skills install` to install first.');
     process.exit(1);
   }
 
   if (linkedProviders.length > 0) {
     console.log(`Linked skills found in: ${linkedProviders.join(', ')}`);
-    console.log('Update the source checkout with `git submodule update --remote`, then rerun `npx tcher skills link --source=.tcher` if new skills are added.');
+    console.log('Update the source checkout with `git submodule update --remote`, then rerun `npx tcher-designs skills link --source=.tcher` if new skills are added.');
     if (copyProviders.length === 0) process.exit(0);
     console.log(`Continuing with copied installs in: ${copyProviders.join(', ')}\n`);
   }

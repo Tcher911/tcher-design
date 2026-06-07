@@ -32,7 +32,7 @@ describe('live-session-store', () => {
     store.appendEvent({
       type: 'generate',
       id: 'session-a',
-      action: 'polish',
+      action: 'refine',
       count: 3,
       pageUrl: 'http://localhost:4321/',
       element: { outerHTML: '<section class="hero">Hero</section>', tagName: 'section' },
@@ -95,7 +95,7 @@ describe('live-session-store', () => {
       event: {
         type: 'generate',
         id: 'corrupt-then-valid',
-        action: 'polish',
+        action: 'refine',
         count: 2,
         element: { outerHTML: '<h1>Title</h1>', tagName: 'h1' },
       },
@@ -192,7 +192,7 @@ describe('live-session-store', () => {
     store.appendEvent({
       type: 'generate',
       id: 'error-session',
-      action: 'polish',
+      action: 'refine',
       count: 1,
       element: { outerHTML: '<button>Try</button>', tagName: 'button' },
     });
@@ -214,7 +214,7 @@ describe('live-session-store', () => {
     store.appendEvent({
       type: 'generate',
       id: 'done-session',
-      action: 'bolder',
+      action: 'brave',
       count: 1,
       element: { outerHTML: '<h1>Title</h1>', tagName: 'h1' },
     });
@@ -234,7 +234,7 @@ describe('live-session-store', () => {
     store.appendEvent({
       type: 'generate',
       id: 'cache-session',
-      action: 'colorize',
+      action: 'palette',
       count: 2,
       element: { outerHTML: '<div>Palette</div>', tagName: 'div' },
     });
@@ -264,7 +264,7 @@ describe('live-session-store', () => {
       event: {
         type: 'generate',
         id: 'legacy-session',
-        action: 'polish',
+        action: 'refine',
         count: 2,
         element: { outerHTML: '<section>Legacy</section>', tagName: 'section' },
       },

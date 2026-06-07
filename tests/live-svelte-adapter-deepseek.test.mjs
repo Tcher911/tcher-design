@@ -194,7 +194,7 @@ async function runReplaceDiscardRecoveryFlow({ page, tmp, evidence }) {
   const stateBeforeCycling = await readStateProbe(page);
   await pickElement(page, "[data-testid='expense-row']", { resetPickMode: true });
   await assertSelectedElementChrome(page);
-  await selectAction(page, 'Polish');
+  await selectAction(page, 'Refine');
 
   const sourceBefore = readFileSync(join(tmp, ROUTE_FILE), 'utf-8');
   await clickGo(page);
@@ -275,7 +275,7 @@ async function runEditCopyFlow({ page, tmp, live, evidence }) {
 async function runAnnotationGenerateFlow({ page, tmp, evidence }) {
   await pickElement(page, '.hero-title', { resetPickMode: true });
   await drawAnnotationPinAndStroke(page, { comment: 'Make the page title easier to scan' });
-  await selectAction(page, 'Polish');
+  await selectAction(page, 'Refine');
   await clickGo(page);
   await waitForCycling(page, 3, { timeout: 180_000 });
   const generateEvent = latestJournalEvent(tmp, (event) => event.type === 'generate' && event.screenshotPath);
@@ -291,7 +291,7 @@ async function runAnnotationGenerateFlow({ page, tmp, evidence }) {
 async function runAcceptReplaceFlow({ page, tmp, evidence }) {
   await runPreActions(page, [{ type: 'click', selector: "[data-testid='add-expense']" }, { type: 'wait', selector: "[data-testid='expense-row']" }]);
   await pickElement(page, "[data-testid='expense-row']", { resetPickMode: true });
-  await selectAction(page, 'Polish');
+  await selectAction(page, 'Refine');
   await clickGo(page);
   await waitForVisibleCycling(page, 3, { timeout: 240_000 });
   await cycleTo(page, 3);

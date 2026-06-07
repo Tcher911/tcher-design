@@ -1200,16 +1200,18 @@ function compactManualLogText(value, max = 200) {
 function loadBrowserScripts() {
   // Detection script: prefer the skill-bundled detector, then fall back to
   // source/npm package locations for local development and older installs.
-  // This one IS cached — detect.js rarely changes during a session.
+  // Resolve the path once, but re-read the FILE on every request (same rule
+  // as live-browser.js): a stale in-memory copy once shipped an outdated
+  // overlay for a whole session.
   const detectPaths = [
     path.join(__dirname, 'detector', 'detect-antipatterns-browser.js'),
     path.join(__dirname, '..', '..', 'cli', 'engine', 'detect-antipatterns-browser.js'),
     path.join(__dirname, '..', '..', '..', '..', 'cli', 'engine', 'detect-antipatterns-browser.js'),
     path.join(process.cwd(), 'node_modules', 'tcher', 'cli', 'engine', 'detect-antipatterns-browser.js'),
   ];
-  let detectScript = '';
+  let detectPath = '';
   for (const p of detectPaths) {
-    try { detectScript = fs.readFileSync(p, 'utf-8'); break; } catch { /* try next */ }
+    try { fs.accessSync(p); detectPath = p; break; } catch { /* try next */ }
   }
 
   // live-browser.js: DO NOT cache. Return the path so the /live.js handler
@@ -1224,7 +1226,7 @@ function loadBrowserScripts() {
     }
   }
 
-  return { detectScript, sessionPath, livePath };
+  return { detectPath, sessionPath, livePath };
 }
 
 function hasProjectContext() {
@@ -1244,7 +1246,7 @@ function statOrNull(filePath) {
 // HTTP request handler
 // ---------------------------------------------------------------------------
 
-function createRequestHandler({ detectScript, sessionPath, livePath }) {
+function createRequestHandler({ detectPath, sessionPath, livePath }) {
   return (req, res) => {
     const url = new URL(req.url, `http://localhost:${state.port}`);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1287,8 +1289,16 @@ function createRequestHandler({ detectScript, sessionPath, livePath }) {
       return;
     }
     if (p === '/detect.js' || p === '/') {
+      let detectScript = '';
+      if (detectPath) {
+        try { detectScript = fs.readFileSync(detectPath, 'utf-8'); } catch { /* removed since boot */ }
+      }
       if (!detectScript) { res.writeHead(404); res.end('Not available'); return; }
-      res.writeHead(200, { 'Content-Type': 'application/javascript' });
+      res.writeHead(200, {
+        'Content-Type': 'application/javascript',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      });
       res.end(detectScript);
       return;
     }
@@ -2309,8 +2319,8 @@ const annotRoot = getLiveAnnotationsDir(process.cwd());
 fs.mkdirSync(annotRoot, { recursive: true });
 state.sessionDir = fs.mkdtempSync(path.join(annotRoot, 'session-'));
 
-const { detectScript, sessionPath, livePath } = loadBrowserScripts();
-httpServer = http.createServer(createRequestHandler({ detectScript, sessionPath, livePath }));
+const { detectPath, sessionPath, livePath } = loadBrowserScripts();
+httpServer = http.createServer(createRequestHandler({ detectPath, sessionPath, livePath }));
 
 httpServer.listen(state.port, '127.0.0.1', () => {
   writeLiveServerInfo(process.cwd(), { pid: process.pid, port: state.port, token: state.token });

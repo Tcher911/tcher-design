@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>no-viewport-meta fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+</style>
+</head>
+<body>
+<h1>Page without a viewport meta tag</h1>
+<div class="col">
+  <p>This full page deliberately omits the viewport meta tag, so mobile browsers
+  will render it at desktop width and scale it down. Every other fixture in this
+  directory includes the tag; this is the only one that should flag.</p>
+</div>
+</body>
+</html>

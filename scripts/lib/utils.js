@@ -664,9 +664,9 @@ const EXCLUDED_FROM_SUGGESTIONS = new Set([
 // Sub-commands of /tcher that should appear in {{available_commands}}.
 // These are the commands that audit/critique/etc. reference when suggesting next steps.
 const TCHER_SUB_COMMANDS = [
-  'adapt', 'animate', 'audit', 'bolder', 'clarify', 'colorize',
-  'critique', 'delight', 'distill', 'document', 'harden', 'layout',
-  'onboard', 'optimize', 'overdrive', 'polish', 'quieter', 'shape', 'typeset',
+  'responsive', 'animate', 'audit', 'brave', 'clarify', 'palette',
+  'critique', 'motion', 'trim', 'document', 'harden', 'idea', 'layout',
+  'onboard', 'optimize', 'extreme', 'refine', 'calm', 'shape', 'typo',
 ];
 
 export function replacePlaceholders(content, provider, commandNames = [], allSkillNames = []) {

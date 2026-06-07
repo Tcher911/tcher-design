@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tap-target-too-small fixture</title>
+<style>
+  /* jsdom does no layout: every measured case sets explicit width/height. */
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  .flag-close { width: 16px; height: 16px; }
+  .flag-prev { width: 20px; height: 20px; }
+  .flag-slim { width: 120px; height: 18px; }
+  .flag-dot { width: 22px; height: 22px; }
+  .pass-min { width: 24px; height: 24px; }
+  .pass-cta { width: 160px; height: 44px; }
+  .pass-hidden { width: 16px; height: 16px; display: none; }
+  .pass-deco { width: 16px; height: 16px; }
+</style>
+</head>
+<body>
+<h1>Tap target sizing cases</h1>
+
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<div class="col" id="flag">
+  <button type="button" class="flag-close" aria-label="Close dialog">×</button>
+  <a href="/prev" class="flag-prev" aria-label="Previous page">‹</a>
+  <button type="button" class="flag-slim">Save changes</button>
+  <a href="/toggle" class="flag-dot" role="button" aria-label="Toggle">•</a>
+</div>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<div class="col" id="pass">
+  <button type="button" class="pass-min" aria-label="Exactly minimum">×</button>
+  <button type="button" class="pass-cta">Get started</button>
+  <button type="button" class="pass-hidden" aria-label="Hidden control">×</button>
+  <span class="pass-deco">•</span>
+  <p>Inline links inside running prose, like <a href="/docs">the documentation</a>, are
+  exempt: the target is constrained by the line box, which WCAG 2.5.8 allows.</p>
+  <button type="button">No explicit dimensions, so the static engine cannot measure it</button>
+</div>
+
+</body>
+</html>

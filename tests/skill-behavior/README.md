@@ -46,10 +46,10 @@ The trace is the source of truth, not the model's free-form reply.
 | 3 | PRODUCT.md + DESIGN.md (brand register) | runs `context.mjs` 1-3 times; loads `reference/brand.md`; consults the design system (DESIGN.md bundled in output, but CSS / tokens / directory listing also count) |
 | 4 | PRODUCT.md + DESIGN.md, context already loaded in turn 1 | turn 2 does **not** re-run `context.mjs`; `reference/brand.md` is loaded across turns 1+2 |
 | 5 | PRODUCT.md WITHOUT a `## Register` field; task cue says "landing page" | runs `context.mjs` (which emits a generic register directive); agent loads `reference/brand.md` via task-cue cascade |
-| 6 | PRODUCT.md + DESIGN.md + a minimal `index.html`; prompt is `/tcher polish` | loads `reference/polish.md` |
+| 6 | PRODUCT.md + DESIGN.md + a minimal `index.html`; prompt is `/tcher refine` | loads `reference/refine.md` |
 | 7 | same fixture; prompt is `/tcher audit` | loads `reference/audit.md` |
-| 8 | PRODUCT.md + DESIGN.md + a SvelteKit scaffold (`src/app.css`, components, `+page.svelte`); prompt is `/tcher polish src/routes/+page.svelte` | reads at least one project code file (CSS / component / page) — not just the skill's reference files |
-| 9 | PRODUCT.md + `index.html` + a seeded update cache with a newer version (`skillVersion` copy-mode so `context.mjs` has a `SKILL.md` to version-check against); prompt is `/tcher polish index.html` | `context.mjs` runs and its output carries the `UPDATE_AVAILABLE` directive (proven via captured bash output); the agent does **not** auto-run `npx tcher skills update` (it must ask first) |
+| 8 | PRODUCT.md + DESIGN.md + a SvelteKit scaffold (`src/app.css`, components, `+page.svelte`); prompt is `/tcher refine src/routes/+page.svelte` | reads at least one project code file (CSS / component / page) — not just the skill's reference files |
+| 9 | PRODUCT.md + `index.html` + a seeded update cache with a newer version (`skillVersion` copy-mode so `context.mjs` has a `SKILL.md` to version-check against); prompt is `/tcher refine index.html` | `context.mjs` runs and its output carries the `UPDATE_AVAILABLE` directive (proven via captured bash output); the agent does **not** auto-run `npx tcher-designs skills update` (it must ask first) |
 
 Scenario 9 passed on all three current-lineup providers (`claude-sonnet-4-6`,
 `gpt-5.5`, `gemini-3.1-flash-lite`) on 2026-05-28.
@@ -78,7 +78,7 @@ a regression is "more failures than baseline", not "any failures at all".
 | 3 (product + design) | pass | pass | pass (rare flake — sub-command ref loads but register ref doesn't) |
 | 4 (already loaded) | pass | pass | pass |
 | 5 (no register field, task-cue cascade) | pass | pass | pass |
-| 6 (`polish` routing) | pass | **fail** | pass |
+| 6 (`refine` routing) | pass | **fail** | pass |
 | 7 (`audit` routing) | pass | **fail** | pass |
 | 8 (existing project, explore design system) | pass | pass | pass |
 

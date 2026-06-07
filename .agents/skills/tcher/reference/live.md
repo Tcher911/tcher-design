@@ -189,9 +189,9 @@ All three carry `fallback: "agent-driven"`. Follow **Handle fallback** below.
 
 ### 3. Load the action's reference
 
-If `event.action` is `tcher` (the default freeform action), use SKILL.md's shared laws plus the loaded register reference (`brand.md` or `product.md`). Do not load a sub-command reference. **Freeform is not a pass to skip parameters:** you still follow the composition budget and the freeform bias in **§7 Parameters** below. Sub-command files list MUST-have signature knobs; freeform has no such file, so sizing knobs from surface weight and primary axes is entirely on you.
+If `event.action` is `tcher` (the default Idea/freeform action), use SKILL.md's shared laws plus the loaded register reference (`brand.md` or `product.md`). Do not load a sub-command reference. **Idea is not a pass to skip parameters:** you still follow the composition budget and the freeform bias in **§7 Parameters** below. Sub-command files list MUST-have signature knobs; freeform has no such file, so sizing knobs from surface weight and primary axes is entirely on you.
 
-Any other `event.action` (`bolder`, `quieter`, `distill`, `polish`, `typeset`, `colorize`, `layout`, `adapt`, `animate`, `delight`, `overdrive`): Read `reference/<action>.md` before planning. Each sub-command encodes a specific discipline; skipping its reference produces generic output. Those files may require specific params; layer them on top of the §7 budget, not instead of it.
+Any other `event.action` (`brave`, `calm`, `trim`, `refine`, `typo`, `palette`, `layout`, `responsive`, `animate`, `motion`, `extreme`): Read `reference/<action>.md` before planning. Each sub-command encodes a specific discipline; skipping its reference produces generic output. Those files may require specific params; layer them on top of the §7 budget, not instead of it.
 
 ### 4. Plan three variants: identity first, then mode, then axes
 
@@ -271,17 +271,17 @@ Instead, work from the brand:
 
 **For action-specific invocations**, each variant must vary along the dimension the action names:
 
-- `bolder`: amplify a different dimension per variant (scale / saturation / structural change). Not three "slightly bigger" variants.
-- `quieter`: pull back a different dimension (color / ornament / spacing).
-- `distill`: remove a different class of excess (visual noise / redundant content / nested structure).
-- `polish`: target a different refinement axis (rhythm / hierarchy / micro-details like corner radii, focus states, optical kerning).
-- `typeset`: different type pairing AND different scale ratio each. Not three riffs on one pairing.
-- `colorize`: different hue family each (not shades of one hue). Vary chroma and contrast strategy.
+- `brave`: amplify a different dimension per variant (scale / saturation / structural change). Not three "slightly bigger" variants.
+- `calm`: pull back a different dimension (color / ornament / spacing).
+- `trim`: remove a different class of excess (visual noise / redundant content / nested structure).
+- `refine`: target a different refinement axis (rhythm / hierarchy / micro-details like corner radii, focus states, optical kerning).
+- `typo`: different type pairing AND different scale ratio each. Not three riffs on one pairing.
+- `palette`: different hue family each (not shades of one hue). Vary chroma and contrast strategy.
 - `layout`: different structural arrangement (stacked / side-by-side / grid / asymmetric). Not spacing tweaks.
-- `adapt`: different target context per variant (mobile-first / tablet / desktop / print or low-data). Don't make three mobile layouts.
+- `responsive`: different target context per variant (mobile-first / tablet / desktop / print or low-data). Don't make three mobile layouts.
 - `animate`: different motion vocabulary (cascade stagger / clip wipe / scale-and-focus / morph / parallax). Not three staggered fades.
-- `delight`: different flavor of personality (unexpected micro-interaction / typographic surprise / illustrated accent / sonic-or-haptic moment / easter-egg interaction).
-- `overdrive`: different convention broken (scale / structure / motion / input model / state transitions). Skip `overdrive.md`'s "propose and ask" step; live mode is non-interactive.
+- `motion`: different flavor of personality (unexpected micro-interaction / typographic surprise / illustrated accent / sonic-or-haptic moment / easter-egg interaction).
+- `extreme`: different convention broken (scale / structure / motion / input model / state transitions). Skip `extreme.md`'s "propose and ask" step; live mode is non-interactive.
 
 ### 5. Apply the freeform prompt (if present)
 
@@ -350,7 +350,7 @@ Each variant can expose **coarse** knobs alongside the full HTML/CSS replacement
 
 **When to add.** As soon as the variant’s scoped CSS has a meaningful continuous or stepped axis: density, color amount, type scale, motion intensity, column weight, and so on. If you can imagine the user muttering “a bit tighter” or “a touch more accent” **without** wanting a full regeneration, wire that axis. **Not** micro-margins or one-off nudges; those are not parameters.
 
-**Freeform (`action` is `tcher`) bias.** You did not load a sub-command reference, so you must **choose** signature axes yourself. Match the budget table: for a hero or large composition, that means **2–3 axes per variant**, not 1. Prefer knobs that sit on the dimensions where your three variants actually differ (if density varies, expose it as a `steps` knob; if color commitment varies, expose it as a `range`). A hero that ships with **0** params is almost always a mistake, not a judgment call. A hero with exactly **1** param is underweight unless the design is genuinely a fixed-point comparison. Start from the budget table, not from zero.
+**Idea (`action` is `tcher`) bias.** You did not load a sub-command reference, so you must **choose** signature axes yourself. Match the budget table: for a hero or large composition, that means **2–3 axes per variant**, not 1. Prefer knobs that sit on the dimensions where your three variants actually differ (if density varies, expose it as a `steps` knob; if color commitment varies, expose it as a `range`). A hero that ships with **0** params is almost always a mistake, not a judgment call. A hero with exactly **1** param is underweight unless the design is genuinely a fixed-point comparison. Start from the budget table, not from zero.
 
 **Budget scales with the element's visual weight, not token budget.** Knobs need real estate to read as tunable; three sliders on a single control are noise.
 
@@ -385,7 +385,7 @@ Each variant can expose **coarse** knobs alongside the full HTML/CSS replacement
 - `steps`: segmented radio. Drives a data attribute `data-p-<id>` on the variant wrapper. Author CSS with `:scope[data-p-density="airy"] .grid { ... }`. Fields: `options` (array of `{value, label}`), `default` (string), `label`.
 - `toggle`: on/off switch. Drives BOTH a CSS var (`--p-<id>: 0|1`) and a data attribute (present when on, absent when off). Use whichever is more convenient. Fields: `default` (boolean), `label`.
 
-**Signature params per action.** For named sub-commands, read that action’s `reference/<action>.md` for one or two **MUST** params (e.g. `layout` → `density`). Those are non-negotiable when the design can express them. **Freeform has no file-level MUST**; the **Freeform (`tcher`) bias** in this section is the stand-in. If the user’s action is both stylized and sub-command (e.g. `colorize`), the sub-command’s MUST list takes precedence for its axes; still respect the **Hard cap** and add no redundant duplicate knobs.
+**Signature params per action.** For named sub-commands, read that action’s `reference/<action>.md` for one or two **MUST** params (e.g. `layout` → `density`). Those are non-negotiable when the design can express them. **Idea has no file-level MUST**; the **Idea (`tcher`) bias** in this section is the stand-in. If the user’s action is both stylized and sub-command (e.g. `palette`), the sub-command’s MUST list takes precedence for its axes; still respect the **Hard cap** and add no redundant duplicate knobs.
 
 **Reset on variant switch.** User dials density on v1, flips to v2, v2 starts at v2's declared defaults. Known limitation; preservation across variants may land later.
 
@@ -490,9 +490,7 @@ Event: `{id, _acceptResult, _completionAck}`. The poll script already restored t
 
 ## Handle `steer`
 
-Event: `{id, message, pageUrl}`. The user typed or spoke into the global bar **Steer** control: page-level direction without picking an element or launching variant generation.
-
-The mic button uses the browser **Web Speech API** (MVP): click to start, speak, stop automatically when the utterance ends, then the transcript submits as a steer event. Click again while listening to cancel without submitting.
+Event: `{id, message, pageUrl}`. The user typed into the global bar **Steer** control: page-level direction without picking an element or launching variant generation.
 
 This is lighter than `generate`: no screenshot, no element context, no variant cycling. Read `message` and inspect the live page or project files as needed, then either make edits or answer in prose.
 

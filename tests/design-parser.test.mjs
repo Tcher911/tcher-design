@@ -106,18 +106,18 @@ Prose.
   it('strips inline comments after quoted OKLCH values', () => {
     const md = `---
 colors:
-  kinpaku-gold: "oklch(84% 0.19 80.46)"       # primary accent
+  brand-accent: "oklch(84% 0.19 80.46)"       # primary accent
   gold-hairline: "oklch(58% 0.065 82 / 0.32)" # default rule
 ---
 
-# Design System: Kinpaku
+# Design System: Tcher
 
 ## 1. Overview
 
 Prose.
 `;
     const model = parseDesignMd(md);
-    assert.equal(model.frontmatter.colors['kinpaku-gold'], 'oklch(84% 0.19 80.46)');
+    assert.equal(model.frontmatter.colors['brand-accent'], 'oklch(84% 0.19 80.46)');
     assert.equal(model.frontmatter.colors['gold-hairline'], 'oklch(58% 0.065 82 / 0.32)');
   });
 });

@@ -38,7 +38,7 @@ const COMPONENTS = {
     artifacts: [],
     postReleaseHint: 'Run `npm publish` next to push the package to the npm registry.',
     tweetHeader: (v) => `Tcher CLI v${v} is out.`,
-    tweetCta: 'npm i -g tcher',
+    tweetCta: 'npm i -g tcher-designs',
   },
 };
 

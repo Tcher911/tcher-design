@@ -6,12 +6,12 @@ The `<post-update-cleanup>` block at the top of `.claude/skills/tcher/SKILL.md` 
 
 Same rule for AGENTS.md and every other harness-specific instruction file: treat post-update-cleanup as a no-op in this repo.
 
-## Architecture (v3.0+)
+## Architecture
 
-There is **one** user-invocable skill, `tcher`, with **23 commands** underneath it. Users type `/tcher polish`, `/tcher audit`, etc. The skill is defined in `skill/`:
+There is **one** user-invocable skill, `tcher`, with **24 commands** underneath it. Users type `/tcher refine`, `/tcher audit`, etc. The skill is defined in `skill/`:
 
 - `SKILL.md` — frontmatter (with the auto-trigger-optimized description and the `allowed-tools` list), shared design laws, and the **Commands** router table.
-- `reference/` — one `<command>.md` per command (`audit.md`, `polish.md`, `critique.md`, etc.) plus the domain reference files (`typography.md`, `color-and-contrast.md`, etc.). When a sub-command is matched, the router loads its reference file.
+- `reference/` — one `<command>.md` per command (`audit.md`, `refine.md`, `critique.md`, etc.) plus the domain reference files (`typography.md`, `color-and-contrast.md`, etc.). When a sub-command is matched, the router loads its reference file.
 - `reference/brand.md` and `reference/product.md` — the two register references. SKILL.md's Setup section selects one based on the task cue, the surface in focus, or the `register` field in PRODUCT.md (first match wins).
 - `scripts/command-metadata.json` — single source of truth for each command's description, argument hint, and (eventually) category. Both the build and `pin.mjs` read from this.
 - `scripts/pin.mjs` — creates/removes lightweight redirect shims so users can have `/audit` as a standalone shortcut that delegates to `/tcher audit`.
@@ -26,9 +26,9 @@ Every design task belongs to one of two registers:
 - **Brand** — design IS the product: marketing, landing pages, brand sites, campaign surfaces, portfolios, long-form content. Distinctiveness is the bar. Spans every visual lane (tech-minimal, luxury, editorial-magazine, consumer-warm, brutalist, etc.) — do not default to only one.
 - **Product** — design SERVES the product: app UI, admin, dashboards, tools. Earned familiarity is the bar — fluent users of Linear / Figma / Notion / Raycast / Stripe should trust it.
 
-PRODUCT.md at the project root carries a `## Register` section with a bare value (`brand` or `product`). `/tcher teach` asks about register first because it shapes every downstream answer.
+PRODUCT.md at the project root carries a `## Register` section with a bare value (`brand` or `product`). `/tcher init` asks about register first because it shapes every downstream answer.
 
-Sub-command reference files add a short `## Register` section near the top *only where the answer diverges between the two*. Don't restate the register files' content in sub-commands — link instead. Sub-commands where register meaningfully diverges today: `typeset`, `animate`, `bolder`, `delight`, `colorize`, `layout`, `quieter`.
+Sub-command reference files add a short `## Register` section near the top *only where the answer diverges between the two*. Don't restate the register files' content in sub-commands — link instead. Sub-commands where register meaningfully diverges today: `typo`, `animate`, `brave`, `motion`, `palette`, `layout`, `calm`.
 
 **a11y lives in `audit.md`**, not in SKILL.md, `brand.md`, or `product.md`. Models over-cautious themselves into safe, underdesigned output when reminded about accessibility at design time. The audit command is the dedicated place for that check.
 
@@ -81,7 +81,7 @@ Unit tests (build orchestration, detector logic) run via `bun test`. Fixture tes
 
 ### Live-mode E2E
 
-`tests/live-e2e.test.mjs` drives the entire user flow (handshake → pick → Go → cycle → accept → carbonize cleanup) against every fixture in `tests/framework-fixtures/` that declares a `runtime` block. Each fixture installs real deps, boots its framework dev server (Vite, Next, SvelteKit, Astro, Nuxt static), and runs Playwright Chromium against a deterministic fake agent that produces realistic variants in the exact format `reference/live.md` describes.
+`tests/live-e2e.test.mjs` drives the entire user flow (handshake → select → Enter → cycle → accept → carbonize cleanup) against every fixture in `tests/framework-fixtures/` that declares a `runtime` block. Each fixture installs real deps, boots its framework dev server (Vite, Next, SvelteKit, Astro, Nuxt static), and runs Playwright Chromium against a deterministic fake agent that produces realistic variants in the exact format `reference/live.md` describes.
 
 ```bash
 bun run test:live-e2e                                       # full suite, ~2 min, 19 fixtures
@@ -101,7 +101,7 @@ Adding a new fixture is a matter of cloning a directory under `tests/framework-f
 
 ### Skill-behavior tests
 
-`tests/skill-behavior/scenarios.test.mjs` is the LLM-backed safety net for edits to `skill/SKILL.src.md` and the Setup-adjacent reference files (`teach.md`, `document.md`, `brand.md`, `product.md`, sub-command refs). It inlines the source `skill/SKILL.src.md` into the system prompt of a real LLM, gives the agent `bash` / `read` / `write` / `list` tools scoped to a temp workspace, and asserts on the tool-call trace — not on the model's free-form output. The trace is the source of truth.
+`tests/skill-behavior/scenarios.test.mjs` is the LLM-backed safety net for edits to `skill/SKILL.src.md` and the Setup-adjacent reference files (`init.md`, `document.md`, `brand.md`, `product.md`, sub-command refs). It inlines the source `skill/SKILL.src.md` into the system prompt of a real LLM, gives the agent `bash` / `read` / `write` / `list` tools scoped to a temp workspace, and asserts on the tool-call trace — not on the model's free-form output. The trace is the source of truth.
 
 ```bash
 bun run test:skill-behavior                                              # full suite (27 tests, ~5 min, ~$0.50-1.50 across providers)
@@ -114,15 +114,15 @@ TCHER_SKILL_BEHAVIOR_VERBOSE=1 bun run test:skill-behavior          # dump per-s
 **Auth** lives in repo-root `.env` (copied from `~/code/tcher-evals/.env`, gitignored). Providers skip cleanly when their key is unset; they don't fail.
 
 **Nine scenarios:**
-1. empty workspace → agent loads `reference/teach.md`
+1. empty workspace → agent loads `reference/init.md`
 2. PRODUCT.md only → loads `brand.md`
 3. PRODUCT.md + DESIGN.md → loads `brand.md` + consults the design system
 4. context already loaded in turn 1 → turn 2 does **not** re-run `context.mjs`
 5. PRODUCT.md without `## Register` field → agent infers `brand` from task cue
-6. `/tcher polish` → loads `reference/polish.md`
+6. `/tcher refine` → loads `reference/refine.md`
 7. `/tcher audit` → loads `reference/audit.md`
 8. existing SvelteKit project → agent reads at least one project code file
-9. `context.mjs` emits `UPDATE_AVAILABLE` (seeded newer version) → agent surfaces it but does **not** auto-run `npx tcher skills update`
+9. `context.mjs` emits `UPDATE_AVAILABLE` (seeded newer version) → agent surfaces it but does **not** auto-run `npx tcher-designs skills update`
 
 **Baseline.** The 21-22 / 24 baseline (with stable gpt scenario 6/7 failures) was measured on the old cheap tier (`claude-haiku-4-5` / `gpt-5.4-mini`). It needs re-measuring on the current `claude-sonnet-4-6` / `gpt-5.5` lineup; the production-tier models are expected to do better on the sub-command routing scenarios the old gpt tier failed. See `tests/skill-behavior/README.md`.
 
@@ -134,17 +134,29 @@ TCHER_SKILL_BEHAVIOR_VERBOSE=1 bun run test:skill-behavior          # dump per-s
 
 ## CLI
 
-The CLI lives in this repo under `cli/`: `cli/bin/` (entry + sub-commands), `cli/engine/` (the detect-antipatterns rule engine + browser variant), `cli/lib/` (shared helpers). Published to npm as `tcher`.
+The CLI lives in this repo under `cli/`: `cli/bin/` (entry + sub-commands), `cli/engine/` (the detect-antipatterns rule engine + browser variant), `cli/lib/` (shared helpers). Published to npm as `tcher-designs` (the bare `tcher` npm name is the user's separate registry-wrapper package — do not publish over it).
 
 ```bash
-npx tcher detect [file-or-dir-or-url...]   # detect anti-patterns
-npx tcher detect --fast --json src/         # regex-only, JSON output
-npx tcher live                              # start browser overlay server
-npx tcher skills install                    # install skills
-npx tcher --help                            # show help
+npx tcher-designs detect [file-or-dir-or-url...]   # detect anti-patterns
+npx tcher-designs detect --json src/               # JSON output
+npx tcher-designs skills install                   # install skills
+npx tcher-designs --help                           # show help
 ```
 
-The browser detector (`cli/engine/detect-antipatterns-browser.js`) is generated from the main engine. After changing `cli/engine/detect-antipatterns.mjs`, rebuild it:
+There is no `live` CLI subcommand: live mode is driven by the skill via `node <scripts_path>/live.mjs` (see `skill/reference/live.md`).
+
+## Live overlay conventions
+
+Hard-won rules for `skill/scripts/live-browser.js` and the detect overlay; violating any of these has already caused a real bug once.
+
+- **Theme is tcher-kit mono** (black/white). Chrome palette lives in the `C` constants + `barPaletteForTheme()` in `live-browser.js`; the brand mark is `brand.svg` (dark `#171717` tile + white glyph) via `brandMarkSvg()`. On-page marks (selection outline, strokes, pins, insert lines) use `C.mark` ink plus a white halo so they read on any page background. The UX-check overlay is the one place with color: findings are severity-coded (see below).
+- **Voice input was removed by product decision** (typing only). `tests/live-browser-regression.test.mjs` asserts no `SpeechRecognition` code ships; don't reintroduce it casually.
+- **Live action ids are protocol**: each vocabulary entry's `value` in `skill/scripts/live-vocabulary.mjs` must match its `reference/<value>.md` filename, because the agent loads that file for `generate` events. Exception: `value: 'tcher'` (label "Idea") deliberately has no sub-command file. The event field `freeformPrompt` is internal API; renaming UI labels must not touch it.
+- **Renaming a command** means: `git mv` the reference file, router table, `TCHER_SUB_COMMANDS`, pin `VALID_COMMANDS`, `command-metadata.json`, `SKILL_CATEGORIES`, vocabulary value+label, README/live.md mentions, AND appending the OLD name to `DEPRECATED_NAMES` in `skill/scripts/cleanup-deprecated.mjs` so stale pin shims get cleaned. **Never rewrite the existing old names in that list to new ones** — the list identifies directories to DELETE on user machines; renaming entries there makes the cleaner delete users' new pins.
+- **The helper serves `/live.js` and `/detect.js` fresh per request with `Cache-Control: no-store`** and the browser cache-busts `detect.js?v=<ts>`. Keep it that way: an in-memory copy once served a stale overlay for an entire session. Vocabulary changes still need a server restart (`LIVE_COMMANDS` is imported at boot).
+- **Two DOM traps in the overlay**: (1) a CSS `transform` on an ancestor becomes the containing block for `position: fixed` children — never nest a fixed panel inside the slide-in banner; mount on `document.body`. (2) the `tcher-overlay` class pauses a reveal animation at opacity 0 and sets `pointer-events: none`; it is for finding outlines only — never put it on interactive UI like the findings popover.
+
+The browser detector (`cli/engine/detect-antipatterns-browser.js`) is generated from the main engine. After changing anything under `cli/engine/` (registry, rules, engines, the injected overlay), rebuild it:
 
 ```bash
 bun run build:browser
@@ -188,12 +200,12 @@ Skill releases attach `dist/universal.zip`. CLI releases print a reminder to run
 All commands live under `/tcher`. To add a new one:
 
 1. Create `skill/reference/<command>.md` with the command's instructions (this is what the LLM loads when the command is invoked)
-2. Add a row to the **Sub-command reference table** in `skill/SKILL.src.md`
-3. Add an entry to the **Command menu** section in the same file
-4. Add the command name to `TCHER_SUB_COMMANDS` in `scripts/lib/utils.js`
-5. Add it to `VALID_COMMANDS` in `skill/scripts/pin.mjs`
-6. Add its metadata (description + argumentHint) to `skill/scripts/command-metadata.json`
-7. Add its category to `SKILL_CATEGORIES` in `scripts/lib/sub-pages-data.js`
+2. Add a row to the **Commands** router table in `skill/SKILL.src.md` (the bare-`/tcher` menu is rendered from this table; there is no separate menu section)
+3. Add the command name to `TCHER_SUB_COMMANDS` in `scripts/lib/utils.js`
+4. Add it to `VALID_COMMANDS` in `skill/scripts/pin.mjs`
+5. Add its metadata (description + argumentHint) to `skill/scripts/command-metadata.json`
+6. Add its category to `SKILL_CATEGORIES` in `scripts/lib/sub-pages-data.js`
+7. If it should be a live-mode action chip, add a vocabulary entry (value = command name, label, icon) in `skill/scripts/live-vocabulary.mjs`
 
 The build system counts commands from the router table automatically. Update the command count in **all** of these locations when the total changes:
 
@@ -207,13 +219,22 @@ The build validator (`generateCounts` in `scripts/build.js`) checks these files 
 
 ## Adding or modifying anti-pattern detection rules
 
-`cli/engine/detect-antipatterns.mjs` is the source of truth for the rule engine. It powers the CLI and the live-mode browser overlay. Three places stay in sync:
+The engine is modular; `cli/engine/detect-antipatterns.mjs` is just the public facade. The real pieces:
 
-| Where | How it stays in sync |
+| Where | What lives there |
 |---|---|
-| `cli/engine/detect-antipatterns.mjs` (`ANTIPATTERNS` array + `checkXxx` logic) | Hand-edited |
-| `cli/engine/detect-antipatterns-browser.js` | `bun run build:browser` |
-| `skill/SKILL.src.md` and `reference/*.md` | Hand-edited if the rule introduces new design guidance |
+| `cli/engine/registry/antipatterns.mjs` | `ANTIPATTERNS` array (id, category, **severity**, optional **law**, name, description) + `SEVERITY_OVERRIDES` + the severity-default loop |
+| `cli/engine/rules/checks.mjs` | Pure `checkXxx(opts)` functions + the shared/browser/jsdom adapters |
+| `cli/engine/engines/static-html/detect-html.mjs` | jsdom-style engine: `STATIC_ELEMENT_RULES` table + `runPageCheck` page passes |
+| `cli/engine/engines/regex/detect-text.mjs` | Source-text passes (em-dash, buzzwords, ...) for non-HTML files |
+| `cli/engine/browser/injected/index.mjs` | Browser overlay: the element loop, page-level passes, severity colors, banner + findings popover |
+| `cli/engine/detect-antipatterns-browser.js` | GENERATED by `bun run build:browser`; never hand-edit |
+
+**Severity tiers** drive the overlay's color coding: `critical` (red, breaks usability), `major` (orange, hurts quality / loud template tell), `minor` (yellow, stylistic), `advisory` (muted yellow, heads-up / sometimes intentional). Defaults: quality and ux→major, slop→minor; exceptions live in `SEVERITY_OVERRIDES`. Per-entry `severity:` values (the advisory rules, emoji-in-ui) are **never overwritten** by the loop — keep it that way.
+
+**Three categories**: `slop` (AI tells), `quality` (design craft), `ux` (deterministic usability rules; most carry a `law:` field naming the Laws of UX principle they operationalize — principle names only, our own descriptions, lawsofux.com credited in NOTICE.md). The findings popover tabs map design = slop+quality, ux = ux; the CLI mirrors this as `--mode=design|ux|all`. The judgment half of the 30 laws (Peak-End, Tesler's, Flow, mental models) deliberately lives in `audit.md`'s UX dimension, not the engine — don't try to regex what needs judgment.
+
+**Generator caveat**: `scripts/build-browser-detector.js` extracts the registry by regex (the `ANTIPATTERNS` array + `SEVERITY_OVERRIDES` + the assignment loop). If you add another top-level construct to the registry that the browser needs, extend the extractor too, or the overlay silently misses it (an all-yellow overlay shipped exactly this way once).
 
 Always run both builds and the test suite after a rule change:
 
@@ -225,19 +246,20 @@ bun run build && bun run build:browser && bun run test
 
 1. **Fixture** at `tests/fixtures/antipatterns/{rule-id}.html` with two columns (should-flag / should-pass), each case identified by a unique heading. Cover ≥4 flag cases and ≥5 false-positive shapes. Use **explicit pixel dimensions in CSS** because jsdom does no layout.
 2. **Failing test** in `tests/detect-antipatterns-fixtures.test.mjs` using the snippet-substring pattern (regex `/"([^"]+)"/` against `SHOULD_FLAG` / `SHOULD_PASS` lists). Run it and watch it fail before implementing.
-3. **Rule entry** in the `ANTIPATTERNS` array: `id`, `category` (`slop` for AI tells, `quality` for real design or a11y issues), `name`, `description`, optional `skillSection` and `skillGuideline`.
-4. **Pure check function** `checkXxx(opts)` returning `[{ id, snippet }]`. No DOM access in the pure function.
-5. **Two adapters**: `checkElementXxxDOM(el)` for the browser (`getComputedStyle` + `getBoundingClientRect`) and `checkElementXxx(el, tag, window)` for jsdom (`parseFloat(style.width)` instead of layout). Wire **both** into **both** element loops in `cli/engine/detect-antipatterns.mjs` — the browser loop (~line 1837) and the jsdom loop in `detectHtml` (~line 2058). Forgetting one is the most common mistake; symptom is "test passes, live page silent" or vice versa.
-6. **Verify in a real browser**: open `tests/fixtures/antipatterns/{rule-id}.html` directly (or via any static server) and run the browser detector against it. The two adapter paths can disagree, so manual browser checks catch what the fixture test can't.
+3. **Rule entry** in the `ANTIPATTERNS` array: `id`, `category` (`slop` for AI tells, `quality` for real design issues, `ux` for usability rules), `severity` when it shouldn't take the category default, `name`, `description`, optional `law` (ux rules), `skillSection`, and `skillGuideline`.
+4. **Pure check function** `checkXxx(opts)` in `rules/checks.mjs` returning `[{ id, snippet }]`. No DOM access in the pure function.
+5. **Adapters wired into BOTH engines**: an entry in `STATIC_ELEMENT_RULES` (or a `runPageCheck` pass) in `detect-html.mjs`, and a call in the element loop (or a page-level pass) in `browser/injected/index.mjs`. When both engines can share one adapter (textContent-based checks like emoji-in-ui), write it once in checks.mjs. Forgetting one side is the most common mistake; symptom is "test passes, live page silent" or vice versa. Browser-only checks (load state, real overflow) skip the static side on purpose — say so in a comment.
+6. **Verify in a real Chromium**: the fastest loop is a Playwright probe against the running preview (launch chromium, `addScriptTag` the served `/detect.js?v=<ts>`, read `.tcher-label` texts + screenshot). The two adapter paths can disagree, so the fixture test alone is not proof.
 
 ### Conventions and jsdom gotchas
 
 - **Snippet format**: wrap the identifying heading text in straight double quotes (e.g. `'icon tile above h3 "Lightning Fast"'`) so the fixture test can extract it. For rules not anchored to a heading, pick another stable identifier.
 - **jsdom doesn't lay out**: `getBoundingClientRect()` returns 0×0. Read `parseFloat(style.width)` and `parseFloat(style.height)` from explicit CSS instead.
-- **`background:` shorthand isn't decomposed in jsdom**: use the existing `resolveBackground()` and `resolveGradientStops()` helpers (~line 631 / 670).
+- **`background:` shorthand isn't decomposed in jsdom**: use the existing `resolveBackground()` and `resolveGradientStops()` helpers in checks.mjs.
 - **Computed colors aren't normalized in jsdom**: `parseGradientColors()` handles both hex and rgb forms.
+- **Attach findings to the most specific element**: page-level findings land in the banner only; if a rule can point at a concrete element (e.g. the emoji-bullet `<ul>`), return the element so the overlay outlines it and the popover row becomes click-to-jump.
 
-Reference rules to copy from: `side-tab` (border, ~line 312), `low-contrast` (color + gradient, ~line 339), `icon-tile-stack` (sibling relationship, ~line 425), `flat-type-hierarchy` (page-level, ~line 1080).
+Reference rules to copy from (all in `rules/checks.mjs`): `side-tab` (border), `low-contrast` (color + gradient), `icon-tile-stack` (sibling relationship), `checkPageTextDOM` (page-text pass), `checkElementBrokenImageDOM` (browser-only).
 
 ## Evals Framework (separate private repo)
 

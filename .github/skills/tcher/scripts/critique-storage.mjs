@@ -6,7 +6,7 @@
  *   .tcher/critique/<timestamp>__<slug>.md
  * with a small YAML frontmatter carrying the score + P0/P1 counts.
  *
- * /tcher polish reads the latest matching snapshot at start as its
+ * /tcher refine reads the latest matching snapshot at start as its
  * fix backlog. No other skill auto-reads critique output.
  *
  * The slug is derived mechanically from the *resolved* primary artifact

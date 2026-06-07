@@ -26,7 +26,7 @@ function run(args, opts = {}) {
 }
 
 /** Create a fake skill installation in a temp dir */
-function createFakeSkills(root, skills = ['audit', 'polish', 'tcher'], providers = ['.claude']) {
+function createFakeSkills(root, skills = ['audit', 'refine', 'tcher'], providers = ['.claude']) {
   for (const provider of providers) {
     for (const skill of skills) {
       const skillDir = join(root, provider, 'skills', skill);

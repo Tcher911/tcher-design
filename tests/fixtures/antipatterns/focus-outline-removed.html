@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>focus-outline-removed fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; font-size: 16px; }
+  h1 { font-size: 40px; }
+  .col { width: 600px; padding: 20px; }
+  button, a { width: 120px; height: 40px; display: inline-block; }
+
+  /* ── should flag: outline killed with no replacement cue ── */
+  *:focus { outline: none; }
+  a.flag-link:focus { outline: 0; }
+  button.flag-btn:focus-visible { outline: none; }
+  .flag-nav :focus { outline: none; color: inherit; }
+
+  /* ── should pass: outline replaced or kept ── */
+  button.pass-shadow:focus { outline: none; box-shadow: 0 0 0 3px #111; }
+  a.pass-outline:focus { outline: 2px solid #111; }
+  button.pass-border:focus-visible { outline: none; border: 2px solid #111; }
+  .pass-plain:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<h1>Focus visibility cases</h1>
+<div class="col">
+  <a class="flag-link" href="/one">One</a>
+  <button type="button" class="flag-btn">Two</button>
+  <nav class="flag-nav"><a href="/three">Three</a></nav>
+  <button type="button" class="pass-shadow">Four</button>
+  <a class="pass-outline" href="/five">Five</a>
+  <button type="button" class="pass-border">Six</button>
+  <button type="button" class="pass-plain">Seven</button>
+</div>
+</body>
+</html>

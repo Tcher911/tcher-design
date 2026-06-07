@@ -23,5 +23,6 @@ describe('skill detector bundle', () => {
 
     expect(critique).toContain('node {{scripts_path}}/detect.mjs --json [target]');
     expect(critique).not.toContain('npx tcher detect');
+    expect(critique).not.toContain('npx tcher-designs detect');
   });
 });

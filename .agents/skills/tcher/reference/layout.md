@@ -138,7 +138,7 @@ Create a systematic plan:
 - **Consistency**: Is the spacing system applied uniformly?
 - **Responsiveness**: Does the layout adapt gracefully across screen sizes?
 
-When the rhythm and hierarchy land, hand off to `$tcher polish` for the final pass.
+When the rhythm and hierarchy land, hand off to `$tcher refine` for the final pass.
 
 ## Live-mode signature params
 

@@ -250,30 +250,10 @@ describe('live-browser.js regression guards', () => {
       /case 'steer_done':[\s\S]{0,80}?maybeCompleteSteer\(msg\)/,
       'steer_done SSE must unlock the chat bar',
     );
-    assert.match(
-      SOURCE,
-      /function toggleSteerVoice\(\)/,
-      'steer voice must toggle Web Speech recognition from the mic button',
-    );
-    assert.match(
-      SOURCE,
-      /webkitSpeechRecognition|SpeechRecognition/,
-      'steer voice must use the Web Speech API',
-    );
     assert.doesNotMatch(
       SOURCE,
-      /Voice mode coming soon/,
-      'steer voice placeholder toast must not ship once voice is wired',
-    );
-    assert.match(
-      SOURCE,
-      /function isEmbeddedPreviewBrowser\(\)/,
-      'steer voice must detect embedded preview browsers (Cursor/Electron)',
-    );
-    assert.match(
-      SOURCE,
-      /steerVoiceUnavailableMessage\(\)/,
-      'steer voice must explain when preview browsers cannot reach speech services',
+      /SpeechRecognition|toggleSteerVoice|toggleConfigureVoice/,
+      'voice input was removed by product decision (typing only); no Web Speech code should ship',
     );
     assert.doesNotMatch(
       SOURCE,
@@ -374,7 +354,7 @@ describe('live-browser.js regression guards', () => {
     assert.match(
       SOURCE,
       /function buildCyclingRow\(\)[\s\S]*?background: C\.brand, color: C\.ink/,
-      'Accept button uses lacquer-deep text on kinpaku gold',
+      'Accept button uses deep ink text on brand white',
     );
     assert.match(SOURCE, /insertCreateDisabledReason/, 'disabled Create hover must explain why');
     assert.match(SOURCE, /data-tcher-insert-placeholder/, 'placeholder element must be marked');
@@ -473,6 +453,34 @@ describe('live-browser.js regression guards', () => {
       SOURCE,
       /const firstEditable = inlineEditRows\[0\] && inlineEditRows\[0\]\.el;[\s\S]{0,120}?setTimeout\(\(\) => \{[\s\S]{0,120}?if \(!el \|\| !el\.isConnected \|\| state !== 'EDITING'\) return;/,
       'edit-mode delayed focus should capture the element before scheduling and no-op if editing ended before the timeout fires',
+    );
+  });
+
+  it('empty variant cycling is unrepresentable (issue-150 stuck 0/0 bar)', () => {
+    assert.match(
+      SOURCE,
+      /function showBar\(mode\) \{[\s\S]{0,160}?ensureCyclingRenderable\('show-bar'\)/,
+      'showBar must refuse to render CYCLING with zero arrived variants',
+    );
+    assert.match(
+      SOURCE,
+      /function updateBarContent\(mode\) \{[\s\S]{0,220}?ensureCyclingRenderable\('update-bar'\)/,
+      'updateBarContent must apply the same empty-cycling guard',
+    );
+    assert.match(
+      SOURCE,
+      /function recoverEmptyCycling\(reason\) \{[\s\S]{0,520}?abortSvelteComponentInjection\(currentSessionId/,
+      'empty-cycling recovery must abort svelte component sessions back to PICKING',
+    );
+    assert.match(
+      SOURCE,
+      /tcherPreview === 'svelte-component'\) \{\s*if \(!\(svelteComponentSession\?\.mountedVariant > 0\)\) \{[\s\S]{0,560}?abortSvelteComponentInjection\(sessionId/,
+      'svelte resume with a matching in-memory session but no mounted variant must abort, not silently return handled',
+    );
+    assert.doesNotMatch(
+      SOURCE,
+      /if \(!svelteComponentSession\?\.mountedVariant\) \{\s*return true;\s*\}/,
+      'the old silent return-handled path for unmounted svelte sessions must not come back',
     );
   });
 });

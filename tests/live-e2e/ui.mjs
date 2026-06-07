@@ -75,7 +75,6 @@ export async function assertBottomBarIdle(page, { timeout = 5_000 } = {}) {
         DESIGN_TOGGLE,
         STEER_CHAT_ID,
         STEER_INPUT_ID,
-        '#tcher-live-page-chat-voice',
         EXIT_BUTTON,
       ],
     },

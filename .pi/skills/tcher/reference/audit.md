@@ -4,7 +4,7 @@ This is a code-level audit, not a design critique. Check what's measurable and v
 
 ## Diagnostic Scan
 
-Run comprehensive checks across 5 dimensions. Score each dimension 0-4 using the criteria below.
+Run comprehensive checks across 6 dimensions. Score each dimension 0-4 using the criteria below.
 
 ### 1. Accessibility (A11y)
 
@@ -56,6 +56,50 @@ Check against ALL the **DON'T** guidelines from the parent tcher skill (already 
 
 **Score 0-4**: 0=AI slop gallery (5+ tells), 1=Heavy AI aesthetic (3-4 tells), 2=Some tells (1-2 noticeable), 3=Mostly clean (subtle issues only), 4=No AI tells (distinctive, intentional design)
 
+### 6. UX (Laws of UX)
+
+Audit the interface against the 30 Laws of UX (principle names from Jon Yablonski's lawsofux.com; the checks below are this skill's own operationalization). The deterministic engine already measures a subset (run `npx tcher-designs detect --mode=ux` or live mode's Detect UX: Fitts targets, Hick/Miller overload, Similarity link cues, Jakob logo link, Postel autocomplete, Doherty payloads, labels/alt/focus/viewport). **Your job here is the judgment half the engine cannot measure.** Walk each cluster:
+
+**Perception (Gestalt)**
+- **Proximity**: is spacing doing the grouping? Labels nearer their own field than the next; related controls clustered; unrelated sections separated by more than within-section gaps.
+- **Similarity**: do same-looking things behave the same? One visual grammar for links, one for buttons; no false affordances.
+- **Common Region**: do containers group related content, or are cards drawn around arbitrary slices?
+- **Uniform Connectedness**: are steps/flows visually connected (progress rails, connectors) when sequence matters?
+- **Prägnanz**: can each screen be summarized in one sentence? If a region needs study to parse, simplify it.
+
+**Memory & load**
+- **Miller's Law / Chunking**: menus, lists, and forms broken into scannable groups; phone/card inputs chunked.
+- **Working Memory**: does any step ask the user to remember something from a previous screen? Carry it forward instead (visited states, breadcrumbs, persisted form data).
+- **Cognitive Load**: count what competes for attention that doesn't serve the task; cut extraneous decoration, merge duplicate actions.
+- **Serial Position Effect**: most important nav items first and last; the middle is where attention dies.
+
+**Decision-making**
+- **Hick's Law / Choice Overload**: fewer, clearer choices at each decision point; one recommended option highlighted; search/filter when lists must be long.
+- **Cognitive Bias**: does the flow exploit or fight user expectations? Watch for confirmation-bias traps in your own review.
+- **Occam's Razor**: for every element ask "what breaks if this goes?" Remove until the answer is "something".
+- **Pareto Principle**: is the primary 20% of functionality the most prominent 20% of the UI?
+
+**Interaction & performance**
+- **Fitts's Law**: primary actions big and near; destructive actions small and far; edge/corner placement for frequent targets.
+- **Doherty Threshold**: feedback within 400ms everywhere (optimistic UI, skeletons, progress for anything slower).
+- **Postel's Law**: forms accept any reasonable input format and normalize it; validation forgives, error messages instruct.
+- **Tesler's Law**: complexity the user carries that the system could (manual steps that could be defaults, repeated data entry).
+- **Parkinson's Law**: autofill, smart defaults, and one-click paths where the task allows.
+
+**Motivation & emotion**
+- **Goal-Gradient / Zeigarnik**: progress visible in multi-step tasks; started-but-unfinished states invite completion.
+- **Peak-End Rule**: the moment of success (submit, send, complete) and the exit are designed, not default.
+- **Flow**: friction matched to skill: onboarding gentle, expert paths fast (shortcuts, bulk actions).
+- **Aesthetic-Usability Effect**: looks may be masking usability problems; test the ugly path too.
+
+**Mental models & behavior**
+- **Jakob's Law / Mental Model**: conventions kept unless breaking one buys real value (logo→home, cart top-right, underlined links).
+- **Selective Attention**: critical info not styled like ads or banners (banner blindness); important changes visually announced (change blindness).
+- **Paradox of the Active User**: help in context (tooltips, empty states, inline hints), never a manual to read first.
+- **Von Restorff Effect**: exactly one thing per screen is the standout; if everything pops, nothing does.
+
+**Score 0-4**: 0=Fights the user (conventions broken, no feedback, choice walls), 1=Major friction (several laws violated in core flows), 2=Mixed (core flow respects them, secondary flows don't), 3=Good (deliberate grouping, feedback, defaults; minor gaps), 4=Excellent (flows feel obvious; the laws are invisible because they're all honored)
+
 ## Generate Report
 
 ### Audit Health Score
@@ -67,9 +111,10 @@ Check against ALL the **DON'T** guidelines from the parent tcher skill (already 
 | 3 | Responsive Design | ? | |
 | 4 | Theming | ? | |
 | 5 | Anti-Patterns | ? | |
-| **Total** | | **??/20** | **[Rating band]** |
+| 6 | UX (Laws of UX) | ? | |
+| **Total** | | **??/24** | **[Rating band]** |
 
-**Rating bands**: 18-20 Excellent (minor polish), 14-17 Good (address weak dimensions), 10-13 Acceptable (significant work needed), 6-9 Poor (major overhaul), 0-5 Critical (fundamental issues)
+**Rating bands**: 22-24 Excellent (minor polish), 17-21 Good (address weak dimensions), 12-16 Acceptable (significant work needed), 7-11 Poor (major overhaul), 0-6 Critical (fundamental issues)
 
 ### Anti-Patterns Verdict
 **Start here.** Pass/fail: Does this look AI-generated? List specific tells. Be brutally honest.
@@ -91,11 +136,11 @@ Tag every issue with **P0-P3 severity**:
 For each issue, document:
 - **[P?] Issue name**
 - **Location**: Component, file, line
-- **Category**: Accessibility / Performance / Theming / Responsive / Anti-Pattern
+- **Category**: Accessibility / Performance / Theming / Responsive / Anti-Pattern / UX (cite the law)
 - **Impact**: How it affects users
 - **WCAG/Standard**: Which standard it violates (if applicable)
 - **Recommendation**: How to fix it
-- **Suggested command**: Which command to use (prefer: /tcher adapt, /tcher animate, /tcher audit, /tcher bolder, /tcher clarify, /tcher colorize, /tcher critique, /tcher delight, /tcher distill, /tcher document, /tcher harden, /tcher layout, /tcher onboard, /tcher optimize, /tcher overdrive, /tcher polish, /tcher quieter, /tcher shape, /tcher typeset)
+- **Suggested command**: Which command to use (prefer: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo)
 
 ### Patterns & Systemic Issues
 
@@ -114,7 +159,7 @@ List recommended commands in priority order (P0 first, then P1, then P2):
 1. **[P?] `/command-name`**: Brief description (specific context from audit findings)
 2. **[P?] `/command-name`**: Brief description (specific context)
 
-**Rules**: Only recommend commands from: /tcher adapt, /tcher animate, /tcher audit, /tcher bolder, /tcher clarify, /tcher colorize, /tcher critique, /tcher delight, /tcher distill, /tcher document, /tcher harden, /tcher layout, /tcher onboard, /tcher optimize, /tcher overdrive, /tcher polish, /tcher quieter, /tcher shape, /tcher typeset. Map findings to the most appropriate command. End with `/tcher polish` as the final step if any fixes were recommended.
+**Rules**: Only recommend commands from: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo. Map findings to the most appropriate command. End with `/tcher refine` as the final step if any fixes were recommended.
 
 After presenting the summary, tell the user:
 

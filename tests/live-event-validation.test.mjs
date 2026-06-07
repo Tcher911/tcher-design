@@ -72,7 +72,7 @@ describe('validateEvent — replace generate (regression)', () => {
         type: 'generate',
         id: VALID_ID,
         count: 2,
-        action: 'polish',
+        action: 'refine',
       }),
       /element context/i,
     );
@@ -90,7 +90,7 @@ describe('validateEvent — replace generate (regression)', () => {
         type: 'generate',
         id: VALID_ID,
         count: 2,
-        action: 'polish',
+        action: 'refine',
         element: { outerHTML: '<div/>' },
       }),
       null,
