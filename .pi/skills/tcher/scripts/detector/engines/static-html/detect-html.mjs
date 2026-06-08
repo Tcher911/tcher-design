@@ -30,6 +30,7 @@ import {
   checkElementLinkAffordance,
   checkFocusOutlineCss,
   checkUxPageFromDoc,
+  checkThaiTypographyFromDoc,
   resolveBackground,
   resolveBorderRadiusPx,
 } from '../../rules/checks.mjs';
@@ -207,6 +208,11 @@ async function detectHtml(filePath, options = {}) {
     // ux page rules: viewport meta, nav/select/form overload, logo link,
     // autocomplete, input labels (shared adapter; `el` is overlay-only)
     for (const f of runPageCheck('ux-page-rules', () => checkUxPageFromDoc(document, (el) => window.getComputedStyle(el)))) {
+      findings.push(finding(f.id, filePath, f.snippet));
+    }
+    // quality: Thai typography (line-height / letter-spacing / font-size on
+    // Thai runs). Shared page pass; silent on pages with no Thai text.
+    for (const f of runPageCheck('thai-typography', () => checkThaiTypographyFromDoc(document, (el) => window.getComputedStyle(el)))) {
       findings.push(finding(f.id, filePath, f.snippet));
     }
     // ux: focus-outline-removed runs over the aggregated stylesheet text

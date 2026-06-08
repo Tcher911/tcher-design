@@ -1624,6 +1624,15 @@ if (IS_BROWSER) {
       addBrowserFindings(groupMap, target, [{ type: f.id, detail: f.snippet }]);
     }
 
+    // quality: Thai typography — shared page pass with the static engine.
+    // Each finding carries its concrete element so the overlay outlines it;
+    // silent on pages with no Thai text.
+    for (const f of checkThaiTypographyFromDoc(document, (n) => getComputedStyle(n))) {
+      if (!_ruleOk(f.id)) continue;
+      const target = f.el && f.el.nodeType === 1 ? f.el : document.body;
+      addBrowserFindings(groupMap, target, [{ type: f.id, detail: f.snippet }]);
+    }
+
     // ux: focus-outline-removed — page pass over same-origin stylesheet text.
     // tcher's own chrome styles are excluded by owner id/ancestry.
     const focusCssChunks = [];

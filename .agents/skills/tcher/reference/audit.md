@@ -140,7 +140,7 @@ For each issue, document:
 - **Impact**: How it affects users
 - **WCAG/Standard**: Which standard it violates (if applicable)
 - **Recommendation**: How to fix it
-- **Suggested command**: Which command to use (prefer: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo)
+- **Suggested command**: Which command to use (prefer: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo, $tcher thai, $tcher sea, $tcher flows)
 
 ### Patterns & Systemic Issues
 
@@ -159,7 +159,7 @@ List recommended commands in priority order (P0 first, then P1, then P2):
 1. **[P?] `$command-name`**: Brief description (specific context from audit findings)
 2. **[P?] `$command-name`**: Brief description (specific context)
 
-**Rules**: Only recommend commands from: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo. Map findings to the most appropriate command. End with `$tcher refine` as the final step if any fixes were recommended.
+**Rules**: Only recommend commands from: $tcher responsive, $tcher animate, $tcher audit, $tcher brave, $tcher clarify, $tcher palette, $tcher critique, $tcher motion, $tcher trim, $tcher document, $tcher harden, $tcher idea, $tcher layout, $tcher onboard, $tcher optimize, $tcher extreme, $tcher refine, $tcher calm, $tcher shape, $tcher typo, $tcher thai, $tcher sea, $tcher flows. Map findings to the most appropriate command. End with `$tcher refine` as the final step if any fixes were recommended.
 
 After presenting the summary, tell the user:
 

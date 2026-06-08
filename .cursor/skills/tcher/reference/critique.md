@@ -123,7 +123,7 @@ For each issue, tag with **P0-P3 severity** (see [Issue Severity below](#issue-s
 - **[P?] What**: Name the problem clearly
 - **Why it matters**: How this hurts users or undermines goals
 - **Fix**: What to do about it (be concrete)
-- **Suggested command**: Which command could address this (from: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo)
+- **Suggested command**: Which command could address this (from: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo, /tcher thai, /tcher sea, /tcher flows)
 
 #### Persona Red Flags
 > *Consult the [Personas reference](#persona-based-design-testing) below.*
@@ -220,7 +220,7 @@ List recommended commands in priority order, based on the user's answers:
 ...
 
 **Rules for recommendations**:
-- Only recommend commands from: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo
+- Only recommend commands from: /tcher responsive, /tcher animate, /tcher audit, /tcher brave, /tcher clarify, /tcher palette, /tcher critique, /tcher motion, /tcher trim, /tcher document, /tcher harden, /tcher idea, /tcher layout, /tcher onboard, /tcher optimize, /tcher extreme, /tcher refine, /tcher calm, /tcher shape, /tcher typo, /tcher thai, /tcher sea, /tcher flows
 - Order by the user's stated priorities first, then by impact
 - Each item's description should carry enough context that the command knows what to focus on
 - Map each Priority Issue to the appropriate command

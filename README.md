@@ -1,6 +1,6 @@
 # tcher-design
 
-1 skill, 24 commands, and curated anti-patterns for exceptional frontend design.
+1 skill, 27 commands, and curated anti-patterns for exceptional frontend design.
 
 > **Quick start:** `npx tcher-designs skills install`
 
@@ -13,7 +13,7 @@ Every LLM learned from the same generic templates. Without guidance, you get the
 tcher-design fights that bias with:
 
 - **An expanded skill** with 7 domain-specific reference files
-- **24 commands** to audit, critique, refine, trim, animate, and more
+- **27 commands** to audit, critique, refine, trim, animate, and more
 - **Curated anti-patterns** that explicitly tell the AI what NOT to do
 
 ---
@@ -57,7 +57,7 @@ npx tcher-designs skills install
 
 ---
 
-## 24 Commands
+## 27 Commands
 
 ### Setup & Planning
 
@@ -76,6 +76,7 @@ npx tcher-designs skills install
 |---------|-------------|
 | `/tcher critique` | UX design review: hierarchy, clarity, emotional resonance |
 | `/tcher audit` | Technical quality checks: a11y, performance, responsive |
+| `/tcher flows` | Trace task journeys in code: dead ends, missing states, can users finish |
 
 ### Refine & Polish
 
@@ -111,6 +112,13 @@ npx tcher-designs skills install
 |---------|-------------|
 | `/tcher responsive` | Adapt for different devices or contexts |
 | `/tcher optimize` | Performance improvements |
+
+### Localization
+
+| Command | What it does |
+|---------|-------------|
+| `/tcher thai` | Thai typography: leading for stacked marks, font pairing, mixed Thai+English |
+| `/tcher sea` | Adapt UX for SEA / Thailand: trust signals, PromptPay/COD, info density, mobile-first |
 
 ### Live Mode
 
@@ -187,7 +195,7 @@ Press exit on the pill; the injected script is removed cleanly.
 | Variations ×2 / ×3 / ×4 | Number of variants per run. Click to cycle (default ×2). More = more options, longer wait. |
 | Enter | Send the task to the agent |
 | Type Here (on the pill bar) | Page-level direction without selecting an element; type what needs to change and press Enter |
-| Detect UX | Run the 56-rule design + UX check on the current page (see below) |
+| Detect UX | Run the 59-rule design + UX check on the current page (see below) |
 
 ### 12 Live Mode Actions
 
@@ -212,11 +220,11 @@ Each action loads its own reference file (`reference/brave.md`, etc.) to ensure 
 
 ## UX Check: Detect UX
 
-Press **Detect UX** on the pill bar to scan the live page with **56 deterministic rules**. No AI call, no network: the engine walks the real DOM with computed styles and flags problems in about a second.
+Press **Detect UX** on the pill bar to scan the live page with **59 deterministic rules**. No AI call, no network: the engine walks the real DOM with computed styles and flags problems in about a second.
 
 The rules split into two sets, and the findings popover has a tab for each:
 
-- **Design (42)**: AI-template tells and craft problems. Purple gradient text, side-tab borders, icon-tile stacks, low contrast, cramped padding, marketing buzzwords.
+- **Design (45)**: AI-template tells and craft problems. Purple gradient text, side-tab borders, icon-tile stacks, low contrast, cramped padding, marketing buzzwords, cramped Thai line-height.
 - **UX (14)**: usability checks, several operationalizing principles from Jon Yablonski's [Laws of UX](https://lawsofux.com/). Tap targets under 24px (Fitts's Law), navs past 8 choices (Hick's Law), prose links with no visual cue (Law of Similarity), forms past 7 ungrouped fields (Miller's Law), autofillable fields without `autocomplete` (Postel's Law), multi-thousand-pixel images in small slots (Doherty Threshold), plus inputs without labels, icon buttons without names, missing `alt`, killed focus outlines, and a missing viewport meta.
 
 Findings are color-coded by severity:
@@ -275,7 +283,7 @@ Explicit guidance baked into the skill telling the AI what to avoid:
 - Don't wrap everything in cards or nest cards inside cards
 - Don't use bounce or elastic easing; it feels dated
 
-The Detect UX engine enforces 56 machine-checkable rules (42 design, 14 UX; see **UX Check** above), so the guidance is verified, not just suggested.
+The Detect UX engine enforces 59 machine-checkable rules (45 design, 14 UX; see **UX Check** above), so the guidance is verified, not just suggested.
 
 ---
 

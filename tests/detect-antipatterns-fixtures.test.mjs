@@ -901,3 +901,65 @@ describe('detectHtml — ux: form-field-overload', () => {
     assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
   });
 });
+
+// ─── Thai typography (category: 'quality') ──────────────────────────────────
+// Fire only on elements whose OWN text holds a Thai run. line-height and
+// font-size gate on a prose-length run; letter-spacing fires on any Thai run.
+// Snippets end with the element's "tag.class" selector, which `quoted` reads.
+
+describe('detectHtml — quality: thai-line-height-cramped', () => {
+  const SHOULD_FLAG = ['flag-normal', 'flag-tight', 'flag-px', 'flag-mid'];
+  const SHOULD_PASS = ['pass-relaxed', 'pass-loose', 'pass-pxok', 'pass-heading', 'pass-label', 'pass-english'];
+
+  it('flags Thai prose below 1.5x leading, passes relaxed/heading/label/non-Thai', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'thai-line-height-cramped.html'));
+    const found = f.filter(r => r.antipattern === 'thai-line-height-cramped');
+    for (const r of found) assert.equal(r.severity, 'major');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — quality: thai-letter-spacing', () => {
+  const SHOULD_FLAG = ['flag-em', 'flag-px', 'flag-label', 'flag-heading'];
+  const SHOULD_PASS = ['pass-normal', 'pass-zero', 'pass-negative', 'pass-english', 'pass-default'];
+
+  it('flags positive tracking on Thai, passes normal/zero/negative/non-Thai', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'thai-letter-spacing.html'));
+    const found = f.filter(r => r.antipattern === 'thai-letter-spacing');
+    for (const r of found) assert.equal(r.severity, 'minor');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});
+
+describe('detectHtml — quality: thai-font-size-small', () => {
+  const SHOULD_FLAG = ['flag-12', 'flag-13', 'flag-half', 'flag-em'];
+  const SHOULD_PASS = ['pass-16', 'pass-18', 'pass-14', 'pass-caption', 'pass-english', 'pass-heading'];
+
+  it('flags Thai prose below 14px, passes >=14/heading/label/non-Thai', async () => {
+    const f = await detectHtml(path.join(FIXTURES, 'thai-font-size-small.html'));
+    const found = f.filter(r => r.antipattern === 'thai-font-size-small');
+    for (const r of found) assert.equal(r.severity, 'advisory');
+    const ids = found.map(quoted);
+    for (const t of SHOULD_FLAG) {
+      assert.ok(ids.some(x => x.includes(t)), `expected "${t}" flagged; got: ${ids.join(' | ') || '(none)'}`);
+    }
+    for (const t of SHOULD_PASS) {
+      assert.ok(!ids.some(x => x.includes(t)), `"${t}" should not be flagged`);
+    }
+    assert.equal(found.length, 4, `expected 4 findings, got ${found.length}: ${found.map(r => r.snippet).join('; ')}`);
+  });
+});

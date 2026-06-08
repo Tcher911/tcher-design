@@ -324,6 +324,40 @@ const ANTIPATTERNS = [
     skillGuideline: 'overflow container clipping positioned children',
   },
 
+  // ── Thai typography: faults Latin-tuned defaults inflict on Thai script ──
+  // These fire only on elements whose OWN text holds a Thai run, so non-Thai
+  // pages stay silent. line-height and font-size gate on a prose-length run;
+  // letter-spacing fires on any Thai run (positive tracking breaks syllables).
+  {
+    id: 'thai-line-height-cramped',
+    category: 'quality',
+    name: 'Cramped line-height on Thai text',
+    description:
+      'Thai prose with line-height below 1.5x. Thai stacks upper vowels and tone marks above the base letter, so Latin-tuned leading lets the marks of one line collide with the line above. Use at least 1.6, ideally 1.75-2.0 for long-form Thai.',
+    skillSection: 'Typography',
+    skillGuideline: 'Thai line-height below 1.6',
+  },
+  {
+    id: 'thai-letter-spacing',
+    category: 'quality',
+    severity: 'minor',
+    name: 'Letter-spacing on Thai text',
+    description:
+      'Positive letter-spacing on Thai text. Thai has no word spaces and no uppercase, so tracking copied from Latin labels pushes vowels and tone marks off their base letters and breaks the syllable. Leave Thai at the default (normal) tracking.',
+    skillSection: 'Typography',
+    skillGuideline: 'positive letter-spacing on Thai',
+  },
+  {
+    id: 'thai-font-size-small',
+    category: 'quality',
+    severity: 'advisory',
+    name: 'Thai body text too small',
+    description:
+      'Thai prose below 14px. Thai letters are told apart by small loops that vanish at small sizes faster than Latin does, so Thai needs a larger floor. Use at least 16px (17-18px for loopless faces) for Thai body text.',
+    skillSection: 'Typography',
+    skillGuideline: 'Thai body text below 16px',
+  },
+
   // ── Provider tells: opt-in via --gpt / --gemini (gated off by default) ──
   {
     id: 'gpt-thin-border-wide-shadow',

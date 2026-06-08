@@ -2946,6 +2946,85 @@ function checkUxPageFromDoc(doc, getStyle) {
   return findings;
 }
 
+// ── Thai typography (category: quality) ────────────────────────────────────
+// Latin-tuned type defaults break Thai: stacked vowels and tone marks need
+// more leading, the loops that distinguish letters need size, and tracking
+// copied from Latin labels breaks the syllable. One page pass walks
+// text-bearing elements and keys off each element's OWN Thai run, so the
+// finding lands on the element that holds the text and non-Thai pages stay
+// completely silent.
+function thaiCharCount(s) {
+  let n = 0;
+  for (const ch of String(s || '')) {
+    const cp = ch.codePointAt(0);
+    if (cp >= 0x0e00 && cp <= 0x0e7f) n++;
+  }
+  return n;
+}
+
+function uxDirectText(el) {
+  let out = '';
+  for (const n of el.childNodes || []) {
+    if (n.nodeType === 3) out += (n.textContent || '');
+  }
+  return out;
+}
+
+function checkThaiTypographyFromDoc(doc, getStyle) {
+  const findings = [];
+  const HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+  const els = doc.querySelectorAll(
+    'p, li, dd, dt, blockquote, figcaption, td, th, span, a, button, label, summary, h1, h2, h3, h4, h5, h6, div, section, article'
+  );
+  for (const el of els) {
+    if (uxInTcherChrome(el)) continue;
+    const thai = thaiCharCount(uxDirectText(el));
+    if (thai < 2) continue; // no meaningful Thai run in this element's own text
+    let style;
+    try { style = getStyle(el); } catch { continue; }
+    if (!style) continue;
+    if ((style.display || '') === 'none' || (style.visibility || '') === 'hidden') continue;
+
+    const tag = (el.tagName || '').toLowerCase();
+    const fontSize = parseFloat(style.fontSize) || 16;
+    const sel = uxClassSelector(el);
+
+    // thai-letter-spacing — any positive tracking, even on a short label.
+    const lsPx = resolveLengthPx(style.letterSpacing, fontSize);
+    if (lsPx != null && lsPx > 0.2) {
+      findings.push({
+        id: 'thai-letter-spacing',
+        snippet: `positive letter-spacing ${(lsPx / fontSize).toFixed(3)}em on Thai text "${sel}"`,
+        el,
+      });
+    }
+
+    // line-height and font-size target real Thai prose, not one-line labels
+    // or headings (which legitimately run tight and large).
+    if (thai >= 30 && !HEADINGS.has(tag)) {
+      const lhPx = resolveLengthPx(style.lineHeight, fontSize);
+      // 'normal' (resolveLengthPx → null) renders ~1.2 for most faces, which
+      // is cramped for stacked Thai marks: treat it as the cramped case.
+      const ratio = lhPx == null ? 1.2 : lhPx / fontSize;
+      if (fontSize > 0 && ratio < 1.5) {
+        findings.push({
+          id: 'thai-line-height-cramped',
+          snippet: `Thai prose line-height ${ratio.toFixed(2)}x (need >=1.6) "${sel}"`,
+          el,
+        });
+      }
+      if (fontSize > 0 && fontSize < 14) {
+        findings.push({
+          id: 'thai-font-size-small',
+          snippet: `Thai prose at ${fontSize}px (use >=16px) "${sel}"`,
+          el,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
 export {
   checkBorders,
   isEmojiOnlyText,
@@ -3043,4 +3122,5 @@ export {
   uxCollectTargetRect,
   checkElementLinkAffordance,
   checkUxPageFromDoc,
+  checkThaiTypographyFromDoc,
 };

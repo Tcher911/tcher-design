@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "tcher",
   "metadata": {
-    "description": "Design fluency for AI harnesses. 1 skill, 24 commands, and curated anti-patterns for tcher frontend design."
+    "description": "Design fluency for AI harnesses. 1 skill, 27 commands, and curated anti-patterns for tcher frontend design."
   },
   "owner": {
     "name": "tcher",
@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "tcher",
-      "description": "Design fluency for frontend development. 1 skill with 24 commands (/tcher refine, /tcher audit, /tcher critique, etc.) and curated anti-pattern detection.",
+      "description": "Design fluency for frontend development. 1 skill with 27 commands (/tcher refine, /tcher audit, /tcher critique, etc.) and curated anti-pattern detection.",
       "version": "1.0.0",
       "author": {
         "name": "tcher",

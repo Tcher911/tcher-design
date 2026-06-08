@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thai-font-size-small fixture</title>
+<style>
+  body { font-family: "Noto Sans Thai", sans-serif; margin: 0; font-size: 16px; line-height: 1.7; color: #222222; }
+  .col { width: 600px; padding: 20px; }
+
+  /* ── should flag: Thai prose below 14px (kept >=12 to stay clear of tiny-text) ── */
+  .flag-12   { font-size: 12px; }
+  .flag-13   { font-size: 13px; }
+  .flag-half { font-size: 13.5px; }
+  .flag-em   { font-size: 0.8rem; }   /* 12.8px */
+
+  /* ── should pass ── */
+  .pass-16      { font-size: 16px; }
+  .pass-18      { font-size: 18px; }
+  .pass-14      { font-size: 14px; }   /* boundary: 14 is the floor */
+  .pass-caption { font-size: 11px; }   /* short Thai label, not prose */
+  .pass-english { font-size: 11px; }   /* no Thai run */
+  .pass-heading { font-size: 13px; }   /* heading exempt from prose rules */
+</style>
+</head>
+<body>
+<div class="col">
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<p class="flag-12">ตัวอักษรไทยที่ตั้งขนาดเล็กเกินไปจะทำให้หัวของพยัญชนะหายไปและแยกแยะตัวอักษรแต่ละตัวได้ยาก</p>
+<p class="flag-13">เนื้อความภาษาไทยขนาดเล็กบีบให้รายละเอียดของสระและวรรณยุกต์เลือนหายไปจนอ่านได้ลำบากบนจอ</p>
+<p class="flag-half">ขนาดตัวอักษรไทยที่ต่ำกว่าเกณฑ์ทำให้ผู้อ่านต้องเพ่งสายตาและเหนื่อยล้าเร็วกว่าที่ควรจะเป็น</p>
+<p class="flag-em">การใช้หน่วยเรมกำหนดขนาดเล็กก็ยังถือว่าตัวอักษรไทยเล็กเกินไปสำหรับการอ่านเนื้อหายาวอย่างสบายตา</p>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<p class="pass-16">ขนาดตัวอักษรไทยมาตรฐานสิบหกพิกเซลช่วยให้อ่านเนื้อหายาวได้สบายตาและเห็นหัวพยัญชนะชัดเจน</p>
+<p class="pass-18">การเพิ่มขนาดตัวอักษรไทยให้ใหญ่ขึ้นอีกเล็กน้อยช่วยให้รายละเอียดของสระและวรรณยุกต์ชัดเจนยิ่งขึ้น</p>
+<p class="pass-14">ขนาดสิบสี่พิกเซลถือเป็นเกณฑ์ขั้นต่ำที่ยอมรับได้สำหรับข้อความไทยในส่วนติดต่อผู้ใช้ทั่วไป</p>
+<span class="pass-caption">ค้นหา</span>
+<p class="pass-english">This tiny English caption carries no Thai characters and should not be flagged by the Thai rule.</p>
+<h3 class="pass-heading">หัวข้อย่อยภาษาไทยขนาดเล็กแต่เป็นหัวข้อจึงได้รับการยกเว้นจากกฎเนื้อหาเนื้อความยาวพอสมควร</h3>
+</div>
+</body>
+</html>

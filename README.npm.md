@@ -1,6 +1,6 @@
 # Tcher CLI
 
-Detect UI anti-patterns, design quality issues, and UX problems from the command line. Scans HTML, CSS, JSX, TSX, Vue, and Svelte files for 56 specific patterns: AI-generated UI tells, design craft problems, and a usability rule set built on Laws of UX principles. Every rule carries a severity tier (critical / major / minor / advisory); the live-mode overlay color-codes findings by tier.
+Detect UI anti-patterns, design quality issues, and UX problems from the command line. Scans HTML, CSS, JSX, TSX, Vue, and Svelte files for 59 specific patterns: AI-generated UI tells, design craft problems, and a usability rule set built on Laws of UX principles. Every rule carries a severity tier (critical / major / minor / advisory); the live-mode overlay color-codes findings by tier.
 
 ## Quick Start
 
@@ -45,11 +45,11 @@ npx tcher-designs detect --mode=ux src/
 
 **Motion**: bounce/elastic easing, layout property transitions
 
-**Quality**: tiny body text, cramped padding, long line lengths, small touch targets
+**Quality**: tiny body text, cramped padding, long line lengths, small touch targets, Thai typography faults (cramped leading, tracking, small size on Thai text)
 
 **UX (Laws of UX)**: sub-24px tap targets (Fitts's Law), nav choice overload (Hick's Law), links indistinguishable from prose (Law of Similarity), ungrouped form walls (Miller's Law), missing autocomplete (Postel's Law), plus inputs without labels, icon buttons without names, missing alt, killed focus outlines, missing viewport meta. Rule names follow Jon Yablonski's [lawsofux.com](https://lawsofux.com/); JSON output carries the law per finding.
 
-56 detections in total. See the full list at [tcher-designs.vercel.app](https://tcher-designs.vercel.app/).
+59 detections in total. See the full list at [tcher-designs.vercel.app](https://tcher-designs.vercel.app/).
 
 ## Exit Codes
 

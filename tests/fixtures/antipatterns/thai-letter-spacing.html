@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thai-letter-spacing fixture</title>
+<style>
+  body { font-family: "Noto Sans Thai", sans-serif; margin: 0; font-size: 16px; line-height: 1.7; letter-spacing: normal; color: #222222; }
+  .col { width: 600px; padding: 20px; }
+  h1 { font-size: 40px; }
+  h2 { font-size: 28px; }
+
+  /* ── should flag: positive letter-spacing on Thai ── */
+  .flag-em      { letter-spacing: 0.04em; }   /* 0.64px @16, below wide-tracking's 0.05em */
+  .flag-px      { letter-spacing: 0.5px; }
+  .flag-label   { letter-spacing: 0.04em; }
+  .flag-heading { letter-spacing: 0.04em; }
+
+  /* ── should pass ── */
+  .pass-normal   { letter-spacing: normal; }
+  .pass-zero     { letter-spacing: 0; }
+  .pass-negative { letter-spacing: -0.02em; }
+  .pass-english  { letter-spacing: 0.1em; }    /* no Thai run */
+  /* .pass-default declares nothing; inherits body's normal */
+</style>
+</head>
+<body>
+<div class="col">
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<p class="flag-em">ภาษาไทยไม่ควรใส่ระยะห่างระหว่างตัวอักษรแบบภาษาอังกฤษเพราะจะดันวรรณยุกต์ออกจากพยัญชนะ</p>
+<p class="flag-px">การเพิ่มระยะห่างระหว่างตัวอักษรไทยแม้เพียงเล็กน้อยก็ทำให้คำขาดความต่อเนื่องและอ่านยากขึ้น</p>
+<span class="flag-label">เข้าสู่ระบบ</span>
+<h2 class="flag-heading">หัวข้อภาษาไทยที่ถูกขยายระยะตัวอักษร</h2>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<p class="pass-normal">ข้อความภาษาไทยที่ใช้ระยะห่างตัวอักษรตามค่าปกติจะอ่านได้ลื่นไหลและคงรูปพยางค์ไว้ครบถ้วน</p>
+<p class="pass-zero">การตั้งค่าระยะห่างตัวอักษรเป็นศูนย์ถือว่าเหมาะสมกับภาษาไทยและไม่รบกวนการอ่านแต่อย่างใด</p>
+<h1 class="pass-negative">พาดหัวไทยกระชับ</h1>
+<p class="pass-english">This English label uses wide tracking but contains no Thai characters whatsoever here.</p>
+<p class="pass-default">ย่อหน้านี้ไม่ได้กำหนดระยะห่างตัวอักษรเองจึงรับค่าปกติมาจากเอกสารและถือว่าผ่านเกณฑ์</p>
+</div>
+</body>
+</html>

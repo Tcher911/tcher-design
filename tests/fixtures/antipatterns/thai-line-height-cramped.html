@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thai-line-height-cramped fixture</title>
+<style>
+  body { font-family: "Noto Sans Thai", sans-serif; margin: 0; font-size: 16px; line-height: 1.7; color: #222222; }
+  .col { width: 600px; padding: 20px; }
+  h2 { font-size: 28px; }
+
+  /* ── should flag: Thai prose with line-height below 1.5x ── */
+  .flag-normal { line-height: normal; }   /* ~1.2 */
+  .flag-tight  { line-height: 1.35; }
+  .flag-px     { line-height: 22px; }      /* 22/16 = 1.375 */
+  .flag-mid    { line-height: 1.45; }
+
+  /* ── should pass ── */
+  .pass-relaxed { line-height: 1.6; }
+  .pass-loose   { line-height: 2.0; }
+  .pass-pxok    { line-height: 28px; }     /* 28/16 = 1.75 */
+  .pass-heading { line-height: 1.2; }      /* heading: tight leading is fine */
+  .pass-label   { line-height: normal; }   /* short Thai label, not prose */
+  .pass-english { line-height: 1.2; }      /* no Thai run */
+</style>
+</head>
+<body>
+<div class="col">
+<!-- ───────────────── SHOULD FLAG ───────────────── -->
+<p class="flag-normal">ภาษาไทยมีสระบนสระล่างและวรรณยุกต์ที่วางซ้อนกันหลายชั้นจึงต้องการระยะบรรทัดที่กว้างกว่าภาษาอังกฤษ</p>
+<p class="flag-tight">การออกแบบตัวอักษรไทยให้อ่านง่ายต้องใส่ใจทั้งความสูงบรรทัดขนาดตัวอักษรและระยะห่างระหว่างพยัญชนะ</p>
+<p class="flag-px">เมื่อข้อความไทยยาวหลายบรรทัดหากระยะบรรทัดแคบเกินไปวรรณยุกต์จะชนกับบรรทัดด้านบนทำให้อ่านยาก</p>
+<p class="flag-mid">เนื้อหาภาษาไทยที่จัดระยะบรรทัดตามค่าเริ่มต้นของภาษาอังกฤษมักจะดูอึดอัดและเบียดกันเกินไป</p>
+
+<!-- ───────────────── SHOULD PASS ───────────────── -->
+<p class="pass-relaxed">ระยะบรรทัดที่กว้างพอจะทำให้ข้อความภาษาไทยอ่านสบายตาและไม่เบียดกันแม้จะมีวรรณยุกต์หลายชั้น</p>
+<p class="pass-loose">ข้อความยาวภาษาไทยที่ตั้งระยะบรรทัดไว้กว้างเป็นพิเศษช่วยให้สายตาไล่อ่านได้ง่ายตลอดทั้งย่อหน้า</p>
+<p class="pass-pxok">การกำหนดระยะบรรทัดเป็นหน่วยพิกเซลก็ใช้ได้ตราบใดที่อัตราส่วนเทียบกับขนาดตัวอักษรยังกว้างเพียงพอ</p>
+<h2 class="pass-heading">หัวข้อภาษาไทยขนาดใหญ่ที่ตั้งระยะบรรทัดแคบยังอ่านได้เพราะเป็นบรรทัดเดียวและตัวอักษรใหญ่</h2>
+<span class="pass-label">เมนูหลัก</span>
+<p class="pass-english">This English paragraph uses tight leading but carries no Thai characters at all here.</p>
+</div>
+</body>
+</html>

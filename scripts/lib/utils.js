@@ -667,6 +667,7 @@ const TCHER_SUB_COMMANDS = [
   'responsive', 'animate', 'audit', 'brave', 'clarify', 'palette',
   'critique', 'motion', 'trim', 'document', 'harden', 'idea', 'layout',
   'onboard', 'optimize', 'extreme', 'refine', 'calm', 'shape', 'typo',
+  'thai', 'sea', 'flows',
 ];
 
 export function replacePlaceholders(content, provider, commandNames = [], allSkillNames = []) {

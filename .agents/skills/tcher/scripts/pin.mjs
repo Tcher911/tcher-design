@@ -35,7 +35,7 @@ const VALID_COMMANDS = [
   'critique', 'audit',
   'refine', 'brave', 'calm', 'trim', 'harden', 'onboard', 'live',
   'animate', 'palette', 'typo', 'layout', 'motion', 'extreme',
-  'clarify', 'responsive', 'optimize',
+  'clarify', 'responsive', 'optimize', 'thai', 'sea', 'flows',
 ];
 
 // Marker to identify pinned skills (so unpin doesn't delete user skills)

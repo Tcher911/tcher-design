@@ -94,5 +94,17 @@
   "typo": {
     "description": "Improves typography by fixing font choices, hierarchy, sizing, weight, and readability so text feels intentional. Use when the user mentions fonts, type, readability, text hierarchy, sizing looks off, or wants more polished, intentional typography.",
     "argumentHint": "[target]"
+  },
+  "thai": {
+    "description": "Tunes Thai typography so Thai text reads like a native designer set it: line-height for stacked vowels and tone marks, font selection and pairing (Anuphan, IBM Plex Sans Thai, Sarabun, Prompt), letter-spacing, and harmonious mixed Thai and English. Use when the page has Thai content or the user mentions Thai fonts, leading, or mixed-language type.",
+    "argumentHint": "[target]"
+  },
+  "sea": {
+    "description": "Adapts an interface to Southeast Asian, especially Thai, norms: trust signals and social proof, PromptPay / cash-on-delivery / wallet payment flows, comfortable information density (Shopee / Lazada style, not Western whitespace-max), and mobile-first thumb-zone layout. Use when the product targets Thailand or SEA, or the user mentions trust, PromptPay, dense UI, or local payment and mobile behavior.",
+    "argumentHint": "[target]"
+  },
+  "flows": {
+    "description": "Reads the codebase (routes, pages, components, and state) and analyzes whether users can actually complete their tasks, not just whether the UI looks good. Traces each primary flow (checkout, sign-up, onboarding, upload) and reports dead ends, missing loading/error/empty/success states, orphan pages, broken flows, and the step count per task with a completion-rate risk. Use when the user asks whether a flow works end-to-end, mentions users getting stuck, dropped, or unable to finish, or wants a journey or task-completion review rather than a single-screen or technical audit.",
+    "argumentHint": "[flow or area (checkout, signup...)]"
   }
 }

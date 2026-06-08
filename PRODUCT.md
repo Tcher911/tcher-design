@@ -12,7 +12,7 @@ Designers, product managers, and engineers who use AI coding tools (Cursor, Clau
 
 ## Product Purpose
 
-Tcher gives builders a shared design vocabulary with their AI, delivered as a plug-and-play skill (24 commands) plus a CLI, working in every major AI coding harness. Live mode adds in-browser iteration (select an element, get real variants) and a built-in UX check: 56 deterministic rules (42 design, 14 Laws-of-UX/usability), severity-coded. Success is measured in two ways: (1) the user can steer AI output with design precision instead of vague prose, and (2) the AI produces interfaces that pass professional design review, not "looks like an AI made it" output.
+Tcher gives builders a shared design vocabulary with their AI, delivered as a plug-and-play skill (27 commands) plus a CLI, working in every major AI coding harness. Live mode adds in-browser iteration (select an element, get real variants) and a built-in UX check: 59 deterministic rules (45 design, 14 Laws-of-UX/usability), severity-coded. Success is measured in two ways: (1) the user can steer AI output with design precision instead of vague prose, and (2) the AI produces interfaces that pass professional design review, not "looks like an AI made it" output.
 
 ## Brand Personality
 

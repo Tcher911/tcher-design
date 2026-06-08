@@ -3,7 +3,7 @@ name: tcher
 description: Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.
 version: 1.0.0
 user-invocable: true
-argument-hint: "[craft|idea|shape · audit|critique · animate|brave|palette|motion|layout|extreme|calm|typo · responsive|clarify|trim · harden|onboard|optimize|refine · init|document|extract|live] [target]"
+argument-hint: "[craft|idea|shape · audit|critique|flows · animate|brave|palette|motion|layout|extreme|calm|typo|thai · responsive|clarify|trim · harden|onboard|optimize|refine|sea · init|document|extract|live] [target]"
 license: Apache 2.0
 allowed-tools:
   - Bash(npx tcher-designs *)
@@ -122,6 +122,7 @@ If someone could look at this interface and say "AI made that" without doubt, it
 | `extract [target]` | Build | Pull reusable tokens and components into design system | [reference/extract.md](reference/extract.md) |
 | `critique [target]` | Evaluate | UX design review with heuristic scoring | [reference/critique.md](reference/critique.md) |
 | `audit [target]` | Evaluate | Technical quality checks (a11y, perf, responsive) | [reference/audit.md](reference/audit.md) |
+| `flows [target]` | Evaluate | Trace task journeys in code: dead ends, missing states, broken/orphan flows | [reference/flows.md](reference/flows.md) |
 | `refine [target]` | Refine | Final quality pass before shipping | [reference/refine.md](reference/refine.md) |
 | `brave [target]` | Refine | Amplify safe or bland designs | [reference/brave.md](reference/brave.md) |
 | `calm [target]` | Refine | Tone down aggressive or overstimulating designs | [reference/calm.md](reference/calm.md) |
@@ -138,6 +139,8 @@ If someone could look at this interface and say "AI made that" without doubt, it
 | `responsive [target]` | Fix | Adapt for different devices and screen sizes | [reference/responsive.md](reference/responsive.md) |
 | `optimize [target]` | Fix | Diagnose and fix UI performance | [reference/optimize.md](reference/optimize.md) |
 | `live` | Iterate | Visual variant mode: pick elements in the browser, generate alternatives | [reference/live.md](reference/live.md) |
+| `thai [target]` | Localize | Tune Thai typography: leading for stacked marks, font pairing, mixed Thai+English | [reference/thai.md](reference/thai.md) |
+| `sea [target]` | Localize | Adapt UX for SEA / Thailand: trust signals, PromptPay/COD, info density, mobile-first | [reference/sea.md](reference/sea.md) |
 
 Plus two management commands: `pin <command>` and `unpin <command>`, detailed below.
 

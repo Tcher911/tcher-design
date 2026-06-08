@@ -20,8 +20,10 @@ export const SKILL_CATEGORIES = {
   // EVALUATE - review and assess
   critique: 'evaluate',
   audit: 'evaluate',
+  flows: 'evaluate',
   // REFINE - improve existing design
   typo: 'refine',
+  thai: 'refine',
   layout: 'refine',
   palette: 'refine',
   animate: 'refine',
@@ -38,6 +40,7 @@ export const SKILL_CATEGORIES = {
   optimize: 'harden',
   harden: 'harden',
   onboard: 'harden',
+  sea: 'harden',
   // SYSTEM - setup and tooling
   init: 'system',
   document: 'system',

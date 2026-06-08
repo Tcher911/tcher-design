@@ -8,7 +8,7 @@ If you load the Tcher skill from `.agents/skills/tcher/SKILL.md` (or any sibling
 
 Two shipped components plus tooling:
 
-- `skill/` is the source of truth for the single `tcher` skill (24 commands): `SKILL.src.md`, one `reference/<command>.md` per command plus domain references, runtime `scripts/` (context, pin, the live-* suite, `live-vocabulary.mjs`), and canonical subagent prompts in `agents/`.
+- `skill/` is the source of truth for the single `tcher` skill (27 commands): `SKILL.src.md`, one `reference/<command>.md` per command plus domain references, runtime `scripts/` (context, pin, the live-* suite, `live-vocabulary.mjs`), and canonical subagent prompts in `agents/`.
 - `cli/` is the npm package `tcher-designs`: `bin/` (entry + `skills` subcommands) and `engine/` (detection registry, rules, static/regex engines, the injected browser overlay).
 - `scripts/` holds the build orchestrator (`build.js`, with count and prose validators), `build-browser-detector.js`, and the provider transformer factory in `scripts/lib/transformers/`.
 - Harness output dirs (`.claude/`, `.cursor/`, `.agents/`, and 9 siblings) plus `plugin/` are **generated but intentionally committed**; refresh them with `bun run build`, never hand-edit. `dist/` is generated output. Tests and fixtures live in `tests/`.

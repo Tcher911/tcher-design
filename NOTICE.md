@@ -13,7 +13,7 @@ The `tcher` skill in this project builds on Anthropic's original frontend-design
 
 This project extends the original with:
 - 7 domain-specific reference files (typography, color-and-contrast, spatial-design, motion-design, interaction-design, responsive-design, ux-writing)
-- 24 commands
+- 27 commands
 - Expanded patterns and anti-patterns
 
 ## Remix Icon
