@@ -31,7 +31,14 @@ const FALLBACK_DIRS = ['.agents/context', 'docs'];
 // silent on failure: a network problem, sandbox, or missing cache must never
 // block context output or print an error.
 
-const UPDATE_HOST = (process.env.TCHER_UPDATE_HOST || 'https://tcher.style').replace(/\/$/, '');
+// Skill releases are tagged `skill-v<version>` on GitHub (see
+// scripts/release.mjs), so the latest skill version is the highest such tag.
+// The old tcher.style/api/version host is dead; read tags from the GitHub API
+// instead. Override the repo for forks with TCHER_GITHUB_REPO.
+const UPDATE_REPO = process.env.TCHER_GITHUB_REPO || 'Tcher911/tcher-design';
+// API base is overridable so tests can point the version poll at a localhost
+// stub instead of the real GitHub API.
+const UPDATE_API_BASE = (process.env.TCHER_UPDATE_HOST || 'https://api.github.com').replace(/\/$/, '');
 const UPDATE_CACHE_PATH =
   process.env.TCHER_UPDATE_CACHE || path.join(os.homedir(), '.tcher', 'update-check.json');
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // throttle the network poll to once a day
@@ -158,10 +165,21 @@ function compareSemver(a, b) {
 
 async function fetchLatestSkillVersion() {
   try {
-    const res = await fetch(`${UPDATE_HOST}/api/version`, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    const res = await fetch(`${UPDATE_API_BASE}/repos/${UPDATE_REPO}/tags?per_page=100`, {
+      headers: { 'User-Agent': 'tcher-designs-cli', Accept: 'application/vnd.github+json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
     if (!res.ok) return null;
-    const data = await res.json();
-    return typeof data?.skills === 'string' ? data.skills : null;
+    const tags = await res.json();
+    if (!Array.isArray(tags)) return null;
+    // Keep release tags: `v<semver>` (current single-release scheme) or the
+    // legacy `skill-v<semver>`. Then pick the highest version.
+    const versions = tags
+      .map(t => /^(?:skill-)?v(\d+\.\d+\.\d+)$/.exec(t?.name || ''))
+      .filter(Boolean)
+      .map(m => m[1]);
+    if (versions.length === 0) return null;
+    return versions.sort((a, b) => compareSemver(a, b)).at(-1);
   } catch {
     return null; // offline, sandboxed, timed out, or bad JSON: all non-fatal
   }

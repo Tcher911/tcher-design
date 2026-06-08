@@ -112,4 +112,19 @@ export const PROVIDERS = {
     displayName: 'Rovo Dev',
     frontmatterFields: ['user-invocable', 'argument-hint', 'license', 'compatibility', 'metadata', 'allowed-tools'],
   },
+  // Agent-neutral variant written to repo-root `skills/tcher` (configDir: '').
+  // The Vercel `npx skills` discoverer checks the root `skills/` dir before any
+  // `.agent/skills` dir, so this variant — not a harness-specific one — is what
+  // `npx skills add Tcher911/tcher-design` installs (and what surfaces on
+  // skills.sh). `neutralScriptsPath` makes script references relative to the
+  // skill's own directory so the copied files work in any agent's dir.
+  npxskills: {
+    provider: 'npxskills',
+    placeholderProvider: 'universal',
+    providerTags: ['universal'],
+    configDir: '',
+    displayName: 'Universal (npx skills)',
+    neutralScriptsPath: true,
+    frontmatterFields: ['license', 'compatibility', 'metadata'],
+  },
 };

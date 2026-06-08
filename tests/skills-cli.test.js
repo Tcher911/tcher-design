@@ -6,7 +6,7 @@
  * Pure blocks (already-installed detection, unprefix migration) run in the
  * default `bun run test`. Network blocks that download the universal bundle use
  * `describeNet` and run only under `bun run test:cli-e2e` (TCHER_CLI_E2E=1),
- * skipping gracefully when tcher.style is unreachable.
+ * skipping gracefully when no published release carries the bundle asset.
  */
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { execSync } from 'child_process';
@@ -71,15 +71,16 @@ function createPrefixedInstall(root, { prefix = 'i-', providers = ['.claude'], f
 
 // ─── Already-installed detection ─────────────────────────────────────────────
 
-// Network e2e blocks (real bundle downloads from tcher.style) run only
-// under `bun run test:cli-e2e` (TCHER_CLI_E2E=1). The default `bun run test`
-// skips them so it stays fast and works offline; when opted in they still skip
-// gracefully if the bundle endpoint is unreachable.
+// Network e2e blocks (real bundle downloads from the GitHub release asset) run
+// only under `bun run test:cli-e2e` (TCHER_CLI_E2E=1). The default `bun run
+// test` skips them so it stays fast and works offline; when opted in they still
+// skip gracefully if no release with the bundle asset is published yet.
 const WANT_CLI_E2E = process.env.TCHER_CLI_E2E === '1';
+const E2E_REPO = process.env.TCHER_GITHUB_REPO || 'Tcher911/tcher-design';
 let bundleReachable = false;
 if (WANT_CLI_E2E) {
   try {
-    execSync('curl -sfIL --max-time 10 https://tcher.style/api/download/bundle/universal -o /dev/null', { stdio: 'pipe' });
+    execSync(`curl -sfIL --max-time 10 https://github.com/${E2E_REPO}/releases/latest/download/universal.zip -o /dev/null`, { stdio: 'pipe' });
     bundleReachable = true;
   } catch {}
 }

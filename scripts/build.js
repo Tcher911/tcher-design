@@ -339,7 +339,11 @@ function assembleUniversal(distDir) {
     fs.rmSync(universalDir, { recursive: true, force: true });
   }
 
-  const providerConfigs = Object.values(PROVIDERS);
+  // The npxskills variant has configDir '' and belongs at repo-root `skills/`,
+  // not inside the universal bundle (it would land as dist/universal/skills and
+  // bloat the zip our own installer downloads). Exclude it here; the sync step
+  // routes it to the repo root instead.
+  const providerConfigs = Object.values(PROVIDERS).filter(({ provider }) => provider !== 'npxskills');
 
   for (const { provider, configDir } of providerConfigs) {
     const src = path.join(distDir, provider, configDir);
@@ -353,7 +357,7 @@ function assembleUniversal(distDir) {
   // (all provider dirs are dotfiles, hidden by default in Finder)
   fs.writeFileSync(path.join(universalDir, 'README.txt'),
 `Tcher. Design fluency for AI harnesses.
-https://tcher.style
+https://github.com/Tcher911/tcher-design
 
 This folder contains skills for all supported tools:
 

@@ -343,8 +343,8 @@ describe('context.mjs update check', () => {
     });
   }
 
-  it('polls /api/version over the network and caches a newer version', async () => {
-    const { srv, host } = await startStub({ skills: '2.0.0' });
+  it('polls the GitHub tags API over the network and caches a newer version', async () => {
+    const { srv, host } = await startStub([{ name: 'skill-v2.0.0' }, { name: 'cli-v1.0.0' }]);
     try {
       const res = await runAsync({}, { host }); // empty cache forces the poll
       assert.equal(res.status, 0);
@@ -359,7 +359,7 @@ describe('context.mjs update check', () => {
   });
 
   it('stays silent when the network reports a same-or-older version', async () => {
-    const { srv, host } = await startStub({ skills: '1.0.0' });
+    const { srv, host } = await startStub([{ name: 'skill-v1.0.0' }]);
     try {
       const res = await runAsync({}, { host });
       assert.equal(res.status, 0);
@@ -373,7 +373,7 @@ describe('context.mjs update check', () => {
 
   it('fails silent and stamps lastCheck when the endpoint is unreachable', async () => {
     // Bind then immediately close to obtain a port nothing is listening on.
-    const { srv, host } = await startStub({ skills: '2.0.0' });
+    const { srv, host } = await startStub([{ name: 'skill-v2.0.0' }]);
     await new Promise((r) => srv.close(r));
     const res = run({}, { host });
     assert.equal(res.status, 0);

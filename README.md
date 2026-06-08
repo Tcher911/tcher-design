@@ -5,8 +5,10 @@
 A skill you install into your AI coding tool. 27 commands, a 59-rule scanner, and an understanding of Thai typography and UX.
 
 ```bash
-npx tcher-designs skills install
+npx skills add Tcher911/tcher-design --copy
 ```
+
+Then open your AI tool and type `/tcher init`. (Use `--copy` so the skill lands in your agent's own folder, e.g. `.claude/`. Without it, `npx skills` symlinks through `.agents/` and Claude Code never sees it.)
 
 ---
 
@@ -124,9 +126,18 @@ Files that point the AI at the right axes, not one generic "good design" blob:
 
 ## Install
 
+The simplest path is the Vercel skills CLI. Pass `--copy` so the skill lands in your agent's own folder; the default symlink mode routes everything through `.agents/` and skips agents like Claude Code that read their own directory:
+
 ```bash
-npx tcher-designs skills install   # install
-npx tcher-designs skills update    # update to the latest
+npx skills add Tcher911/tcher-design --copy
+```
+
+Or use the tcher CLI, which always writes each agent's own folder, adds `detect`, and lets you target specific tools:
+
+```bash
+npx tcher-designs skills install                      # auto-detect your tool, then confirm
+npx tcher-designs skills install --providers=claude,cursor
+npx tcher-designs skills update                       # update to the latest
 ```
 
 Or copy a prebuilt directory from `dist/`:
@@ -148,4 +159,4 @@ Works in Claude Code · Cursor · Gemini CLI · Codex CLI · VS Code Copilot · 
 
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Built by [Tcher](https://tcher-designs.vercel.app/).
+Apache 2.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Built by [Tcher](https://github.com/Tcher911/tcher-design).

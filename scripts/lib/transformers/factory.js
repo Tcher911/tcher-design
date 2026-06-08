@@ -163,6 +163,7 @@ export function createTransformer(config) {
     providerTags = [provider],
     writeOpenAIMetadata = false,
     includeVersion = true,
+    neutralScriptsPath = false,
   } = config;
   const placeholderKey = placeholderProvider || provider;
 
@@ -230,7 +231,11 @@ export function createTransformer(config) {
       skillBody = stripRuleMarkers(skillBody);
 
       // Replace {{scripts_path}} with provider-aware path to skill's scripts directory
-      const scriptsPath = `${configDir}/skills/${skillName}/scripts`;
+      // Harness variants hardcode the install path (e.g. `.claude/skills/tcher/scripts`).
+      // The neutral variant is copied into whatever agent dir the user picks, so it
+      // uses a path relative to the skill's own directory; the `<universal>` block in
+      // SKILL.src.md tells the agent to resolve `scripts/` against the skill folder.
+      const scriptsPath = neutralScriptsPath ? 'scripts' : `${configDir}/skills/${skillName}/scripts`;
       skillBody = skillBody.replace(/\{\{scripts_path\}\}/g, scriptsPath);
       if (bodyTransform) skillBody = bodyTransform(skillBody, skill);
 

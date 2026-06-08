@@ -584,6 +584,17 @@ export const PROVIDER_PLACEHOLDERS = {
     config_file: 'AGENTS.md',
     ask_instruction: 'ask the user directly to clarify what you cannot infer.',
     command_prefix: '/'
+  },
+  // Agent-neutral variant shipped at repo-root `skills/tcher` for the Vercel
+  // `npx skills add` ecosystem (skills.sh). It is copied verbatim into whatever
+  // agent directory the user installs to, so it must not hardcode any single
+  // harness's paths. The `<universal>` block in SKILL.src.md explains that
+  // script paths are relative to the skill's own directory.
+  'universal': {
+    model: 'the agent',
+    config_file: 'AGENTS.md',
+    ask_instruction: 'ask the user directly to clarify what you cannot infer.',
+    command_prefix: '/'
   }
 };
 
@@ -602,6 +613,7 @@ export const PROVIDER_BLOCK_TAGS = new Set([
   'rovo-dev',
   'trae',
   'trae-cn',
+  'universal',
 ]);
 
 /**

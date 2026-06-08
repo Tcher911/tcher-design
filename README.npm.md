@@ -1,82 +1,45 @@
-# Tcher CLI
+# Tcher
 
-Detect UI anti-patterns, design quality issues, and UX problems from the command line. Scans HTML, CSS, JSX, TSX, Vue, and Svelte files for 59 specific patterns: AI-generated UI tells, design craft problems, and a usability rule set built on Laws of UX principles. Every rule carries a severity tier (critical / major / minor / advisory); the live-mode overlay color-codes findings by tier.
+A design skill for AI coding agents, plus a scanner that catches the patterns that make AI-generated UI look AI-generated. 27 commands across Claude Code, Cursor, Gemini, Codex, and 60+ other agents. 59 detection rules that run with no model and no network.
 
-## Quick Start
+## Install the skill
 
 ```bash
-# Install skills into your AI harness (Claude, Cursor, Gemini, etc.)
-npx tcher-designs skills install
+npx skills add Tcher911/tcher-design --copy
+```
 
-# Update skills to the latest version
+Open your agent and type `/tcher init`. It interviews you once, writes `PRODUCT.md` and `DESIGN.md`, and every other command reads those first so the design stays on-brief. Pass `--copy` so the skill lands in your agent's own folder; the default symlink mode routes through `.agents/` and skips agents like Claude Code that read their own directory.
+
+Want to pick which tools get it, or use the `detect` scanner below? Use the tcher CLI instead:
+
+```bash
+npx tcher-designs skills install                       # detect your agent, then confirm
+npx tcher-designs skills install --providers=claude,cursor
 npx tcher-designs skills update
-
-# Link skills from a Git submodule checkout
-npx tcher-designs skills link --source=.tcher --providers=claude,cursor
-
-# List all available commands
-npx tcher-designs skills help
-
-# Scan files or directories for anti-patterns
-npx tcher-designs detect src/
-
-# Scan a live URL (requires Puppeteer)
-npx tcher-designs detect https://example.com
-
-# JSON output for CI/tooling
-npx tcher-designs detect --json src/
-
-# Only the UX/usability rule set
-npx tcher-designs detect --mode=ux src/
 ```
 
-## What It Detects
+## Scan for anti-patterns
 
-**AI Slop Tells**: patterns that scream "AI generated this":
-- Side-tab accent borders, gradient text on headings
-- Purple/violet gradients and cyan-on-dark palettes
-- Dark mode with glowing accents, border + border-radius clashes
+`detect` reads HTML, CSS, JSX, TSX, Vue, and Svelte and flags 59 specific patterns: AI tells, real craft problems, and a usability set built on Jon Yablonski's [Laws of UX](https://lawsofux.com/). It runs locally. Nothing leaves your machine.
 
-**Typography Issues**: overused fonts (Inter, Roboto), flat type hierarchy, single font families
-
-**Color & Contrast**: WCAG AA violations, gray text on colored backgrounds, pure black/white
-
-**Layout & Composition**: nested cards, monotonous spacing, everything-centered layouts
-
-**Motion**: bounce/elastic easing, layout property transitions
-
-**Quality**: tiny body text, cramped padding, long line lengths, small touch targets, Thai typography faults (cramped leading, tracking, small size on Thai text)
-
-**UX (Laws of UX)**: sub-24px tap targets (Fitts's Law), nav choice overload (Hick's Law), links indistinguishable from prose (Law of Similarity), ungrouped form walls (Miller's Law), missing autocomplete (Postel's Law), plus inputs without labels, icon buttons without names, missing alt, killed focus outlines, missing viewport meta. Rule names follow Jon Yablonski's [lawsofux.com](https://lawsofux.com/); JSON output carries the law per finding.
-
-59 detections in total. See the full list at [tcher-designs.vercel.app](https://tcher-designs.vercel.app/).
-
-## Exit Codes
-
-- `0`: no issues found
-- `2`: anti-patterns detected
-
-## Options
-
+```bash
+npx tcher-designs detect src/                 # a file, a folder, or a URL
+npx tcher-designs detect --json src/          # for CI
+npx tcher-designs detect --mode=ux src/       # only the usability rules
+npx tcher-designs detect https://example.com  # live page (needs puppeteer)
 ```
-tcher-designs detect [options] [file-or-dir-or-url...]
 
-  --json         Output findings as JSON
-  --mode=<set>   all (default), design, or ux
-  --gpt          Also report GPT-specific provider tells
-  --gemini       Also report Gemini-specific provider tells
-  --help         Show help
-```
+Exit code is `0` when clean, `2` when it finds something, so it drops straight into a CI gate. Every finding carries a severity tier: critical, major, minor, or advisory.
+
+## What it flags
+
+The 59 rules split three ways. **Design (45)** is the AI-and-template tells: side-tab accent borders, gradient text on headings, purple-on-dark palettes, Inter everywhere, flat type hierarchy, nested cards, everything centered. **Craft** overlaps here: sub-12px body text, cramped leading, WCAG contrast failures, and three Thai-typography faults most linters miss (tight Thai line-height, positive tracking on Thai runs, Thai text under 14px). **UX (14)** is the usability layer: sub-24px tap targets (Fitts), nav choice overload (Hick), links that read as plain text (Similarity), form walls (Miller), inputs without labels, killed focus outlines, missing viewport meta. JSON output names the law behind each UX hit.
 
 ## Requirements
 
-- Node.js 24+
-- `puppeteer` (optional, only needed for URL scanning)
-
-## Part of Tcher
-
-This CLI is part of [Tcher](https://tcher-designs.vercel.app/), a cross-provider design skill pack for AI-powered development tools. The full suite includes 24 commands for Claude, Cursor, Gemini, Codex, and more.
+- Node 24+
+- `puppeteer`, only if you scan a URL
 
 ## License
 
-[Apache 2.0](https://github.com/Tcher911/tcher-design/blob/main/LICENSE)
+Apache 2.0. Source and full command list at [github.com/Tcher911/tcher-design](https://github.com/Tcher911/tcher-design).

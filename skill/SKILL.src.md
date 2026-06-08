@@ -12,6 +12,10 @@ Designs and iterates production-grade frontend interfaces. Real working code, co
 
 ## Setup
 
+<universal>
+> **Resolving script paths.** Commands below written as `node scripts/<name>.mjs` use a path relative to *this skill's own directory*. Run them against wherever this skill is installed (for example `.claude/skills/tcher/scripts/<name>.mjs` for Claude Code, `.cursor/skills/tcher/scripts/<name>.mjs` for Cursor), not the project root.
+</universal>
+
 You MUST do these steps before proceeding:
 
 1. Run `node {{scripts_path}}/context.mjs` once per session. If you've already seen its output in this conversation, do not re-run it. The script either prints the project's PRODUCT.md (and DESIGN.md when present) as a markdown block, or tells you it's missing. Follow whatever it prints. **If it reports `NO_PRODUCT_MD`, stop and follow `reference/init.md` before doing anything else.** If the output ends with an `UPDATE_AVAILABLE` directive, follow it (ask the user once about updating, then continue). It never blocks the current task.

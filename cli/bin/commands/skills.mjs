@@ -19,7 +19,14 @@ import { tmpdir, homedir } from 'node:os';
 import extract from 'extract-zip';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const API_BASE = 'https://tcher.style';
+
+// Skills are distributed as a `universal.zip` asset attached to GitHub
+// releases (skill releases attach it; see scripts/release.mjs). The old
+// tcher.style host is dead, so we resolve the asset straight from the
+// GitHub releases API. Override the repo with TCHER_GITHUB_REPO for forks.
+const GITHUB_REPO = process.env.TCHER_GITHUB_REPO || 'Tcher911/tcher-design';
+const BUNDLE_ASSET = 'universal.zip';
+const USER_AGENT = 'tcher-designs-cli';
 
 // Provider folder names in project roots
 const PROVIDER_DIRS = ['.claude', '.cursor', '.gemini', '.agents', '.github', '.kiro', '.opencode', '.pi', '.qoder', '.trae', '.trae-cn', '.rovodev'];
@@ -67,15 +74,38 @@ function ask(question) {
 
 // ─── skills help ──────────────────────────────────────────────────────────────
 
+// Locate a command-metadata.json inside an extracted bundle. Every provider
+// ships an identical copy under <provider>/skills/tcher/scripts/, so the first
+// one found is authoritative.
+function findBundleCommandMetadata(bundleDir) {
+  for (const d of PROVIDER_DIRS) {
+    const p = join(bundleDir, d, 'skills', 'tcher', 'scripts', 'command-metadata.json');
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
 async function showHelp() {
-  let commands;
+  // The command list used to come from tcher.style/api/commands. That host is
+  // gone, so we read the command metadata out of the release bundle itself --
+  // the same artifact `install` downloads -- which keeps help in lockstep with
+  // whatever version actually ships.
+  let metadata;
+  let bundleDir;
   try {
-    const res = await fetch(`${API_BASE}/api/commands`);
-    commands = await res.json();
-  } catch {
-    console.error('Could not fetch command list from tcher.style. Check your network connection.');
+    bundleDir = await downloadAndExtractBundle();
+    const mdPath = findBundleCommandMetadata(bundleDir);
+    if (!mdPath) throw new Error('command metadata missing from bundle');
+    metadata = JSON.parse(readFileSync(mdPath, 'utf-8'));
+  } catch (e) {
+    console.error(`Could not fetch the command list: ${e.message}`);
+    if (bundleDir) rmSync(bundleDir, { recursive: true, force: true });
     process.exit(1);
   }
+  rmSync(bundleDir, { recursive: true, force: true });
+
+  const commands = Object.entries(metadata)
+    .map(([id, meta]) => ({ id, description: meta?.description || '' }));
 
   const pad = (s, n) => s + ' '.repeat(Math.max(0, n - s.length));
 
@@ -83,7 +113,7 @@ async function showHelp() {
   console.log('  Install:  npx tcher-designs skills install');
   console.log('  Link:     npx tcher-designs skills link --source=.tcher');
   console.log('  Update:   npx tcher-designs skills update');
-  console.log('  Docs:     https://tcher.style/cheatsheet\n');
+  console.log(`  Docs:     https://github.com/${GITHUB_REPO}\n`);
   console.log(`  ${pad('Command', 22)} Description`);
   console.log(`  ${'-'.repeat(22)} ${'-'.repeat(52)}`);
 
@@ -130,13 +160,49 @@ function hashSkillsDir(skillsDir) {
 }
 
 /**
+ * Resolve the download URL for the universal bundle.
+ *
+ * Returns the GitHub *API* asset URL (`/repos/.../releases/assets/<id>`), not
+ * the `releases/download/<tag>/<asset>` web URL. The web download endpoint sits
+ * behind a CDN that returns intermittent (sometimes persistent) 504s for fresh
+ * or recently-retagged releases; the API asset endpoint serves the same bytes
+ * reliably when called with `Accept: application/octet-stream` (downloadFile
+ * sends it). Picks the most recent release that actually carries the asset:
+ * skill bundles attach it, so a cli-only release can't shadow it.
+ *
+ * Falls back to the conventional web URL only when the API list call fails
+ * outright (offline, rate limit); it is the broken endpoint, but it is better
+ * than nothing as a last resort.
+ */
+async function resolveBundleUrl() {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=30`, {
+      headers: { 'User-Agent': USER_AGENT, Accept: 'application/vnd.github+json' },
+    });
+    if (res.ok) {
+      const releases = await res.json();
+      if (Array.isArray(releases)) {
+        for (const rel of releases) {
+          const asset = (rel.assets || []).find(a => a.name === BUNDLE_ASSET);
+          if (asset) return asset.url;
+        }
+      }
+    }
+  } catch {
+    // Network/rate-limit failure: fall through to the conventional URL.
+  }
+  return `https://github.com/${GITHUB_REPO}/releases/latest/download/${BUNDLE_ASSET}`;
+}
+
+/**
  * Download the universal bundle to a temp dir and return its path.
  * Caller is responsible for cleanup.
  */
 async function downloadAndExtractBundle() {
   const tmpZip = join(tmpdir(), `tcher-update-${Date.now()}.zip`);
   const tmpDir = join(tmpdir(), `tcher-update-${Date.now()}`);
-  await downloadFile(`${API_BASE}/api/download/bundle/universal`, tmpZip);
+  const bundleUrl = await resolveBundleUrl();
+  await downloadFile(bundleUrl, tmpZip);
   mkdirSync(tmpDir, { recursive: true });
   await extract(tmpZip, { dir: tmpDir });
   rmSync(tmpZip, { force: true });
@@ -240,9 +306,12 @@ async function check() {
 
 // ─── skills install ───────────────────────────────────────────────────────────
 
-// Check if tcher skills are already present in any provider folder
-function isAlreadyInstalled(root) {
-  for (const d of PROVIDER_DIRS) {
+// Check if tcher skills are already present in a provider folder. When
+// `providers` is given (an explicit --providers list), only those folders are
+// checked, so installing into .claude isn't blocked just because some other
+// harness (e.g. a stray .agents from `npx skills add`) already has the skill.
+function isAlreadyInstalled(root, providers = PROVIDER_DIRS) {
+  for (const d of providers) {
     const skillsDir = join(root, d, 'skills');
     if (!existsSync(skillsDir)) continue;
     try {
@@ -530,13 +599,6 @@ async function install(flags) {
   const yes = flags.includes('-y') || flags.includes('--yes');
   const providersValue = getFlagValue(flags, '--providers');
   const root = findProjectRoot();
-  const existing = isAlreadyInstalled(root);
-
-  if (existing && !force) {
-    console.log(`Tcher skills are already installed (found in ${existing}/).`);
-    console.log('Run with --force to reinstall.\n');
-    process.exit(0);
-  }
 
   // Decide which harness folders to install into, then copy each harness's own
   // compiled variant from the universal bundle. We deliberately do NOT shell out
@@ -544,6 +606,16 @@ async function install(flags) {
   // source, and its symlink default points every harness at one shared variant.
   // Copying per-provider variants is the only correct install for this skill.
   const targets = resolveInstallTargets(root, providersValue);
+
+  // Only count an install as "already there" within the folders we're about to
+  // write, so `--providers=.claude` proceeds even if another harness has it.
+  const existing = isAlreadyInstalled(root, targets.length > 0 ? targets : PROVIDER_DIRS);
+  if (existing && !force) {
+    console.log(`Tcher skills are already installed (found in ${existing}/).`);
+    console.log('Run with --force to reinstall.\n');
+    process.exit(0);
+  }
+
   if (targets.length === 0) {
     console.error('Could not determine a target harness folder.');
     console.error('Pass one explicitly, e.g. --providers=.claude,.cursor');
@@ -659,26 +731,57 @@ function getModifiedSkillFiles(root, providerDirs) {
   return modified;
 }
 
-function downloadFile(url, dest) {
+function downloadOnce(url, dest, redirects = 0) {
   return new Promise((resolve, reject) => {
-    const file = createWriteStream(dest);
-    get(url, (res) => {
+    // The GitHub API asset URL needs `Accept: application/octet-stream` to
+    // return the binary (otherwise it returns JSON metadata); it then 302s
+    // through objects.githubusercontent.com, sometimes with an extra hop, so
+    // follow a short redirect chain. Resolve Location against the current URL
+    // and only open the output file once we hit a real 200.
+    if (redirects > 5) {
+      reject(new Error('Too many redirects'));
+      return;
+    }
+    get(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/octet-stream' } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        // Follow redirect
-        get(res.headers.location, (res2) => {
-          res2.pipe(file);
-          file.on('finish', () => { file.close(); resolve(); });
-        }).on('error', reject);
+        res.resume(); // drain so the socket can be reused
+        const next = new URL(res.headers.location, url).toString();
+        downloadOnce(next, dest, redirects + 1).then(resolve, reject);
         return;
       }
       if (res.statusCode !== 200) {
-        reject(new Error(`HTTP ${res.statusCode}`));
+        res.resume();
+        const err = new Error(`HTTP ${res.statusCode}`);
+        err.statusCode = res.statusCode;
+        reject(err);
         return;
       }
+      const file = createWriteStream(dest);
       res.pipe(file);
       file.on('finish', () => { file.close(); resolve(); });
+      file.on('error', reject);
     }).on('error', reject);
   });
+}
+
+// Retry transient failures: GitHub's asset CDN throws 5xx (notably 504) on
+// fresh or recently-retagged releases, and connections drop. 4xx is permanent,
+// so don't retry it.
+async function downloadFile(url, dest) {
+  const maxAttempts = 4;
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await downloadOnce(url, dest);
+      return;
+    } catch (err) {
+      lastErr = err;
+      const retriable = !err.statusCode || err.statusCode >= 500;
+      if (!retriable || attempt === maxAttempts) break;
+      await new Promise(r => setTimeout(r, attempt * 1500));
+    }
+  }
+  throw lastErr;
 }
 
 async function update(flags = []) {
@@ -697,7 +800,7 @@ async function update(flags = []) {
     // Cleanup script not available (e.g. running from npm package) -- skip
   }
 
-  // Download the latest skills directly from tcher.style.
+  // Download the latest skills directly from the GitHub release bundle.
   // We skip `npx skills update` because it has a known upstream bug
   // (vercel-labs/skills#775) where it can't find the lock file.
   const root = findProjectRoot();
