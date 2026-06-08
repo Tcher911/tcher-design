@@ -28,7 +28,6 @@ import { LIVE_COMMANDS } from './live-vocabulary.mjs';
 import {
   getDesignSidecarPath,
   getLiveDir,
-  getLiveAnnotationsDir,
   readLiveServerInfo,
   removeLiveServerInfo,
   resolveDesignSidecarPath,
@@ -84,7 +83,6 @@ const state = {
   nextEventSeq: 1,
   lastAgentPollingBroadcast: null,
   exitTimer: null,
-  sessionDir: null,         // per-session tmp dir for annotation screenshots
   sessionStore: null,
   leaseTimer: null,
   manualEditActivity: null,
@@ -871,10 +869,6 @@ function rollbackTimedOutApplyReply(msg) {
   return rollbackApplySnapshot(details.batch, details.rollbackSnapshot, msg.data?.files || [], 'stale_manual_edit_apply_reply');
 }
 
-// Cap per-annotation upload size. A full 1920×1080 PNG is typically <1 MB;
-// cap at 10 MB to guard against runaway writes from a misbehaving client.
-const MAX_ANNOTATION_BYTES = 10 * 1024 * 1024;
-
 function enqueueEvent(event) {
   if (!event || (event.id && state.pendingEvents.some((entry) => entry.event?.id === event.id && entry.event?.type === event.type))) return;
   state.pendingEvents.push({ event, leaseUntil: 0, seq: state.nextEventSeq++ });
@@ -1317,66 +1311,6 @@ function createRequestHandler({ detectPath, sessionPath, livePath }) {
       } catch {
         res.writeHead(404); res.end('Vendor script not found');
       }
-      return;
-    }
-
-    // --- Annotation upload (browser → server, raw PNG body) ---
-    // Client generates the eventId, POSTs the PNG, then POSTs the generate
-    // event with screenshotPath already set. Keeps bytes out of the SSE/poll
-    // bridge and preserves the "one shot from the user's POV" UX.
-    if (p === '/annotation' && req.method === 'POST') {
-      const token = url.searchParams.get('token');
-      if (token !== state.token) { res.writeHead(401); res.end('Unauthorized'); return; }
-      const eventId = url.searchParams.get('eventId');
-      if (!eventId || !/^[A-Za-z0-9_-]{1,64}$/.test(eventId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid eventId' }));
-        return;
-      }
-      if ((req.headers['content-type'] || '').toLowerCase() !== 'image/png') {
-        res.writeHead(415, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Content-Type must be image/png' }));
-        return;
-      }
-      if (!state.sessionDir) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Session dir unavailable' }));
-        return;
-      }
-      const chunks = [];
-      let total = 0;
-      let aborted = false;
-      req.on('data', (c) => {
-        if (aborted) return;
-        total += c.length;
-        if (total > MAX_ANNOTATION_BYTES) {
-          aborted = true;
-          res.writeHead(413, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Payload too large' }));
-          req.destroy();
-          return;
-        }
-        chunks.push(c);
-      });
-      req.on('end', () => {
-        if (aborted) return;
-        const absPath = path.join(state.sessionDir, eventId + '.png');
-        try {
-          fs.writeFileSync(absPath, Buffer.concat(chunks));
-        } catch (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Write failed: ' + err.message }));
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true, path: absPath }));
-      });
-      req.on('error', () => {
-        if (!aborted) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Upload failed' }));
-        }
-      });
       return;
     }
 
@@ -2152,9 +2086,6 @@ function shutdown() {
   removeLiveServerInfo(process.cwd());
   if (state.leaseTimer) clearTimeout(state.leaseTimer);
   state.leaseTimer = null;
-  if (state.sessionDir) {
-    try { fs.rmSync(state.sessionDir, { recursive: true, force: true }); } catch {}
-  }
   for (const res of state.sseClients) { try { res.end(); } catch {} }
   state.sseClients.clear();
   for (const poll of state.pendingPolls) poll.resolve({ type: 'exit' });
@@ -2208,7 +2139,6 @@ Endpoints:
   /live.js             Browser script (element picker + variant cycling)
   /detect.js           Detection overlay (backwards compatible)
   /modern-screenshot.js Vendored modern-screenshot UMD build (lazy-loaded by live.js)
-  /annotation          POST raw image/png to stage a variant screenshot
   /events              SSE stream (server→browser) + POST (browser→server)
   /poll                Long-poll for agent CLI
   /manual-edit-stash   Stage browser copy edits
@@ -2312,12 +2242,6 @@ restorePendingEventsFromStore();
 pruneStaleManualApplyEvidence(process.cwd());
 const portArg = args.find(a => a.startsWith('--port='));
 state.port = portArg ? parseInt(portArg.split('=')[1], 10) : await findOpenPort();
-// Annotation screenshots live in the project root so the agent's Read tool
-// doesn't trip a per-file permission prompt. Sessioned by token so concurrent
-// projects (or quick restarts) don't collide.
-const annotRoot = getLiveAnnotationsDir(process.cwd());
-fs.mkdirSync(annotRoot, { recursive: true });
-state.sessionDir = fs.mkdtempSync(path.join(annotRoot, 'session-'));
 
 const { detectPath, sessionPath, livePath } = loadBrowserScripts();
 httpServer = http.createServer(createRequestHandler({ detectPath, sessionPath, livePath }));

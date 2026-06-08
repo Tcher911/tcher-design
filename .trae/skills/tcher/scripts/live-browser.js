@@ -108,8 +108,7 @@
     { key: 'variant-cycling-row', ids: [PREFIX + '-bar', PREFIX + '-params-panel'] },
     { key: 'variant-params-panel', ids: [PREFIX + '-params-panel'] },
     { key: 'saving-confirmed-rows', ids: [PREFIX + '-bar'] },
-    { key: 'insert-mode-chrome', ids: [PREFIX + '-insert-line', PREFIX + '-insert-placeholder', PREFIX + '-placeholder-resize', PREFIX + '-insert-input', PREFIX + '-insert-create', PREFIX + '-insert-create-tooltip'] },
-    { key: 'annotation-chrome', ids: [PREFIX + '-annot', PREFIX + '-annot-svg', PREFIX + '-annot-pins', PREFIX + '-annot-clear'] },
+    { key: 'insert-mode-chrome', ids: [PREFIX + '-insert-line', PREFIX + '-insert-placeholder', PREFIX + '-annot', PREFIX + '-placeholder-resize', PREFIX + '-insert-input', PREFIX + '-insert-create', PREFIX + '-insert-create-tooltip'] },
     { key: 'design-system-panel', ids: [PREFIX + '-design-host'] },
     { key: 'toasts-and-errors', ids: [PREFIX + '-toast'] },
     { key: 'css-isolation-boundary', ids: [PREFIX + '-root'] },
@@ -423,29 +422,16 @@
   }
 
   //
-  // Annotation overlay (comment pins + ink strokes)
+  // Insert overlay (placeholder-resize surface)
   //
   // Active while state === 'CONFIGURING'. The overlay is a fixed-positioned
-  // sibling of <body> mirroring selectedElement's bounding rect. Click (no
-  // drag) drops a comment pin; drag paints an ink SVG stroke. All coords
-  // are stored in element-local CSS px so they survive scroll / resize and
-  // correlate directly with the captured PNG.
+  // sibling of <body> mirroring selectedElement's bounding rect. Its only job
+  // is to host the insert placeholder's edge-resize handles; pointer events on
+  // it are routed to the placeholder-resize drag.
   //
 
-  const DRAG_THRESHOLD = 5;       // px - below this, treat pointerup as a click
-  const PIN_DBL_CLICK_MS = 300;   // two clicks on the same pin within this delete it
   let annotOverlayEl = null;
-  let annotSvgEl = null;
-  let annotPinsEl = null;
-  let annotClearChipEl = null;
-  let annotState = { comments: [], strokes: [] };
   let annotActive = false;
-  // `annotPointer` is either:
-  //   { kind: 'new',   x0, y0, moved, strokeEl, strokePoints }   creating a stroke/pin
-  //   { kind: 'pin',   idx, startPointer, startPin, moved }     dragging an existing pin
-  let annotPointer = null;
-  let annotEditing = null;        // { idx, input, wrapEl }
-  let annotLastPinClick = { idx: -1, time: 0 }; // for click-click-to-delete
   let placeholderResizeLayerEl = null;
   let placeholderResizeDrag = null;
 
@@ -456,43 +442,8 @@
       position: 'fixed', top: '0', left: '0', width: '0', height: '0',
       pointerEvents: 'auto', zIndex: Z.highlight + 2,
       display: 'none', overflow: 'visible',
-      cursor: 'crosshair', touchAction: 'none',
+      touchAction: 'none',
     });
-
-    annotSvgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    annotSvgEl.id = PREFIX + '-annot-svg';
-    Object.assign(annotSvgEl.style, {
-      position: 'absolute', top: '0', left: '0',
-      width: '100%', height: '100%',
-      // The SVG itself doesn't absorb clicks; individual hit-paths opt-in via
-      // pointer-events=stroke so gaps still fall through to the overlay.
-      pointerEvents: 'none', overflow: 'visible',
-    });
-    annotOverlayEl.appendChild(annotSvgEl);
-
-    annotPinsEl = document.createElement('div');
-    annotPinsEl.id = PREFIX + '-annot-pins';
-    Object.assign(annotPinsEl.style, {
-      position: 'absolute', inset: '0',
-      pointerEvents: 'none',
-    });
-    annotOverlayEl.appendChild(annotPinsEl);
-
-    annotClearChipEl = document.createElement('div');
-    annotClearChipEl.id = PREFIX + '-annot-clear';
-    annotClearChipEl.dataset.annotClear = 'true';
-    annotClearChipEl.textContent = 'Clear';
-    Object.assign(annotClearChipEl.style, {
-      position: 'absolute', top: '8px', right: '8px',
-      background: C.ink, color: C.white,
-      fontFamily: FONT, fontSize: '10px', fontWeight: '500',
-      letterSpacing: '0.08em', textTransform: 'uppercase',
-      padding: '5px 12px', borderRadius: '999px',
-      cursor: 'pointer', pointerEvents: 'auto',
-      display: 'none', userSelect: 'none',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-    });
-    annotOverlayEl.appendChild(annotClearChipEl);
 
     placeholderResizeLayerEl = document.createElement('div');
     placeholderResizeLayerEl.id = PREFIX + '-placeholder-resize';
@@ -517,12 +468,6 @@
     defangOutsideHandlers(annotOverlayEl, { setPointerEvents: false });
   }
 
-  function updateClearChip() {
-    if (!annotClearChipEl) return;
-    const hasAny = annotState.comments.length > 0 || annotState.strokes.length > 0;
-    annotClearChipEl.style.display = hasAny ? 'block' : 'none';
-  }
-
   function showAnnotOverlay(el) {
     if (!annotOverlayEl || !el) return;
     annotActive = true;
@@ -536,9 +481,6 @@
     placeholderResizeDrag = null;
     if (annotOverlayEl) annotOverlayEl.style.display = 'none';
     syncPlaceholderResizeHandles();
-    // Drop any in-progress edit without touching annotState - clearAnnotations
-    // (if the caller is exiting configure mode) handles state reset.
-    annotEditing = null;
   }
 
   function positionAnnotOverlay(el) {
@@ -548,133 +490,18 @@
       top: r.top + 'px', left: r.left + 'px',
       width: r.width + 'px', height: r.height + 'px',
     });
-    annotSvgEl.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
     syncPlaceholderResizeHandles();
-  }
-
-  function clearAnnotations() {
-    annotState.comments = [];
-    annotState.strokes = [];
-    if (annotSvgEl) while (annotSvgEl.firstChild) annotSvgEl.removeChild(annotSvgEl.firstChild);
-    if (annotPinsEl) annotPinsEl.innerHTML = '';
-    annotPointer = null;
-    annotEditing = null;
-    annotLastPinClick = { idx: -1, time: 0 };
-    updateClearChip();
-  }
-
-  // Rebuild the SVG layer. Each stroke gets a wider invisible hit path
-  // beneath the visible ink path so clicks register on thin lines.
-  function redrawStrokes() {
-    while (annotSvgEl.firstChild) annotSvgEl.removeChild(annotSvgEl.firstChild);
-    annotState.strokes.forEach((s, idx) => {
-      const d = pointsToPath(s.points);
-      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      hit.setAttribute('d', d);
-      hit.setAttribute('stroke', 'transparent');
-      hit.setAttribute('stroke-width', '16');
-      hit.setAttribute('stroke-linecap', 'round');
-      hit.setAttribute('stroke-linejoin', 'round');
-      hit.setAttribute('fill', 'none');
-      hit.setAttribute('pointer-events', 'stroke');
-      hit.style.cursor = 'pointer';
-      hit.dataset.annotStroke = String(idx);
-      annotSvgEl.appendChild(hit);
-      const visible = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      visible.setAttribute('d', d);
-      visible.setAttribute('stroke', C.mark);
-      visible.style.filter = C.markHalo;
-      visible.setAttribute('stroke-width', '3');
-      visible.setAttribute('stroke-linecap', 'round');
-      visible.setAttribute('stroke-linejoin', 'round');
-      visible.setAttribute('fill', 'none');
-      visible.setAttribute('pointer-events', 'none');
-      annotSvgEl.appendChild(visible);
-    });
-    updateClearChip();
-  }
-
-  function localCoords(e) {
-    const rect = annotOverlayEl.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
   function onAnnotDown(e) {
     if (!annotActive) return;
 
-    // 0) Insert placeholder edge resize - wins over draw / pins.
+    // Insert placeholder edge resize is the only interaction this overlay hosts.
     const resizeEdge = e.target.closest?.('[data-tcher-placeholder-resize]')?.dataset.tcherPlaceholderResize;
     if (resizeEdge && configureKind === 'insert' && placeholderElement) {
       startPlaceholderEdgeResize(resizeEdge, e);
       return;
     }
-
-    // 1) Clear chip → wipe all annotations
-    if (e.target.closest?.('[data-annot-clear]')) {
-      if (annotEditing) annotEditing = null;
-      clearAnnotations();
-      renderAllPins();
-      redrawStrokes();
-      e.stopPropagation(); e.preventDefault();
-      return;
-    }
-
-    // 2) Stroke hit path → delete that stroke
-    const strokeHit = e.target.closest?.('[data-annot-stroke]');
-    if (strokeHit) {
-      const idx = parseInt(strokeHit.dataset.annotStroke, 10);
-      if (Number.isInteger(idx)) {
-        annotState.strokes.splice(idx, 1);
-        redrawStrokes();
-      }
-      e.stopPropagation(); e.preventDefault();
-      return;
-    }
-
-    // 3) Pin → drag, edit, or delete-on-double-click
-    const pinWrap = e.target.closest?.('[data-annot-pin]');
-    if (pinWrap) {
-      const idx = parseInt(pinWrap.dataset.annotPin, 10);
-      if (!Number.isInteger(idx)) return;
-      // Double-click (two pointerdowns on the same pin within window) → delete.
-      const now = Date.now();
-      if (annotLastPinClick.idx === idx && now - annotLastPinClick.time < PIN_DBL_CLICK_MS) {
-        if (annotEditing && annotEditing.idx === idx) annotEditing = null;
-        annotState.comments.splice(idx, 1);
-        annotLastPinClick = { idx: -1, time: 0 };
-        renderAllPins();
-        e.stopPropagation(); e.preventDefault();
-        return;
-      }
-      annotLastPinClick = { idx, time: now };
-      // If editing a different pin, commit that edit before starting here.
-      if (annotEditing && annotEditing.idx !== idx) finalizeEditingPin();
-      // If already editing THIS pin and the user clicked the dot, let the
-      // input keep focus (don't start a drag - the click wasn't meant as one).
-      if (annotEditing && annotEditing.idx === idx) return;
-      const p = localCoords(e);
-      const pin = annotState.comments[idx];
-      annotPointer = {
-        kind: 'pin', idx,
-        startPointer: p,
-        startPin: { x: pin.x, y: pin.y },
-        moved: false,
-      };
-      try { annotOverlayEl.setPointerCapture(e.pointerId); } catch {}
-      e.stopPropagation(); e.preventDefault();
-      return;
-    }
-
-    // 4) Empty area → commit any open edit, then start new annotation
-    if (annotEditing) {
-      finalizeEditingPin();
-      e.stopPropagation(); e.preventDefault();
-      return;
-    }
-    const p = localCoords(e);
-    annotPointer = { kind: 'new', x0: p.x, y0: p.y, moved: false, strokeEl: null, strokePoints: null };
-    try { annotOverlayEl.setPointerCapture(e.pointerId); } catch {}
-    e.stopPropagation(); e.preventDefault();
   }
 
   function onAnnotMove(e) {
@@ -693,55 +520,6 @@
       e.stopPropagation();
       return;
     }
-
-    if (!annotPointer) return;
-    const p = localCoords(e);
-
-    if (annotPointer.kind === 'pin') {
-      const dx = p.x - annotPointer.startPointer.x;
-      const dy = p.y - annotPointer.startPointer.y;
-      if (!annotPointer.moved) {
-        if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-        annotPointer.moved = true;
-      }
-      const pin = annotState.comments[annotPointer.idx];
-      if (!pin) { annotPointer = null; return; }
-      pin.x = annotPointer.startPin.x + dx;
-      pin.y = annotPointer.startPin.y + dy;
-      renderAllPins();
-      e.stopPropagation();
-      return;
-    }
-
-    // kind === 'new'
-    const dx = p.x - annotPointer.x0, dy = p.y - annotPointer.y0;
-    if (!annotPointer.moved) {
-      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-      annotPointer.moved = true;
-      const strokeEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      strokeEl.setAttribute('stroke', C.mark);
-      strokeEl.style.filter = C.markHalo;
-      strokeEl.setAttribute('stroke-width', '3');
-      strokeEl.setAttribute('stroke-linecap', 'round');
-      strokeEl.setAttribute('stroke-linejoin', 'round');
-      strokeEl.setAttribute('fill', 'none');
-      strokeEl.setAttribute('pointer-events', 'none');
-      annotSvgEl.appendChild(strokeEl);
-      annotPointer.strokeEl = strokeEl;
-      annotPointer.strokePoints = [[annotPointer.x0, annotPointer.y0]];
-    }
-    annotPointer.strokePoints.push([p.x, p.y]);
-    annotPointer.strokeEl.setAttribute('d', pointsToPath(annotPointer.strokePoints));
-    e.stopPropagation();
-  }
-
-  function pointsToPath(points) {
-    if (!points || points.length === 0) return '';
-    let d = 'M' + points[0][0].toFixed(1) + ' ' + points[0][1].toFixed(1);
-    for (let i = 1; i < points.length; i++) {
-      d += ' L' + points[i][0].toFixed(1) + ' ' + points[i][1].toFixed(1);
-    }
-    return d;
   }
 
   function onAnnotUp(e) {
@@ -751,196 +529,6 @@
       e.stopPropagation();
       return;
     }
-    if (!annotActive || !annotPointer) return;
-
-    if (annotPointer.kind === 'pin') {
-      const wasDrag = annotPointer.moved;
-      const idx = annotPointer.idx;
-      try { annotOverlayEl.releasePointerCapture(e.pointerId); } catch {}
-      annotPointer = null;
-      if (wasDrag) {
-        // A drag is an intentional reposition; a follow-up click shouldn't be
-        // interpreted as a double-click-to-delete.
-        annotLastPinClick = { idx: -1, time: 0 };
-      } else {
-        beginEditPin(idx);
-      }
-      e.stopPropagation();
-      return;
-    }
-
-    // kind === 'new'
-    const wasDrag = annotPointer.moved;
-    if (wasDrag) {
-      annotState.strokes.push({ points: annotPointer.strokePoints });
-      // Swap the temporary preview SVG path for the full render with hit paths.
-      redrawStrokes();
-    } else {
-      const idx = annotState.comments.length;
-      annotState.comments.push({ x: annotPointer.x0, y: annotPointer.y0, text: '' });
-      renderAllPins();
-      beginEditPin(idx);
-    }
-    try { annotOverlayEl.releasePointerCapture(e.pointerId); } catch {}
-    annotPointer = null;
-    if (configureKind === 'insert') syncInsertCreateButton();
-    e.stopPropagation();
-  }
-
-  function renderAllPins() {
-    annotPinsEl.innerHTML = '';
-    annotState.comments.forEach((c, idx) => {
-      annotPinsEl.appendChild(buildPinElement(c, idx));
-    });
-    updateClearChip();
-  }
-
-  function buildPinElement(comment, idx) {
-    const interactive = idx >= 0;
-    const wrap = document.createElement('div');
-    if (interactive) wrap.dataset.annotPin = String(idx);
-    Object.assign(wrap.style, {
-      position: 'absolute',
-      left: (comment.x - 7) + 'px', top: (comment.y - 7) + 'px',
-      pointerEvents: interactive ? 'auto' : 'none',
-      display: 'flex', alignItems: 'flex-start', gap: '6px',
-      cursor: interactive ? 'grab' : 'default',
-      touchAction: 'none',
-    });
-    const dot = document.createElement('div');
-    Object.assign(dot.style, {
-      width: '14px', height: '14px', borderRadius: '50%',
-      background: C.mark, border: '2px solid ' + C.white,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
-      flexShrink: '0',
-    });
-    wrap.appendChild(dot);
-
-    if (comment.text) {
-      const bubble = document.createElement('div');
-      bubble.textContent = comment.text;
-      Object.assign(bubble.style, {
-        background: C.ink, color: C.white,
-        fontFamily: FONT, fontSize: '12px', lineHeight: '1.4',
-        padding: '4px 8px', borderRadius: '3px',
-        marginTop: '-2px', maxWidth: '220px',
-        pointerEvents: 'none', whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
-      });
-      wrap.appendChild(bubble);
-    }
-    return wrap;
-  }
-
-  function beginEditPin(idx) {
-    const wrapEl = annotPinsEl.querySelector('[data-annot-pin="' + idx + '"]');
-    if (!wrapEl) return;
-    // Strip any existing bubble (but keep the dot)
-    wrapEl.querySelectorAll('div:not(:first-child)').forEach(n => n.remove());
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Note…';
-    Object.assign(input.style, {
-      background: C.ink, color: C.white,
-      fontFamily: FONT, fontSize: '12px', lineHeight: '1.4',
-      padding: '4px 8px', borderRadius: '3px',
-      border: '1px solid ' + C.brand,
-      outline: 'none', marginTop: '-2px',
-      width: '220px', pointerEvents: 'auto',
-    });
-    const originalText = annotState.comments[idx].text || '';
-    input.value = originalText;
-    wrapEl.appendChild(input);
-    annotEditing = { idx, input, wrapEl, originalText };
-    input.addEventListener('keydown', onAnnotInputKey, true);
-    input.addEventListener('blur', () => {
-      // Fires on both focus-loss and programmatic blur; commit unless we
-      // already handled it.
-      if (annotEditing && annotEditing.input === input) finalizeEditingPin();
-    });
-    // Stop clicks/pointerdowns inside the input from bubbling to the overlay
-    ['pointerdown', 'click'].forEach(ev => {
-      input.addEventListener(ev, e => e.stopPropagation());
-    });
-    setTimeout(() => input.focus(), 0);
-  }
-
-  function onAnnotInputKey(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault(); e.stopPropagation();
-      finalizeEditingPin();
-    } else if (e.key === 'Escape') {
-      e.preventDefault(); e.stopPropagation();
-      cancelEditingPin();
-    } else {
-      // Keep arrows / backspace from hitting global handlers
-      e.stopPropagation();
-    }
-  }
-
-  function finalizeEditingPin() {
-    if (!annotEditing) return;
-    const { idx, input } = annotEditing;
-    const text = input.value.trim();
-    annotEditing = null;
-    if (text) annotState.comments[idx].text = text;
-    else annotState.comments.splice(idx, 1);
-    renderAllPins();
-  }
-
-  function cancelEditingPin() {
-    if (!annotEditing) return;
-    const { idx, originalText } = annotEditing;
-    annotEditing = null;
-    // If the pin had text before this edit, restore it. If it was a
-    // just-created empty pin, Escape removes it.
-    if (originalText) {
-      annotState.comments[idx].text = originalText;
-    } else {
-      annotState.comments.splice(idx, 1);
-    }
-    renderAllPins();
-  }
-
-  // Build a detached annotation subtree suitable for injection into the clone
-  // modern-screenshot creates. Coordinates are element-local so this slots
-  // straight into an element that's been made position:relative. Takes an
-  // explicit snapshot so it works after annotState has been cleared.
-  function buildAnnotationsForCapture(rect, snapshot) {
-    const comments = snapshot ? snapshot.comments : annotState.comments;
-    const strokes = snapshot ? snapshot.strokes : annotState.strokes;
-    if (comments.length === 0 && strokes.length === 0) return null;
-    const wrap = document.createElement('div');
-    Object.assign(wrap.style, {
-      position: 'absolute', top: '0', left: '0',
-      width: rect.width + 'px', height: rect.height + 'px',
-      pointerEvents: 'none', overflow: 'visible',
-    });
-    if (strokes.length > 0) {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
-      Object.assign(svg.style, {
-        position: 'absolute', top: '0', left: '0',
-        width: '100%', height: '100%', overflow: 'visible',
-      });
-      for (const s of strokes) {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('stroke', C.mark);
-        path.style.filter = C.markHalo;
-        path.setAttribute('stroke-width', '3');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
-        path.setAttribute('fill', 'none');
-        path.setAttribute('d', pointsToPath(s.points));
-        svg.appendChild(path);
-      }
-      wrap.appendChild(svg);
-    }
-    for (const c of comments) {
-      // idx=-1 means non-interactive; pointerEvents stay off in the clone
-      wrap.appendChild(buildPinElement(c, -1));
-    }
-    return wrap;
   }
 
   //
@@ -1423,18 +1011,13 @@
     placeholder.dataset.tcherPlaceholderWidth = 'explicit';
   }
 
-  function canCreateInsert({ prompt, comments, strokes }) {
-    const hasPrompt = typeof prompt === 'string' && prompt.trim().length > 0;
-    const hasComments = Array.isArray(comments) && comments.length > 0;
-    const hasStrokes = Array.isArray(strokes) && strokes.some(
-      (s) => Array.isArray(s?.points) && s.points.length >= 2,
-    );
-    return hasPrompt || hasComments || hasStrokes;
+  function canCreateInsert({ prompt }) {
+    return typeof prompt === 'string' && prompt.trim().length > 0;
   }
 
-  function insertCreateDisabledReason({ prompt, comments, strokes }) {
-    if (canCreateInsert({ prompt, comments, strokes })) return null;
-    return 'Add a prompt or annotate the placeholder to create';
+  function insertCreateDisabledReason({ prompt }) {
+    if (canCreateInsert({ prompt })) return null;
+    return 'Add a prompt to create';
   }
 
   function clampPlaceholderSize(width, height, parentWidth) {
@@ -1841,8 +1424,6 @@
   function insertCreateGateState(input) {
     return {
       prompt: input?.value ?? '',
-      comments: annotState.comments,
-      strokes: annotState.strokes,
     };
   }
 
@@ -3044,7 +2625,6 @@
     hideBar();
     stopScrollTracking();
     hideAnnotOverlay();
-    clearAnnotations();
     renderEditBadge('hidden');
     state = 'PICKING';
     hoveredElement = null;
@@ -5606,7 +5186,6 @@
       hideBar();
       stopScrollTracking();
       hideAnnotOverlay();
-      clearAnnotations();
       renderEditBadge('hidden');
       state = 'PICKING';
       hoveredElement = null;
@@ -5630,7 +5209,6 @@
       selectedElement = placeholder;
       state = 'CONFIGURING';
       hideHighlight();
-      clearAnnotations();
       showAnnotOverlay(placeholder);
       showBar('configure');
       startScrollTracking();
@@ -5649,7 +5227,6 @@
     selectedElement = hoveredElement;
     state = 'CONFIGURING';
     showHighlight(selectedElement);
-    clearAnnotations();
     showAnnotOverlay(selectedElement);
     showBar('configure');
     renderEditBadge(hasTextRows(selectedElement) ? 'idle' : 'hidden');
@@ -5733,8 +5310,6 @@
   }
 
   function handleKeyDown(e) {
-    // When the annotation input is focused, let it handle its own keys.
-    if (annotEditing && annotEditing.input && e.target === annotEditing.input) return;
     const deepActive = activeElementDeep();
     if (
       deepActive
@@ -5778,7 +5353,7 @@
       if (state === 'EDITING') { cancelEditing(); return; }
       if (state === 'CONFIGURING') {
         if (configureKind === 'insert') { cancelInsertConfigure(); return; }
-        disableInlineEdit(); hideBar(); stopScrollTracking(); hideAnnotOverlay(); clearAnnotations(); renderEditBadge('hidden'); state = 'PICKING'; syncPageChatFocus('escape-from-configure'); return;
+        disableInlineEdit(); hideBar(); stopScrollTracking(); hideAnnotOverlay(); renderEditBadge('hidden'); state = 'PICKING'; syncPageChatFocus('escape-from-configure'); return;
       }
       if (state === 'CYCLING') { handleDiscard(); return; }
       if (state === 'SAVING' || state === 'CONFIRMED') return; // don't interrupt
@@ -5811,7 +5386,6 @@
         selectedElement = hoveredElement;
         state = 'CONFIGURING';
         showHighlight(selectedElement);
-        clearAnnotations();
         showAnnotOverlay(selectedElement);
         showBar('configure');
         renderEditBadge(hasTextRows(selectedElement) ? 'idle' : 'hidden');
@@ -5825,7 +5399,6 @@
         } else {
           // CONFIGURING: re-select the new element
           selectedElement = next;
-          clearAnnotations();
           showAnnotOverlay(next);
           showBar('configure');
           disableInlineEdit();
@@ -5850,8 +5423,6 @@
     if (!selectedElement || state !== 'CONFIGURING') return;    const input = uiGetById(PREFIX + '-input');
     const prompt = input ? input.value.trim() : '';
 
-    // Commit any pending pin edit BEFORE we snapshot annotations.
-    if (annotEditing) finalizeEditingPin();
     // Go captures page content, not manual-edit runtime state.
     disableInlineEdit();
     stripManualEditRuntimeState(selectedElement);
@@ -5864,15 +5435,10 @@
     resetSessionFileMeta();
 
     // Flip to GENERATING immediately so the bar morphs without waiting on
-    // capture + upload. The event is emitted from captureAndEmit() once the
-    // screenshot is uploaded (or capture fails - we still emit, just without
-    // screenshotPath).
+    // capture. The event is emitted from captureAndEmit() once capture finishes
+    // (or fails - we still emit either way).
     const elForCapture = selectedElement;
     const captureRect = elForCapture.getBoundingClientRect();
-    const snapshot = {
-      comments: annotState.comments.map(c => ({ x: c.x, y: c.y, text: c.text })),
-      strokes: annotState.strokes.map(s => ({ points: s.points.map(p => [p[0], p[1]]) })),
-    };
     const basePayload = {
       type: 'generate', id: currentSessionId,
       action: selectedAction,
@@ -5881,12 +5447,9 @@
       pageUrl: location.pathname,
       element: extractContext(elForCapture),
     };
-    if (snapshot.comments.length > 0) basePayload.comments = snapshot.comments;
-    if (snapshot.strokes.length > 0) basePayload.strokes = snapshot.strokes;
 
-    // Hide the interactive overlay so it doesn't linger during generation.
+    // Hide the overlay so it doesn't linger during generation.
     hideAnnotOverlay();
-    clearAnnotations();
 
     state = 'GENERATING';
     // Disable the Edit badge: starting a manual text edit mid-generation would
@@ -5902,14 +5465,13 @@
     variantObserver = startVariantObserver(currentSessionId);
     startScrollLock(currentSessionId);
 
-    captureAndEmit(elForCapture, basePayload, snapshot, captureRect);
+    captureAndEmit(elForCapture, basePayload, captureRect);
   }
 
   function cancelInsertConfigure() {
     hideBar();
     stopScrollTracking();
     hideAnnotOverlay();
-    clearAnnotations();
     clearInsertPicking();
     configureKind = 'replace';
     selectedElement = null;
@@ -5922,12 +5484,7 @@
     if (!placeholderElement || !insertAnchorElement || state !== 'CONFIGURING' || configureKind !== 'insert') return;
     const input = uiGetById(PREFIX + '-insert-input');
     const prompt = input ? input.value.trim() : '';
-    if (annotEditing) finalizeEditingPin();
-    const snapshot = {
-      comments: annotState.comments.map(c => ({ x: c.x, y: c.y, text: c.text })),
-      strokes: annotState.strokes.map(s => ({ points: s.points.map(p => [p[0], p[1]]) })),
-    };
-    if (!canCreateInsert({ prompt, comments: snapshot.comments, strokes: snapshot.strokes })) return;
+    if (!canCreateInsert({ prompt })) return;
     pendingAcceptedSession = null;
     currentSessionId = id8();
     expectedVariants = selectedCount;
@@ -5955,11 +5512,8 @@
       },
       freeformPrompt: prompt || undefined,
     };
-    if (snapshot.comments.length > 0) basePayload.comments = snapshot.comments;
-    if (snapshot.strokes.length > 0) basePayload.strokes = snapshot.strokes;
 
     hideAnnotOverlay();
-    clearAnnotations();
 
     state = 'GENERATING';
     showBar('generating');
@@ -5970,7 +5524,7 @@
     if (variantObserver) variantObserver.disconnect();
     variantObserver = startVariantObserver(currentSessionId);
     startScrollLock(currentSessionId);
-    captureAndEmit(elForCapture, basePayload, snapshot, captureRect);
+    captureAndEmit(elForCapture, basePayload, captureRect);
   }
 
   //
@@ -6208,113 +5762,75 @@
     return { blob, paper };
   }
 
-  async function captureElementToBlob(el, snapshot, rect) {
+  async function captureElementToBlob(el) {
     try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
-    const hasAnnotations = snapshot && (snapshot.comments.length > 0 || snapshot.strokes.length > 0);
-    let annotNode = null;
-    let savedPosition = null;
-    if (hasAnnotations) {
-      const pos = getComputedStyle(el).position;
-      if (pos === 'static') {
-        savedPosition = el.style.position;
-        el.style.position = 'relative';
+    const ms = await loadModernScreenshot();
+    const fontCssText = await collectFontCssText();
+    const opts = {
+      scale: Math.min(window.devicePixelRatio || 1, 2),
+      font: fontCssText ? { cssText: fontCssText } : undefined,
+    };
+    if (shouldUseAncestorCropShaderProxy(el)) {
+      try {
+        return await hideCaptureChromeForShaderProxy(() => captureElementFromRenderedAncestor(ms, el, opts));
+      } catch (err) {
+        console.warn('[tcher] Svelte ancestor crop capture failed, falling back to element capture:', err);
       }
-      annotNode = buildAnnotationsForCapture(rect, snapshot);
-      el.appendChild(annotNode);
     }
-    try {
-      const ms = await loadModernScreenshot();
-      const fontCssText = await collectFontCssText();
-      const opts = {
-        scale: Math.min(window.devicePixelRatio || 1, 2),
-        font: fontCssText ? { cssText: fontCssText } : undefined,
-      };
-      if (shouldUseAncestorCropShaderProxy(el)) {
-        try {
-          return await hideCaptureChromeForShaderProxy(() => captureElementFromRenderedAncestor(ms, el, opts));
-        } catch (err) {
-          console.warn('[tcher] Svelte ancestor crop capture failed, falling back to element capture:', err);
-        }
-      }
-      const bg = resolveCanvasBackground(el);
-      // Fast path: the element paints its own background, or an opaque ancestor
-      // color was found. modern-screenshot bakes that color; paper matches it.
-      if (bg !== '#ffffff') {
-        const blob = await ms.domToBlob(el, { ...opts, ...(bg ? { backgroundColor: bg } : {}) });
-        return { blob, paper: bg ? cssColorToRgb01(bg) : resolvePaperRgb(el) };
-      }
-      // Transparent up to the root. The visible backdrop may still come from an
-      // ancestor's background-image or a covering positioned layer (e.g. a hero
-      // art div) that the color walk can't see. Capture that ancestor and crop
-      // to the element so the real backdrop is embedded - correct for both the
-      // shader and the screenshot sent to the model. Fall back to white only
-      // when nothing is actually painted behind the element.
-      const backdrop = findBackdropAncestor(el);
-      if (!backdrop) {
-        const blob = await ms.domToBlob(el, { ...opts, backgroundColor: '#ffffff' });
-        return { blob, paper: SHADER_PAPER_FALLBACK };
-      }
-      const ancestorCanvas = await ms.domToCanvas(backdrop, opts);
-      const S = opts.scale;
-      const er = el.getBoundingClientRect();
-      const ar = backdrop.getBoundingClientRect();
-      const sx = (er.left - ar.left) * S, sy = (er.top - ar.top) * S;
-      const sw = er.width * S, sh = er.height * S;
-      const crop = document.createElement('canvas');
-      crop.width = Math.max(1, Math.round(sw));
-      crop.height = Math.max(1, Math.round(sh));
-      const cctx = crop.getContext('2d', { willReadFrequently: true });
-      cctx.drawImage(ancestorCanvas, sx, sy, sw, sh, 0, 0, crop.width, crop.height);
-      // Ground = backdrop sampled around the element, falling back to the crop
-      // mean only if the surround is fully transparent.
-      const actx = ancestorCanvas.getContext('2d', { willReadFrequently: true });
-      const paper = sampleSurroundingRgb(actx, sx, sy, sw, sh, ancestorCanvas.width, ancestorCanvas.height)
-        || averageRgb01(cctx, crop.width, crop.height);
-      const blob = await new Promise((res) => crop.toBlob(res, 'image/png'));
-      return { blob, paper };
-    } finally {
-      if (annotNode) annotNode.remove();
-      if (savedPosition !== null) el.style.position = savedPosition;
+    const bg = resolveCanvasBackground(el);
+    // Fast path: the element paints its own background, or an opaque ancestor
+    // color was found. modern-screenshot bakes that color; paper matches it.
+    if (bg !== '#ffffff') {
+      const blob = await ms.domToBlob(el, { ...opts, ...(bg ? { backgroundColor: bg } : {}) });
+      return { blob, paper: bg ? cssColorToRgb01(bg) : resolvePaperRgb(el) };
     }
+    // Transparent up to the root. The visible backdrop may still come from an
+    // ancestor's background-image or a covering positioned layer (e.g. a hero
+    // art div) that the color walk can't see. Capture that ancestor and crop
+    // to the element so the real backdrop is embedded - correct for both the
+    // shader and the screenshot sent to the model. Fall back to white only
+    // when nothing is actually painted behind the element.
+    const backdrop = findBackdropAncestor(el);
+    if (!backdrop) {
+      const blob = await ms.domToBlob(el, { ...opts, backgroundColor: '#ffffff' });
+      return { blob, paper: SHADER_PAPER_FALLBACK };
+    }
+    const ancestorCanvas = await ms.domToCanvas(backdrop, opts);
+    const S = opts.scale;
+    const er = el.getBoundingClientRect();
+    const ar = backdrop.getBoundingClientRect();
+    const sx = (er.left - ar.left) * S, sy = (er.top - ar.top) * S;
+    const sw = er.width * S, sh = er.height * S;
+    const crop = document.createElement('canvas');
+    crop.width = Math.max(1, Math.round(sw));
+    crop.height = Math.max(1, Math.round(sh));
+    const cctx = crop.getContext('2d', { willReadFrequently: true });
+    cctx.drawImage(ancestorCanvas, sx, sy, sw, sh, 0, 0, crop.width, crop.height);
+    // Ground = backdrop sampled around the element, falling back to the crop
+    // mean only if the surround is fully transparent.
+    const actx = ancestorCanvas.getContext('2d', { willReadFrequently: true });
+    const paper = sampleSurroundingRgb(actx, sx, sy, sw, sh, ancestorCanvas.width, ancestorCanvas.height)
+      || averageRgb01(cctx, crop.width, crop.height);
+    const blob = await new Promise((res) => crop.toBlob(res, 'image/png'));
+    return { blob, paper };
   }
 
-  async function captureAndEmit(el, basePayload, snapshot, rect) {
-    let screenshotPath;
+  async function captureAndEmit(el, basePayload, rect) {
     let blob;
     let paper;
     try {
-      ({ blob, paper } = await captureElementToBlob(el, snapshot, rect));
+      ({ blob, paper } = await captureElementToBlob(el));
     } catch (err) {
       console.warn('[tcher] capture failed, proceeding without screenshot:', err);
     }
-    // Light up the shader overlay the moment capture is ready - no reason to
-    // wait for the upload to complete before the user sees something alive.
+    // Light up the shader overlay the moment capture is ready so the user sees
+    // something alive while the model works. The capture is never sent to the
+    // model: it would anchor it on the current rendering and fight the
+    // three-distinct-directions brief.
     if (blob && state === 'GENERATING') {
       showShaderOverlay(el, blob, rect, paper);
     }
-    // Only upload + forward the screenshot when annotations (comments/strokes)
-    // are present. Without annotations the image is pure visual anchoring -
-    // it biases the model toward the current rendering and works against the
-    // three-distinct-directions brief.
-    const hasAnnotations = snapshot && (snapshot.comments.length > 0 || snapshot.strokes.length > 0);
-    if (blob && hasAnnotations) {
-      try {
-        const uploadRes = await fetch(
-          'http://localhost:' + PORT + '/annotation?token=' + encodeURIComponent(TOKEN) +
-          '&eventId=' + encodeURIComponent(basePayload.id),
-          { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: blob },
-        );
-        if (uploadRes.ok) {
-          const { path: p } = await uploadRes.json();
-          screenshotPath = p;
-        } else {
-          console.warn('[tcher] annotation upload failed:', uploadRes.status);
-        }
-      } catch (err) {
-        console.warn('[tcher] annotation upload failed:', err);
-      }
-    }
-    sendEvent(screenshotPath ? { ...basePayload, screenshotPath } : basePayload);
+    sendEvent(basePayload);
   }
 
   //
@@ -7305,7 +6821,7 @@ void main() {
           try {
             const rect = shaderTarget.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) return;
-            const { blob, paper } = await captureElementToBlob(shaderTarget, null, rect);
+            const { blob, paper } = await captureElementToBlob(shaderTarget);
             if (blob && state === 'GENERATING') {
               showShaderOverlay(shaderTarget, blob, rect, paper);
             }

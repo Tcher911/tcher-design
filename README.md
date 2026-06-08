@@ -1,35 +1,154 @@
 # tcher-design
 
-1 skill, 27 commands, and curated anti-patterns for exceptional frontend design.
-
-> **Quick start:** `npx tcher-designs skills install`
-
----
-
-## Why tcher-design?
-
-Every LLM learned from the same generic templates. Without guidance, you get the same predictable output: Inter font, purple gradients, cards nested in cards, gray text on colored backgrounds.
-
-tcher-design fights that bias with:
-
-- **An expanded skill** with 7 domain-specific reference files
-- **27 commands** to audit, critique, refine, trim, animate, and more
-- **Curated anti-patterns** that explicitly tell the AI what NOT to do
-
----
-
-## Installation
-
-**Option 1: npx (Recommended)**
+A skill you install into the AI coding tool you already use. **27 commands**, a 59-rule scanner, and knowledge most design guidance skips: Thai typography that sets correctly, and the UX Thai and SEA users actually use.
 
 ```bash
 npx tcher-designs skills install
 ```
 
-**Option 2: Copy from repository**
+---
+
+## Features
+
+### Thai typography (`/tcher thai`)
+
+Thai stacks vowels and tone marks above and below each consonant, so Latin line-height of 1.4 to 1.5 lets the marks on one line crash into the line above. This command sets line-height to 1.6 and up, cuts the letter-spacing that breaks Thai syllables, and picks real Thai faces (Anuphan, IBM Plex Sans Thai, Sarabun) instead of letting Inter fall through to a random system font. It also pairs Thai with English so a mixed line stops looking lumpy. Three of these faults also run automatically in the scanner.
+
+### SEA and Thai UX (`/tcher sea`)
+
+A checkout that only takes credit cards loses most of Thailand. This leads with PromptPay QR and cash-on-delivery, adds the proof SEA buyers check for (a real phone number, reviews, a DBD badge), and keeps the dense, information-rich layout Shopee and Lazada users expect instead of airy whitespace. Thumb-zone first. LINE if it fits the brand, not because a checklist asked for it.
+
+### Detect UX: 59 rules, no AI (`detect`)
+
+Press one button in the browser, or run `npx tcher-designs detect`, and the engine walks the live DOM with computed styles and flags problems in about a second. **Design (45)** catches AI template tells and craft faults, from violet gradient text to cramped Thai leading. **UX (14)** catches usability, most of it operationalizing a named principle from Jon Yablonski's [Laws of UX](https://lawsofux.com/): tap targets under 24px (Fitts's Law), navs past eight links (Hick's Law), prose links with no visual cue (Law of Similarity). Findings are color-coded by severity and cite their law inline.
+
+### Flows: can the user finish the task? (`/tcher flows`)
+
+Audit grades one screen. This reads your routes, pages, components, and state, then follows a whole task (checkout, sign-up, upload) across screens to find where it breaks: dead ends with no way out, a confirmation page with no next step, missing loading or error or empty states, orphan routes nothing links to, forms that submit into silence. It reports a completion-rate risk per flow and names the one fix to make first.
+
+---
+
+## Commands
+
+Each command reads `PRODUCT.md` and `DESIGN.md` first (run `/tcher init` once), then does one job. Type `/tcher` with no argument and it recommends the best next one for your project's state.
+
+**Start a project**
+
+| Command | What it does |
+|---|---|
+| `/tcher init` | One-time setup. Interviews you, writes `PRODUCT.md` (strategy) and `DESIGN.md` (the visual system) that every other command reads. |
+| `/tcher document` | The reverse of init: generate `DESIGN.md` from code you already shipped. |
+| `/tcher extract` | Pull repeated patterns, components, and tokens into a real design system. |
+| `/tcher shape` | Plan the UX and UI before any code. Ends in a brief you confirm. |
+| `/tcher idea` | Float a few genuinely different directions from one short prompt, trade-offs stated out loud. |
+| `/tcher craft` | Shape, build, and visually iterate a feature end to end. |
+
+**Review what you have**
+
+| Command | What it does |
+|---|---|
+| `/tcher critique` | UX review of one surface: hierarchy, clarity, cognitive load, scored. |
+| `/tcher audit` | Technical pass: accessibility, performance, responsive behavior, anti-patterns, rated P0 to P3. |
+| `/tcher flows` | Trace task journeys through the code. Dead ends, missing states, orphan pages, broken flows. |
+
+**Sharpen one axis at a time**
+
+| Command | What it does |
+|---|---|
+| `/tcher typo` | Replace invisible default fonts; build a type scale with real weight contrast. |
+| `/tcher palette` | Add strategic color, different hue families, not three tints of one. |
+| `/tcher layout` | Fix spacing rhythm, grids, and visual hierarchy. |
+| `/tcher animate` | Add purposeful motion, with a reduced-motion path that is not an afterthought. |
+| `/tcher motion` | Add personality: micro-interactions and the occasional earned surprise. |
+| `/tcher extreme` | Push past convention: shaders, spring physics, scroll-driven reveals. |
+
+**Dial the intensity**
+
+| Command | What it does |
+|---|---|
+| `/tcher brave` | Amplify a timid, flat design. Each variant bets on a different dimension. |
+| `/tcher calm` | Pull back an overstimulating one without losing the craft. |
+| `/tcher trim` | Strip to essence. Remove what does not earn its place. |
+| `/tcher refine` | The last five percent: alignment, spacing, consistency, before you ship. |
+
+**Make it production-real**
+
+| Command | What it does |
+|---|---|
+| `/tcher harden` | Errors, i18n, text overflow, empty data, the cases a demo never hits. |
+| `/tcher onboard` | First-run flows, empty states, and the path to the first win. |
+| `/tcher clarify` | Rewrite unclear labels, error messages, and microcopy. |
+| `/tcher responsive` | Adapt across devices and contexts, with tap targets that survive a thumb. |
+| `/tcher optimize` | Diagnose and fix UI performance: load, render, bundle. |
+
+**Localize for Thai and SEA**
+
+| Command | What it does |
+|---|---|
+| `/tcher thai` | Thai typography: leading for stacked marks, real Thai font pairing, mixed Thai and English. |
+| `/tcher sea` | SEA and Thai UX: trust signals, PromptPay and COD, information density, mobile-first. |
+
+**Iterate in the browser**
+
+| Command | What it does |
+|---|---|
+| `/tcher live` | Pick an element on the page, get real variants, accept one, and it writes back to source. |
+
+Want a command as its own shortcut? `/tcher pin audit` makes `/audit` call `/tcher audit` directly; `/tcher unpin` removes it.
+
+---
+
+## Live mode
+
+`/tcher live` opens a helper on port `8400` and injects a picker into your running dev server (Vite, Next.js, SvelteKit, Astro, Nuxt, or a static file). Click an element, pick a focused action or type a direction in plain language ("less SaaS"), and the agent hot-swaps two to four real variants into the page over HMR. Toggle between them on the actual element, tune any sliders a variant exposes, then accept. Accepting writes the winner back to real source and cleans up every temporary artifact. Discard reverts. The same pill bar carries the Detect UX button, so you scan and redesign in one loop.
+
+---
+
+## CLI
+
+The scanner is also a plain command for CI and pre-commit. No API key, and no browser for static files.
+
+```bash
+npx tcher-designs detect src/                # scan a directory
+npx tcher-designs detect index.html          # a file
+npx tcher-designs detect https://example.com # a live URL
+npx tcher-designs detect --json .            # machine-readable
+npx tcher-designs detect --mode=ux src/      # only the usability set
+npx tcher-designs detect --gpt --gemini .    # include provider-specific tells
+```
+
+The deterministic engine covers what a DOM walk can measure. The judgment half of the Laws of UX (Peak-End, Tesler's, Flow, mental models) lives in `/tcher audit`, which scores a dedicated UX dimension across all 30 laws.
+
+---
+
+## Reference files
+
+Seven files point the AI at the right axes instead of one generic "good design" blob:
+
+| Reference | Covers |
+|---|---|
+| typography | Type systems, font pairing, modular scales, OpenType |
+| color-and-contrast | OKLCH, tinted neutrals, dark mode, contrast ratios |
+| spatial-design | Spacing systems, grids, visual hierarchy |
+| motion-design | Easing curves, staggering, reduced motion |
+| interaction-design | Forms, focus states, loading patterns |
+| responsive-design | Mobile-first, fluid type, container queries |
+| ux-writing | Button labels, error messages, empty states |
+
+---
+
+## Install
+
+```bash
+npx tcher-designs skills install          # install into your harness
+npx tcher-designs skills install --force  # reinstall over an existing copy
+npx tcher-designs skills update           # update to the latest
+```
+
+Or copy a prebuilt directory from `dist/`:
 
 | Tool | Command |
-|------|---------|
+|---|---|
 | Claude Code (project) | `cp -r dist/claude-code/.claude your-project/` |
 | Claude Code (global) | `cp -r dist/claude-code/.claude/* ~/.claude/` |
 | Cursor | `cp -r dist/cursor/.cursor your-project/` |
@@ -39,260 +158,10 @@ npx tcher-designs skills install
 | Trae | `cp -r dist/trae/.trae/skills/* ~/.trae/skills/` |
 | Rovo Dev | `cp -r dist/rovo-dev/.rovodev your-project/` |
 
----
-
-## The Skill: /tcher
-
-7 domain-specific reference files that guide the AI to think along the right axes:
-
-| Reference | Covers |
-|-----------|--------|
-| typography | Type systems, font pairing, modular scales, OpenType |
-| color-and-contrast | OKLCH, tinted neutrals, dark mode, accessibility |
-| spatial-design | Spacing systems, grids, visual hierarchy |
-| motion-design | Easing curves, staggering, reduced motion |
-| interaction-design | Forms, focus states, loading patterns |
-| responsive-design | Mobile-first, fluid design, container queries |
-| ux-writing | Button labels, error messages, empty states |
-
----
-
-## 27 Commands
-
-### Setup & Planning
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher init` | One-time setup: reads the project, writes `PRODUCT.md` and `DESIGN.md` |
-| `/tcher document` | Generate `DESIGN.md` from existing code (if you skipped init) |
-| `/tcher extract` | Pull reusable components and tokens into the design system |
-| `/tcher shape` | Plan UX/UI before writing code |
-| `/tcher idea` | Explore distinct design directions from a short brief |
-| `/tcher craft` | Full shape → build → iterate flow in one go |
-
-### Review & Audit
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher critique` | UX design review: hierarchy, clarity, emotional resonance |
-| `/tcher audit` | Technical quality checks: a11y, performance, responsive |
-| `/tcher flows` | Trace task journeys in code: dead ends, missing states, can users finish |
-
-### Refine & Polish
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher refine` | Final pass: design system alignment and shipping readiness |
-| `/tcher trim` | Strip to essence, remove everything unnecessary |
-| `/tcher brave` | Amplify designs that are too timid |
-| `/tcher calm` | Tone down designs that are too loud |
-| `/tcher harden` | Error handling, i18n, text overflow, edge cases |
-
-### Visual Styling
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher palette` | Introduce strategic color: different hue families, not just tints |
-| `/tcher typo` | Fix font choices, hierarchy, sizing |
-| `/tcher layout` | Fix layout, spacing, visual rhythm |
-| `/tcher animate` | Add purposeful motion |
-| `/tcher motion` | Add moments of joy: micro-interactions, personality, easter eggs |
-| `/tcher extreme` | Add technically extraordinary effects |
-
-### UX & Content
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher clarify` | Improve unclear UX copy |
-| `/tcher onboard` | First-run flows, empty states, activation paths |
-
-### Adaptation & Performance
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher responsive` | Adapt for different devices or contexts |
-| `/tcher optimize` | Performance improvements |
-
-### Localization
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher thai` | Thai typography: leading for stacked marks, font pairing, mixed Thai+English |
-| `/tcher sea` | Adapt UX for SEA / Thailand: trust signals, PromptPay/COD, info density, mobile-first |
-
-### Live Mode
-
-| Command | What it does |
-|---------|-------------|
-| `/tcher live` | Visual variant mode: iterate on elements in the browser in real time |
-
-**Usage examples**
-
-```
-/tcher audit blog           # Audit blog hub + post pages
-/tcher critique landing     # UX design review
-/tcher refine settings      # Final pass before shipping
-/tcher harden checkout      # Add error handling + edge cases
-/tcher redo this hero section
-```
-
-**Shortcut:** `/tcher pin <command>` creates a standalone alias, e.g. `pin audit` → `/audit`
-
----
-
-## Live Mode: `/tcher live`
-
-Select an element in the browser → AI generates variants → preview them live → accept and the change is written back to real source code.
-
-### Prerequisites
-
-- `/tcher init` has been run (variants will align with `PRODUCT.md` / `DESIGN.md`)
-- A dev server with HMR is running: Vite, Next.js, SvelteKit, Astro, Nuxt, Bun, or a static HTML file
-
-### Flow
-
-**1. Start**
-```
-/tcher live
-```
-Opens a helper server on port `8400` and injects a picker script into your entry file. On first run it will ask you to create a `config.json` and offer a dev-only CSP patch if needed (safe, guarded by `NODE_ENV === "development"`).
-
-**2. Open your dev server**
-Navigate to your own dev server URL, e.g. `localhost:5173`.
-⚠️ Not port `8400`; that's the helper only.
-You'll see a dark pill bar at the bottom of the screen with a Select button.
-
-**3. Select an element**
-Click any element you want to change (hero, card, button, section). An outline and context bar will appear.
-
-| Input | Effect |
-|-------|--------|
-| Command chip | Choose a focused action: brave, motion, layout, typo, etc. |
-| Idea field | Natural language direction, e.g. "more playful", "less SaaS" |
-| Comment pin | Pin position matters: a pin near the title comments on the title, not the whole block |
-| Stroke drawing | Circle = emphasize · Arrow = direction/move · Cross = remove |
-
-> If at least one annotation is present, the system sends a screenshot with your markings to the agent before generating.
-
-**4. Press Enter**
-The AI generates 2–4 genuinely different variants and hot-swaps them into the page via HMR. Toggle between `1/2` `2/2` on the real element in the real page. Some variants include sliders (density, color amount, etc.) you can tune without regenerating.
-
-**5. Decide**
-- **Accept** → variant is written back to source code, all temporary code is cleaned up
-- **Discard** → reverts to the original
-- Type a refinement and hit Go again to iterate further
-
-**6. Exit**
-Press exit on the pill; the injected script is removed cleanly.
-
-> **Tip:** Select a small enough element that you can hold the whole thing in your head (one card, one hero). You'll get sharper variants than if you select the entire page. Don't queue other tasks while a generation is in progress.
-
-### Controls
-
-| Control | Description |
-|---------|-------------|
-| "Describe what you need." | Free prompt that steers all variants, e.g. "feel like a newspaper front page" |
-| Variations ×2 / ×3 / ×4 | Number of variants per run. Click to cycle (default ×2). More = more options, longer wait. |
-| Enter | Send the task to the agent |
-| Type Here (on the pill bar) | Page-level direction without selecting an element; type what needs to change and press Enter |
-| Detect UX | Run the 59-rule design + UX check on the current page (see below) |
-
-### 12 Live Mode Actions
-
-Each action loads its own reference file (`reference/brave.md`, etc.) to ensure variants differ along the right axis. Idea uses the project's core design laws and brand register instead.
-
-| Action | What it does | Use when |
-|--------|-------------|----------|
-| **Idea** | No locked direction: agent explores genuinely different archetypes | You want to see the full possibility space, or you already have a prompt |
-| **Brave** | Make it more daring: each variant pushes a different dimension (scale / color / structure) | The design feels timid, flat, or lacks a focal point |
-| **Calm** | Reduce visual noise: each variant pulls back a different thing (color / decoration / spacing) | The design feels cluttered or overly loud |
-| **Trim** | Cut what's unnecessary: visual noise / redundant content / over-nested structure | The element feels bloated |
-| **Refine** | Refine the details: spacing rhythm / hierarchy / micro details like corner radius, focus states | The structure is solid, needs a final pass |
-| **Typo** | Typography only: each variant uses a different font pair and scale ratio | You want to change personality through type |
-| **Palette** | Rethink the entire color set: different hue families, not just three shades of the same color | You want a completely different color world |
-| **Layout** | Restructure the arrangement: stacked / side-by-side / grid / asymmetric | The current layout isn't working |
-| **Responsive** | Adjust for a different context: mobile-first / tablet / desktop / print-low-data | You need a version for another screen or environment |
-| **Animate** | Add motion: cascade stagger / clip wipe / scale-focus / morph / parallax | You want life, not the same fade three ways |
-| **Motion** | Add personality: micro-interaction / typographic surprise / illustrated accent / easter egg | The design is correct but boring |
-| **Extreme** | Break conventions entirely: each variant challenges a different rule (scale / structure / motion / input model) | You want something technically extraordinary |
-
----
-
-## UX Check: Detect UX
-
-Press **Detect UX** on the pill bar to scan the live page with **59 deterministic rules**. No AI call, no network: the engine walks the real DOM with computed styles and flags problems in about a second.
-
-The rules split into two sets, and the findings popover has a tab for each:
-
-- **Design (45)**: AI-template tells and craft problems. Purple gradient text, side-tab borders, icon-tile stacks, low contrast, cramped padding, marketing buzzwords, cramped Thai line-height.
-- **UX (14)**: usability checks, several operationalizing principles from Jon Yablonski's [Laws of UX](https://lawsofux.com/). Tap targets under 24px (Fitts's Law), navs past 8 choices (Hick's Law), prose links with no visual cue (Law of Similarity), forms past 7 ungrouped fields (Miller's Law), autofillable fields without `autocomplete` (Postel's Law), multi-thousand-pixel images in small slots (Doherty Threshold), plus inputs without labels, icon buttons without names, missing `alt`, killed focus outlines, and a missing viewport meta.
-
-Findings are color-coded by severity:
-
-| Tier | Color | Means | Examples |
-|------|-------|-------|----------|
-| critical | red | Breaks readability or usability; fix first | Low contrast, tiny body text, broken images, inputs without labels, 16px tap targets, killed focus outlines |
-| major | orange | Clearly hurts quality, or screams template | Purple gradient text, side-tab borders, nested cards, undistinguishable links, oversized image payloads |
-| minor | yellow | Stylistic tells worth a look | Overused fonts, em-dash overuse, marketing buzzwords, nav choice overload, ungrouped form walls |
-| advisory | muted yellow | Heads-up; sometimes a deliberate choice | Emoji as UI ornament, repeated section kickers, unlinked header logos, missing autocomplete |
-
-How it reads on the page:
-
-1. Every flagged element gets an outline and a label in its tier color; hover shows the detail (exact contrast ratio, offending colors, sizes).
-2. A banner at the top sums the page up with one status badge per tier, e.g. `UX check: 9 critical · 6 major · 2 minor · 6 advisory`.
-3. **View details** opens a left-docked popover with **All / Design / UX** tabs, findings grouped by tier inside each. UX findings cite their law inline ("Fitts's Law · 16×16px"). Click a finding to jump to its element; the outline flashes blue for a second so you can't miss it.
-
-The deterministic rules cover what a DOM walk can measure. The judgment half of the Laws of UX (Peak-End, Tesler's, Flow, mental models) lives in `/tcher audit`, which scores a dedicated UX dimension across all 30 laws.
-
-The same rule engine powers `npx tcher-designs detect` for CI; `--mode=design` or `--mode=ux` scopes the scan to one set. Two differences from the overlay: browser-only checks (broken images, real overflow, crowded tap targets, image payloads) run in the overlay only, and provider-specific tells need `--gpt` / `--gemini` flags on the CLI but always run in the overlay.
-
----
-
-## CLI
-
-**Skills management**
-
-```bash
-npx tcher-designs skills install          # Install
-npx tcher-designs skills install --force  # Reinstall over existing
-npx tcher-designs skills help             # List all commands
-npx tcher-designs skills check            # Check for updates
-npx tcher-designs skills update           # Update to latest version
-```
-
-**Detect anti-patterns** (no AI required)
-
-```bash
-npx tcher-designs detect src/
-npx tcher-designs detect index.html
-npx tcher-designs detect https://example.com
-npx tcher-designs detect --json .
-npx tcher-designs detect --mode=ux src/     # only the UX/usability rule set
-npx tcher-designs detect --gpt --gemini .   # include provider-specific tells
-```
-
----
-
-## Anti-Patterns
-
-Explicit guidance baked into the skill telling the AI what to avoid:
-
-- Don't use overused fonts: Arial, Inter, system defaults
-- Don't use gray text on colored backgrounds
-- Don't use pure black or pure gray; always tint
-- Don't wrap everything in cards or nest cards inside cards
-- Don't use bounce or elastic easing; it feels dated
-
-The Detect UX engine enforces 59 machine-checkable rules (45 design, 14 UX; see **UX Check** above), so the guidance is verified, not just suggested.
-
----
-
-## Supported Tools
-
-Claude Code · Cursor · Gemini CLI · Codex CLI · VS Code Copilot · OpenCode · Kiro · Trae · Rovo Dev · Qoder · Pi
+Works in Claude Code · Cursor · Gemini CLI · Codex CLI · VS Code Copilot · OpenCode · Kiro · Trae · Rovo Dev · Qoder · Pi
 
 ---
 
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Created by [Tcher](https://tcher-designs.vercel.app/)
+Apache 2.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Built by [Tcher](https://tcher-designs.vercel.app/).

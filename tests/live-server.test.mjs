@@ -2455,45 +2455,6 @@ colors: {}
     assert.ok(text.includes('modernScreenshot'));
   });
 
-  it('POST /annotation rejects invalid token', async () => {
-    const res = await fetch(`http://localhost:${server.port}/annotation?token=wrong&eventId=abc`, {
-      method: 'POST', headers: { 'Content-Type': 'image/png' }, body: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
-    });
-    assert.equal(res.status, 401);
-  });
-
-  it('POST /annotation rejects invalid eventId', async () => {
-    const res = await fetch(`http://localhost:${server.port}/annotation?token=${server.token}&eventId=has%20spaces`, {
-      method: 'POST', headers: { 'Content-Type': 'image/png' }, body: new Uint8Array([0x89]),
-    });
-    assert.equal(res.status, 400);
-  });
-
-  it('POST /annotation rejects non-PNG content-type', async () => {
-    const res = await fetch(`http://localhost:${server.port}/annotation?token=${server.token}&eventId=abc`, {
-      method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: new Uint8Array([0x89]),
-    });
-    assert.equal(res.status, 415);
-  });
-
-  it('POST /annotation writes PNG to session dir and returns path', async () => {
-    const eventId = 'test-' + Math.random().toString(36).slice(2, 10);
-    // Minimal valid PNG header + IEND chunk (enough to prove we wrote bytes)
-    const png = new Uint8Array([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
-    ]);
-    const res = await fetch(`http://localhost:${server.port}/annotation?token=${server.token}&eventId=${eventId}`, {
-      method: 'POST', headers: { 'Content-Type': 'image/png' }, body: png,
-    });
-    assert.equal(res.status, 200);
-    const data = await res.json();
-    assert.equal(data.ok, true);
-    assert.ok(data.path.endsWith(eventId + '.png'));
-    const written = readFileSync(data.path);
-    assert.equal(written.length, png.length);
-  });
-
   it('POST /events rejects steer with empty message', async () => {
     const res = await fetch(`http://localhost:${server.port}/events`, {
       method: 'POST',
@@ -2566,50 +2527,6 @@ colors: {}
     controller.abort();
   });
 
-  it('POST /events accepts generate with optional annotation fields', async () => {
-    // Drain any queued events from previous tests
-    let drained;
-    do {
-      const r = await fetch(`http://localhost:${server.port}/poll?token=${server.token}&timeout=100`);
-      drained = await r.json();
-    } while (drained.type !== 'timeout');
-
-    const postRes = await fetch(`http://localhost:${server.port}/events`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: server.token, type: 'generate',
-        id: 'aa11bb22', action: 'refine', count: 2,
-        element: { outerHTML: '<div>x</div>', tagName: 'div' },
-        screenshotPath: '/tmp/fake.png',
-        comments: [{ x: 10, y: 20, text: 'tighten this' }],
-        strokes: [{ points: [[0, 0], [10, 10]] }],
-      }),
-    });
-    assert.equal(postRes.status, 200);
-
-    const pollRes = await fetch(`http://localhost:${server.port}/poll?token=${server.token}&timeout=2000`);
-    const event = await pollRes.json();
-    assert.equal(event.id, 'aa11bb22');
-    assert.equal(event.screenshotPath, '/tmp/fake.png');
-    assert.equal(event.comments.length, 1);
-    assert.equal(event.strokes.length, 1);
-  });
-
-  it('POST /events rejects generate with malformed annotation fields', async () => {
-    const postRes = await fetch(`http://localhost:${server.port}/events`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: server.token, type: 'generate',
-        id: 'cc33dd44', action: 'refine', count: 2,
-        element: { outerHTML: '<div>x</div>', tagName: 'div' },
-        comments: 'not-an-array',
-      }),
-    });
-    assert.equal(postRes.status, 400);
-    const data = await postRes.json();
-    assert.ok(data.error.includes('comments'));
-  });
-
   it('POST /events accepts insert-mode generate with prompt only', async () => {
     await drainPolls(server);
     const postRes = await fetch(`http://localhost:${server.port}/events`, {
@@ -2642,7 +2559,7 @@ colors: {}
     });
   });
 
-  it('POST /events rejects insert-mode generate without prompt or annotations', async () => {
+  it('POST /events rejects insert-mode generate without a prompt', async () => {
     const postRes = await fetch(`http://localhost:${server.port}/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2658,6 +2575,6 @@ colors: {}
     });
     assert.equal(postRes.status, 400);
     const data = await postRes.json();
-    assert.match(data.error, /freeformPrompt or annotations/i);
+    assert.match(data.error, /requires freeformPrompt/i);
   });
 });

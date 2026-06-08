@@ -25,19 +25,6 @@ function validateManualEditText(newText) {
   return hits.length > 0 ? hits : null;
 }
 
-function validateAnnotationFields(msg) {
-  if (msg.screenshotPath !== undefined && typeof msg.screenshotPath !== 'string') {
-    return 'generate: screenshotPath must be string';
-  }
-  if (msg.comments !== undefined && !Array.isArray(msg.comments)) {
-    return 'generate: comments must be array';
-  }
-  if (msg.strokes !== undefined && !Array.isArray(msg.strokes)) {
-    return 'generate: strokes must be array';
-  }
-  return null;
-}
-
 function validateInsertGenerate(msg) {
   if (!msg.insert || typeof msg.insert !== 'object') return 'generate: insert mode requires insert object';
   if (!INSERT_POSITIONS.has(msg.insert.position)) return 'generate: insert.position must be before or after';
@@ -50,20 +37,16 @@ function validateInsertGenerate(msg) {
   if (!Number.isFinite(msg.placeholder.width) || !Number.isFinite(msg.placeholder.height)) {
     return 'generate: placeholder width and height must be numbers';
   }
-  if (!canCreateInsert({
-    prompt: msg.freeformPrompt,
-    comments: msg.comments,
-    strokes: msg.strokes,
-  })) {
-    return 'generate: insert requires freeformPrompt or annotations';
+  if (!canCreateInsert({ prompt: msg.freeformPrompt })) {
+    return 'generate: insert requires freeformPrompt';
   }
-  return validateAnnotationFields(msg);
+  return null;
 }
 
 function validateReplaceGenerate(msg) {
   if (!msg.action || !VISUAL_ACTIONS.includes(msg.action)) return 'generate: invalid action';
   if (!msg.element || !msg.element.outerHTML) return 'generate: missing element context';
-  return validateAnnotationFields(msg);
+  return null;
 }
 
 function validateManualEditEvent(msg, label) {

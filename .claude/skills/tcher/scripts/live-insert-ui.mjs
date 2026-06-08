@@ -56,21 +56,16 @@ export function computeInsertPosition(clientX, clientY, rect, axis = 'column') {
 
 /**
  * Whether Create is allowed for an insert session.
- * Requires a non-empty prompt OR at least one annotation.
+ * Requires a non-empty prompt.
  */
-export function canCreateInsert({ prompt, comments, strokes }) {
-  const hasPrompt = typeof prompt === 'string' && prompt.trim().length > 0;
-  const hasComments = Array.isArray(comments) && comments.length > 0;
-  const hasStrokes = Array.isArray(strokes) && strokes.some(
-    (s) => Array.isArray(s?.points) && s.points.length >= 2,
-  );
-  return hasPrompt || hasComments || hasStrokes;
+export function canCreateInsert({ prompt }) {
+  return typeof prompt === 'string' && prompt.trim().length > 0;
 }
 
 /** Tooltip/title when Create is disabled. */
-export function insertCreateDisabledReason({ prompt, comments, strokes }) {
-  if (canCreateInsert({ prompt, comments, strokes })) return null;
-  return 'Add a prompt or annotate the placeholder to create';
+export function insertCreateDisabledReason({ prompt }) {
+  if (canCreateInsert({ prompt })) return null;
+  return 'Add a prompt to create';
 }
 
 /**
@@ -331,11 +326,8 @@ export function buildInsertGeneratePayload({
   position,
   placeholder,
   freeformPrompt,
-  comments,
-  strokes,
-  screenshotPath,
 }) {
-  const payload = {
+  return {
     type: 'generate',
     mode: 'insert',
     id,
@@ -348,10 +340,6 @@ export function buildInsertGeneratePayload({
     placeholder,
     freeformPrompt: freeformPrompt?.trim() || undefined,
   };
-  if (comments?.length) payload.comments = comments;
-  if (strokes?.length) payload.strokes = strokes;
-  if (screenshotPath) payload.screenshotPath = screenshotPath;
-  return payload;
 }
 
 /**

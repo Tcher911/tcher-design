@@ -344,7 +344,7 @@ describe('live-browser.js regression guards', () => {
     assert.match(SOURCE, /function buildInsertConfigureRow\(\)/, 'insert configure bar required');
     assert.match(SOURCE, /function handleInsertCreate\(\)/, 'insert create handler required');
     assert.match(SOURCE, /mode: 'insert'/, 'insert generate must set mode insert');
-    assert.match(SOURCE, /function syncInsertCreateButton\(btn, input\)/, 'Create button must reflect prompt/annotation gate');
+    assert.match(SOURCE, /function syncInsertCreateButton\(btn, input\)/, 'Create button must reflect the prompt gate');
     assert.match(
       SOURCE,
       /syncInsertCreateButton\(create, input\)/,
@@ -371,8 +371,8 @@ describe('live-browser.js regression guards', () => {
     );
     assert.match(SOURCE, /function hitSiblingInsertGap\(/, 'insert mode detects gaps between siblings');
     assert.match(SOURCE, /function resolveInsertHover\(/, 'insert hover resolves axis-aware boundaries');
-    assert.match(SOURCE, /data-tcher-placeholder-resize/, 'placeholder edge handles on annotation overlay');
-    assert.match(SOURCE, /resizeEdge && configureKind === 'insert'/, 'resize takes priority over draw');
+    assert.match(SOURCE, /data-tcher-placeholder-resize/, 'placeholder edge handles on the insert overlay');
+    assert.match(SOURCE, /resizeEdge && configureKind === 'insert'/, 'insert overlay routes pointerdown to placeholder edge resize');
     assert.match(SOURCE, /cursorForPlaceholderEdge\(spec\.edge\)/, 'edge handles use resize cursors');
     assert.match(
       SOURCE,

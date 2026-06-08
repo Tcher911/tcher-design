@@ -83,23 +83,14 @@ export const LIVE_UI_SURFACES = Object.freeze([
     ids: [
       'tcher-live-insert-line',
       'tcher-live-insert-placeholder',
+      'tcher-live-annot',
       'tcher-live-placeholder-resize',
       'tcher-live-insert-input',
       'tcher-live-insert-voice',
       'tcher-live-insert-create',
       'tcher-live-insert-create-tooltip',
     ],
-    states: ['toggle-active', 'line', 'placeholder', 'resize', 'enabled', 'disabled', 'tooltip'],
-  },
-  {
-    key: 'annotation-chrome',
-    ids: [
-      'tcher-live-annot',
-      'tcher-live-annot-svg',
-      'tcher-live-annot-pins',
-      'tcher-live-annot-clear',
-    ],
-    states: ['overlay', 'drawing', 'pin', 'pin-edit', 'clear'],
+    states: ['toggle-active', 'line', 'placeholder', 'overlay', 'resize', 'enabled', 'disabled', 'tooltip'],
   },
   {
     key: 'design-system-panel',

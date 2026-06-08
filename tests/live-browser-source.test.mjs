@@ -88,7 +88,7 @@ describe('live-browser source contracts', () => {
     );
     assert.match(
       SOURCE,
-      /function handleGo\(\)\s*\{\s*if \(pendingApplyInFlight\) \{ showManualApplyBusyToast\(\); return; \}[\s\S]*?captureAndEmit\(elForCapture, basePayload, snapshot, captureRect\);/,
+      /function handleGo\(\)\s*\{\s*if \(pendingApplyInFlight\) \{ showManualApplyBusyToast\(\); return; \}[\s\S]*?captureAndEmit\(elForCapture, basePayload, captureRect\);/,
       'Go should be blocked while manual copy edits are applying',
     );
     assert.match(

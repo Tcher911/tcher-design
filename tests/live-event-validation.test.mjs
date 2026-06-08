@@ -28,17 +28,16 @@ describe('validateEvent — insert generate', () => {
     assert.equal(validateEvent(baseInsert), null);
   });
 
-  it('accepts insert with annotations only (no prompt)', () => {
-    assert.equal(validateEvent({
-      ...baseInsert,
-      freeformPrompt: undefined,
-      comments: [{ x: 1, y: 2, text: 'headline' }],
-    }), null);
+  it('rejects insert without a prompt', () => {
+    assert.match(
+      validateEvent({ ...baseInsert, freeformPrompt: undefined }),
+      /requires freeformPrompt/i,
+    );
   });
 
-  it('rejects insert without prompt or annotations', () => {
+  it('rejects insert with a blank prompt', () => {
     const err = validateEvent({ ...baseInsert, freeformPrompt: '  ' });
-    assert.match(err, /freeformPrompt or annotations/i);
+    assert.match(err, /requires freeformPrompt/i);
   });
 
   it('rejects insert without placeholder dimensions', () => {

@@ -67,43 +67,23 @@ describe('computeInsertPosition', () => {
 });
 
 describe('canCreateInsert', () => {
-  it('requires a non-empty prompt when there are no annotations', () => {
-    assert.equal(canCreateInsert({ prompt: '', comments: [], strokes: [] }), false);
-    assert.equal(canCreateInsert({ prompt: '  ', comments: [], strokes: [] }), false);
-    assert.equal(canCreateInsert({ prompt: 'Add a CTA', comments: [], strokes: [] }), true);
-  });
-
-  it('allows create with comment pins only', () => {
-    assert.equal(canCreateInsert({
-      prompt: '',
-      comments: [{ x: 10, y: 20, text: 'headline' }],
-      strokes: [],
-    }), true);
-  });
-
-  it('allows create with strokes only (at least two points)', () => {
-    assert.equal(canCreateInsert({
-      prompt: '',
-      comments: [],
-      strokes: [{ points: [[0, 0]] }],
-    }), false);
-    assert.equal(canCreateInsert({
-      prompt: '',
-      comments: [],
-      strokes: [{ points: [[0, 0], [40, 40]] }],
-    }), true);
+  it('requires a non-empty trimmed prompt', () => {
+    assert.equal(canCreateInsert({ prompt: '' }), false);
+    assert.equal(canCreateInsert({ prompt: '  ' }), false);
+    assert.equal(canCreateInsert({ prompt: undefined }), false);
+    assert.equal(canCreateInsert({ prompt: 'Add a CTA' }), true);
   });
 });
 
 describe('insertCreateDisabledReason', () => {
   it('returns null when create is allowed', () => {
-    assert.equal(insertCreateDisabledReason({ prompt: 'x', comments: [], strokes: [] }), null);
+    assert.equal(insertCreateDisabledReason({ prompt: 'x' }), null);
   });
 
   it('explains why Create is disabled', () => {
     assert.match(
-      insertCreateDisabledReason({ prompt: '', comments: [], strokes: [] }),
-      /prompt or annotate/i,
+      insertCreateDisabledReason({ prompt: '' }),
+      /add a prompt to create/i,
     );
   });
 });
@@ -327,9 +307,6 @@ describe('buildInsertGeneratePayload', () => {
       position: 'after',
       placeholder: { width: 320, height: 80 },
       freeformPrompt: '  Add a testimonial strip  ',
-      comments: [{ x: 1, y: 2, text: 'quote here' }],
-      strokes: [],
-      screenshotPath: '/tmp/x.png',
     });
 
     assert.equal(payload.type, 'generate');
@@ -342,11 +319,12 @@ describe('buildInsertGeneratePayload', () => {
     assert.equal(payload.freeformPrompt, 'Add a testimonial strip');
     assert.equal(payload.action, undefined);
     assert.equal(payload.element, undefined);
-    assert.equal(payload.screenshotPath, '/tmp/x.png');
-    assert.equal(payload.comments.length, 1);
+    assert.equal(payload.screenshotPath, undefined);
+    assert.equal(payload.comments, undefined);
+    assert.equal(payload.strokes, undefined);
   });
 
-  it('omits screenshotPath when annotations are absent', () => {
+  it('omits freeformPrompt when blank', () => {
     const payload = buildInsertGeneratePayload({
       id: 'a1b2c3d4',
       count: 2,
@@ -354,11 +332,9 @@ describe('buildInsertGeneratePayload', () => {
       anchorContext: { tagName: 'div' },
       position: 'before',
       placeholder: { width: 200, height: 80 },
-      freeformPrompt: 'Banner',
-      comments: [],
-      strokes: [],
+      freeformPrompt: '   ',
     });
-    assert.equal(payload.screenshotPath, undefined);
+    assert.equal(payload.freeformPrompt, undefined);
   });
 });
 
