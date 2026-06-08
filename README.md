@@ -1,6 +1,8 @@
 # tcher-design
 
-A skill you install into the AI coding tool you already use. **27 commands**, a 59-rule scanner, and knowledge most design guidance skips: Thai typography that sets correctly, and the UX Thai and SEA users actually use.
+**English** · [ไทย](README.th.md)
+
+A skill you install into your AI coding tool. 27 commands, a 59-rule scanner, and an understanding of Thai typography and UX.
 
 ```bash
 npx tcher-designs skills install
@@ -12,137 +14,119 @@ npx tcher-designs skills install
 
 ### Thai typography (`/tcher thai`)
 
-Thai stacks vowels and tone marks above and below each consonant, so Latin line-height of 1.4 to 1.5 lets the marks on one line crash into the line above. This command sets line-height to 1.6 and up, cuts the letter-spacing that breaks Thai syllables, and picks real Thai faces (Anuphan, IBM Plex Sans Thai, Sarabun) instead of letting Inter fall through to a random system font. It also pairs Thai with English so a mixed line stops looking lumpy. Three of these faults also run automatically in the scanner.
+Typography that actually supports Thai: line-height, letter-spacing, and Thai-with-English font pairing.
 
 ### SEA and Thai UX (`/tcher sea`)
 
-A checkout that only takes credit cards loses most of Thailand. This leads with PromptPay QR and cash-on-delivery, adds the proof SEA buyers check for (a real phone number, reviews, a DBD badge), and keeps the dense, information-rich layout Shopee and Lazada users expect instead of airy whitespace. Thumb-zone first. LINE if it fits the brand, not because a checklist asked for it.
+UI tuned for Thai and SEA users: payment, trust signals, layout density, and mobile-first.
 
 ### Detect UX: 59 rules, no AI (`detect`)
 
-Press one button in the browser, or run `npx tcher-designs detect`, and the engine walks the live DOM with computed styles and flags problems in about a second. **Design (45)** catches AI template tells and craft faults, from violet gradient text to cramped Thai leading. **UX (14)** catches usability, most of it operationalizing a named principle from Jon Yablonski's [Laws of UX](https://lawsofux.com/): tap targets under 24px (Fitts's Law), navs past eight links (Hick's Law), prose links with no visual cue (Law of Similarity). Findings are color-coded by severity and cite their law inline.
+Scan the live DOM on a real page. **Design (45)** catches AI and template tells, **UX (14)** catches usability grounded in [Laws of UX](https://lawsofux.com/). Runs in Live mode or as `npx tcher-designs detect`.
 
 ### Flows: can the user finish the task? (`/tcher flows`)
 
-Audit grades one screen. This reads your routes, pages, components, and state, then follows a whole task (checkout, sign-up, upload) across screens to find where it breaks: dead ends with no way out, a confirmation page with no next step, missing loading or error or empty states, orphan routes nothing links to, forms that submit into silence. It reports a completion-rate risk per flow and names the one fix to make first.
+Trace a task across screens in the codebase to find dead ends, missing states, orphan routes, and forms that submit into silence, then name what to fix first.
 
 ---
 
-## Commands
+## 27 Commands
 
-Each command reads `PRODUCT.md` and `DESIGN.md` first (run `/tcher init` once), then does one job. Type `/tcher` with no argument and it recommends the best next one for your project's state.
+Every command reads `PRODUCT.md` and `DESIGN.md` first (run `/tcher init` once). Type `/tcher` with no argument and it recommends the next command for your project's state.
 
 **Start a project**
 
 | Command | What it does |
 |---|---|
-| `/tcher init` | One-time setup. Interviews you, writes `PRODUCT.md` (strategy) and `DESIGN.md` (the visual system) that every other command reads. |
-| `/tcher document` | The reverse of init: generate `DESIGN.md` from code you already shipped. |
+| `/tcher init` | First-time setup. Interviews you, then writes `PRODUCT.md` and `DESIGN.md` that every command reads first. |
+| `/tcher document` | Generate `DESIGN.md` from code you already have (when a design exists already). |
 | `/tcher extract` | Pull repeated patterns, components, and tokens into a real design system. |
-| `/tcher shape` | Plan the UX and UI before any code. Ends in a brief you confirm. |
-| `/tcher idea` | Float a few genuinely different directions from one short prompt, trade-offs stated out loud. |
-| `/tcher craft` | Shape, build, and visually iterate a feature end to end. |
+| `/tcher shape` | Plan UX and UI before writing code. |
+| `/tcher idea` | Explore design directions from a short brief. |
+| `/tcher craft` | Shape, build, and iterate a feature end to end. |
 
 **Review what you have**
 
 | Command | What it does |
 |---|---|
 | `/tcher critique` | UX review of one surface: hierarchy, clarity, cognitive load, scored. |
-| `/tcher audit` | Technical pass: accessibility, performance, responsive behavior, anti-patterns, rated P0 to P3. |
-| `/tcher flows` | Trace task journeys through the code. Dead ends, missing states, orphan pages, broken flows. |
+| `/tcher audit` | Technical pass: a11y, performance, responsive, anti-patterns. |
+| `/tcher flows` | Trace tasks in the code to find dead ends, missing states, orphan pages, broken flows. |
 
-**Sharpen one axis at a time**
+**Sharpen one axis**
 
 | Command | What it does |
 |---|---|
-| `/tcher typo` | Replace invisible default fonts; build a type scale with real weight contrast. |
-| `/tcher palette` | Add strategic color, different hue families, not three tints of one. |
-| `/tcher layout` | Fix spacing rhythm, grids, and visual hierarchy. |
-| `/tcher animate` | Add purposeful motion, with a reduced-motion path that is not an afterthought. |
-| `/tcher motion` | Add personality: micro-interactions and the occasional earned surprise. |
-| `/tcher extreme` | Push past convention: shaders, spring physics, scroll-driven reveals. |
+| `/tcher typo` | Fix fonts and the type scale. |
+| `/tcher palette` | Change the color system. |
+| `/tcher layout` | Fix spacing, grids, visual hierarchy. |
+| `/tcher animate` | Add purposeful motion, with a reduced-motion path. |
+| `/tcher motion` | Add micro-interactions and personality. |
+| `/tcher extreme` | Past convention: shaders, spring physics, scroll-driven reveals. |
 
 **Dial the intensity**
 
 | Command | What it does |
 |---|---|
-| `/tcher brave` | Amplify a timid, flat design. Each variant bets on a different dimension. |
-| `/tcher calm` | Pull back an overstimulating one without losing the craft. |
-| `/tcher trim` | Strip to essence. Remove what does not earn its place. |
-| `/tcher refine` | The last five percent: alignment, spacing, consistency, before you ship. |
+| `/tcher brave` | Make a timid design bolder. |
+| `/tcher calm` | Tone down a design that is too loud. |
+| `/tcher trim` | Cut to only what is needed. |
+| `/tcher refine` | Final pass before ship. |
 
-**Make it production-real**
+**Make it production-ready**
 
 | Command | What it does |
 |---|---|
-| `/tcher harden` | Errors, i18n, text overflow, empty data, the cases a demo never hits. |
-| `/tcher onboard` | First-run flows, empty states, and the path to the first win. |
-| `/tcher clarify` | Rewrite unclear labels, error messages, and microcopy. |
-| `/tcher responsive` | Adapt across devices and contexts, with tap targets that survive a thumb. |
-| `/tcher optimize` | Diagnose and fix UI performance: load, render, bundle. |
+| `/tcher harden` | Error states, i18n, edge cases, text overflow. |
+| `/tcher onboard` | First-run flows, empty states, the path to the first win. |
+| `/tcher clarify` | Rewrite labels, error messages, and microcopy so they stop confusing people. |
+| `/tcher responsive` | Adapt across devices and contexts, with tap targets that work. |
+| `/tcher optimize` | Fix UI performance: load, render, bundle. |
 
 **Localize for Thai and SEA**
 
 | Command | What it does |
 |---|---|
-| `/tcher thai` | Thai typography: leading for stacked marks, real Thai font pairing, mixed Thai and English. |
-| `/tcher sea` | SEA and Thai UX: trust signals, PromptPay and COD, information density, mobile-first. |
+| `/tcher thai` | Tune typography to support Thai. |
+| `/tcher sea` | Adapt UX for Thai and SEA users. |
 
 **Iterate in the browser**
 
 | Command | What it does |
 |---|---|
-| `/tcher live` | Pick an element on the page, get real variants, accept one, and it writes back to source. |
+| `/tcher live` | Pick an element on the page to redesign, with live Hot Swap. |
 
-Want a command as its own shortcut? `/tcher pin audit` makes `/audit` call `/tcher audit` directly; `/tcher unpin` removes it.
-
----
-
-## Live mode
-
-`/tcher live` opens a helper on port `8400` and injects a picker into your running dev server (Vite, Next.js, SvelteKit, Astro, Nuxt, or a static file). Click an element, pick a focused action or type a direction in plain language ("less SaaS"), and the agent hot-swaps two to four real variants into the page over HMR. Toggle between them on the actual element, tune any sliders a variant exposes, then accept. Accepting writes the winner back to real source and cleans up every temporary artifact. Discard reverts. The same pill bar carries the Detect UX button, so you scan and redesign in one loop.
+Want a command as its own shortcut? `/tcher pin audit` makes `/audit` call `/tcher audit`; `/tcher unpin` removes it.
 
 ---
 
-## CLI
+## Live Mode
 
-The scanner is also a plain command for CI and pre-commit. No API key, and no browser for static files.
-
-```bash
-npx tcher-designs detect src/                # scan a directory
-npx tcher-designs detect index.html          # a file
-npx tcher-designs detect https://example.com # a live URL
-npx tcher-designs detect --json .            # machine-readable
-npx tcher-designs detect --mode=ux src/      # only the usability set
-npx tcher-designs detect --gpt --gemini .    # include provider-specific tells
-```
-
-The deterministic engine covers what a DOM walk can measure. The judgment half of the Laws of UX (Peak-End, Tesler's, Flow, mental models) lives in `/tcher audit`, which scores a dedicated UX dimension across all 30 laws.
+`/tcher live` opens a helper on port 8400 and injects a picker into your running dev server (Vite, Next.js, SvelteKit, Astro, Nuxt, or a static file). Click an element, type a direction like "less SaaS", and the agent hot-swaps variants into the page over HMR. Tune any sliders, then accept; it writes the winner back to source and cleans up. Discard reverts. The same pill bar carries the Detect UX button.
 
 ---
 
-## Reference files
+## Reference Files
 
-Seven files point the AI at the right axes instead of one generic "good design" blob:
+Files that point the AI at the right axes, not one generic "good design" blob:
 
 | Reference | Covers |
 |---|---|
-| typography | Type systems, font pairing, modular scales, OpenType |
+| typography | type systems, font pairing, modular scales |
 | color-and-contrast | OKLCH, tinted neutrals, dark mode, contrast ratios |
-| spatial-design | Spacing systems, grids, visual hierarchy |
-| motion-design | Easing curves, staggering, reduced motion |
-| interaction-design | Forms, focus states, loading patterns |
-| responsive-design | Mobile-first, fluid type, container queries |
-| ux-writing | Button labels, error messages, empty states |
+| spatial-design | spacing systems, grids, visual hierarchy |
+| motion-design | easing curves, staggering, reduced motion |
+| interaction-design | forms, focus states, loading patterns |
+| responsive-design | mobile-first, fluid type, container queries |
+| ux-writing | button labels, error messages, empty states |
 
 ---
 
 ## Install
 
 ```bash
-npx tcher-designs skills install          # install into your harness
-npx tcher-designs skills install --force  # reinstall over an existing copy
-npx tcher-designs skills update           # update to the latest
+npx tcher-designs skills install   # install
+npx tcher-designs skills update    # update to the latest
 ```
 
 Or copy a prebuilt directory from `dist/`:
